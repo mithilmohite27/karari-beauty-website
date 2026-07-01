@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+.env*
+!.env.example
+*.log
+.vercel
+.npm-cache
+.agents
+.codex
+preview-*.txt

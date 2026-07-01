@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fffaf4;
+  --foreground: #181614;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+.luxury-gradient {
+  background:
+    radial-gradient(circle at 10% 15%, rgba(248, 219, 225, 0.55), transparent 28rem),
+    radial-gradient(circle at 82% 8%, rgba(200, 160, 90, 0.18), transparent 24rem),
+    linear-gradient(135deg, #fffaf4 0%, #ffffff 46%, #fbf2e7 100%);
+}
+
+.thread-line {
+  position: absolute;
+  height: 2px;
+  width: 18rem;
+  background: linear-gradient(90deg, transparent, rgba(124, 38, 53, 0.36), rgba(200, 160, 90, 0.44), transparent);
+  border-radius: 999px;
+  transform: rotate(-8deg);
+}
+
+.rakhi-knot {
+  position: absolute;
+  height: 0.7rem;
+  width: 0.7rem;
+  border-radius: 999px;
+  border: 2px solid rgba(155, 106, 36, 0.38);
+  background: rgba(255, 250, 244, 0.92);
+  box-shadow: 0 0 0 5px rgba(248, 219, 225, 0.36);
+}
+
+.image-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.38), transparent 62%);
+  transform: translateX(-120%);
+  transition: transform 700ms ease;
+}
+
+.group:hover .image-sheen::after {
+  transform: translateX(120%);
+}
+
+.announcement-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 0%, transparent 38%, rgba(200, 160, 90, 0.22) 48%, transparent 58%, transparent 100%);
+  animation: announcement-shine 6s ease-in-out infinite;
+}
+
+@keyframes announcement-shine {
+  0% {
+    transform: translateX(-120%);
+  }
+  42%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

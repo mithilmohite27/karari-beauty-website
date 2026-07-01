@@ -1,0 +1,399 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowRight, BadgeCheck, ChevronRight, Globe2, MessageCircle, PackageCheck, ShieldCheck, Truck } from "lucide-react";
+import EmptyCartState from "@/components/EmptyCartState";
+import { Header } from "@/components/HomeExperience";
+import QuickViewModal from "@/components/QuickViewModal";
+import { products } from "@/data/products";
+import {
+  addRecentlyViewed,
+  clearCart,
+  getCartItems,
+  getCartSubtotal,
+  getRecentlyViewed,
+  saveOrderRequest
+} from "@/lib/ecommerceStorage";
+import { formatCurrency } from "@/lib/whatsapp";
+
+const countries = ["India", "USA", "Canada", "Australia", "UAE", "UK"];
+const paymentOptions = ["GPay / UPI", "Cash on Delivery / Pay at Store", "Bank Transfer", "International Inquiry"];
+const orderTypes = ["Domestic Order", "International Inquiry"];
+const trustBadges = [
+  { label: "Secure Order Support", icon: ShieldCheck },
+  { label: "Delivery Confirmation", icon: Truck },
+  { label: "International Inquiry", icon: Globe2 },
+  { label: "Gift Ready Picks", icon: PackageCheck }
+];
+
+const initialForm = {
+  fullName: "",
+  mobile: "",
+  email: "",
+  country: "India",
+  address: "",
+  city: "",
+  state: "",
+  pincode: "",
+  deliveryNote: "",
+  paymentPreference: "GPay / UPI",
+  orderType: "Domestic Order"
+};
+
+function createOrderId() {
+  const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, "");
+  const randomPart = Math.random().toString(36).slice(2, 7).toUpperCase();
+  return `KB-${datePart}-${randomPart}`;
+}
+
+function buildWhatsAppOrderUrl(order) {
+  const message = [
+    "Hi Karari Beauty,",
+    "I have submitted an order request.",
+    "",
+    `Order ID: ${order.orderId}`,
+    `Customer: ${order.customer.fullName}`,
+    `Subtotal: ${formatCurrency(order.subtotal)}`,
+    `Payment Preference: ${order.paymentPreference}`,
+    "",
+    "Items:",
+    ...order.items.map((item) => `- ${item.name} x ${item.quantity}`),
+    "",
+    "Please confirm availability, delivery charges and payment details."
+  ].join("\n");
+
+  return `https://wa.me/917435984499?text=${encodeURIComponent(message)}`;
+}
+
+function Field({ label, name, value, error, required, as = "input", children, ...props }) {
+  const inputClass = `mt-2 w-full rounded-md border bg-white/82 px-3 py-3 text-base font-semibold text-[#3A2417] outline-none transition placeholder:text-[#3A2417]/38 sm:text-sm ${
+    error ? "border-[#7A183D] shadow-[0_0_0_3px_rgba(122,24,61,0.08)]" : "border-[rgba(122,24,61,0.14)] focus:border-[#C9962D]"
+  }`;
+  const Input = as;
+
+  return (
+    <label className="block text-sm font-bold text-[#3A2417]">
+      {label} {required ? <span className="text-[#7A183D]">*</span> : null}
+      <Input name={name} value={value} className={inputClass} {...props}>
+        {children}
+      </Input>
+      {error ? <span className="mt-1 block text-xs font-semibold text-[#7A183D]">{error}</span> : null}
+    </label>
+  );
+}
+
+export default function CheckoutPageExperience() {
+  const [items, setItems] = useState([]);
+  const [form, setForm] = useState(initialForm);
+  const [errors, setErrors] = useState({});
+  const [submittedOrder, setSubmittedOrder] = useState(null);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const subtotal = useMemo(() => getCartSubtotal(items), [items]);
+  const isInternational = form.country !== "India";
+
+  useEffect(() => {
+    const syncCart = () => setItems(getCartItems());
+    const syncRecentlyViewed = () => setRecentlyViewed(getRecentlyViewed(products));
+
+    syncCart();
+    syncRecentlyViewed();
+    window.addEventListener("cart:updated", syncCart);
+    window.addEventListener("storage", syncCart);
+    window.addEventListener("recentlyViewed:updated", syncRecentlyViewed);
+
+    return () => {
+      window.removeEventListener("cart:updated", syncCart);
+      window.removeEventListener("storage", syncCart);
+      window.removeEventListener("recentlyViewed:updated", syncRecentlyViewed);
+    };
+  }, []);
+
+  const openProduct = (product) => {
+    setSelectedProduct(product);
+    setRecentlyViewed(addRecentlyViewed(product, products));
+  };
+
+  const updateField = (name, value) => {
+    setForm((current) => {
+      const next = { ...current, [name]: value };
+
+      if (name === "country") {
+        if (value !== "India") {
+          next.orderType = "International Inquiry";
+          next.paymentPreference = "International Inquiry";
+        } else if (current.orderType === "International Inquiry" && current.paymentPreference === "International Inquiry") {
+          next.orderType = "Domestic Order";
+          next.paymentPreference = "GPay / UPI";
+        }
+      }
+
+      return next;
+    });
+    setErrors((current) => ({ ...current, [name]: "" }));
+  };
+
+  const validate = () => {
+    const nextErrors = {};
+    const requiredFields = [
+      ["fullName", "Full name is required."],
+      ["mobile", "Mobile number is required."],
+      ["country", "Country is required."],
+      ["address", "Address is required."],
+      ["city", "City is required."],
+      ["state", "State is required."],
+      ["pincode", "Pincode / ZIP is required."]
+    ];
+
+    requiredFields.forEach(([field, message]) => {
+      if (!String(form[field] || "").trim()) nextErrors[field] = message;
+    });
+
+    if (!items.length) nextErrors.cart = "Your cart is empty.";
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const submitOrder = (event) => {
+    event.preventDefault();
+    if (!validate()) return;
+
+    const order = {
+      orderId: createOrderId(),
+      customer: {
+        fullName: form.fullName.trim(),
+        mobile: form.mobile.trim(),
+        email: form.email.trim()
+      },
+      delivery: {
+        country: form.country,
+        address: form.address.trim(),
+        city: form.city.trim(),
+        state: form.state.trim(),
+        pincode: form.pincode.trim(),
+        note: form.deliveryNote.trim()
+      },
+      paymentPreference: form.paymentPreference,
+      orderType: form.orderType,
+      items,
+      subtotal,
+      status: "Order Request Received",
+      createdAt: new Date().toISOString()
+    };
+
+    saveOrderRequest(order);
+    clearCart();
+    setItems([]);
+    setSubmittedOrder(order);
+  };
+
+  if (submittedOrder) {
+    return (
+      <main className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_48%,#FFF8EE_100%)] text-[#3A2417]">
+        <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} />
+      <section className="px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-5 text-center shadow-boutique sm:p-10">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[rgba(201,150,45,0.32)] bg-[#FFF8EE] text-[#C9962D]">
+              <BadgeCheck className="h-8 w-8" />
+            </div>
+            <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-[#C9962D]">Order Request Received</p>
+            <h1 className="mt-3 font-display text-3xl font-semibold text-[#7A183D] sm:text-4xl">Karari Beauty will contact you soon</h1>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#3A2417]/70">
+              Karari Beauty will contact you to confirm availability, delivery charges and payment details.
+            </p>
+
+            <div className="mt-7 grid gap-3 rounded-xl border border-[rgba(122,24,61,0.12)] bg-[#FFF8EE] p-4 text-left text-sm font-semibold text-[#3A2417]/72 sm:grid-cols-2">
+              <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Order ID</span>{submittedOrder.orderId}</p>
+              <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Customer</span>{submittedOrder.customer.fullName}</p>
+              <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Subtotal</span>{formatCurrency(submittedOrder.subtotal)}</p>
+              <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Payment</span>{submittedOrder.paymentPreference}</p>
+            </div>
+
+            <div className="mt-7 grid gap-3 sm:grid-cols-3">
+              <Link href="/" className="inline-flex h-11 items-center justify-center rounded-md bg-[#7A183D] px-4 text-sm font-bold text-white transition hover:bg-[#3A2417]">
+                Continue Shopping
+              </Link>
+              <Link href="/#collections" className="inline-flex h-11 items-center justify-center rounded-md border border-[#7A183D] bg-white px-4 text-sm font-bold text-[#7A183D] transition hover:bg-[#FFF8EE]">
+                View Collections
+              </Link>
+              <a
+                href={buildWhatsAppOrderUrl(submittedOrder)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-4 text-sm font-bold text-[#3A2417] transition hover:border-[#C9962D] hover:text-[#7A183D]"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Send Summary
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_50%,#FFF8EE_100%)] text-[#3A2417]">
+      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} />
+
+      <section className="px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <nav className="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#3A2417]/62">
+            <Link href="/" className="transition hover:text-[#7A183D]">Home</Link>
+            <ChevronRight className="h-4 w-4 text-[#C9962D]" />
+            <Link href="/cart" className="transition hover:text-[#7A183D]">Cart</Link>
+            <ChevronRight className="h-4 w-4 text-[#C9962D]" />
+            <span className="text-[#7A183D]">Checkout</span>
+          </nav>
+
+          <div className="mt-5 rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4 shadow-soft backdrop-blur sm:mt-6 sm:p-7">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#C9962D]">Order Request</p>
+            <h1 className="mt-3 font-display text-3xl font-semibold text-[#7A183D] sm:text-5xl">Checkout Details</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3A2417]/68">
+              Share your delivery details and preferred payment method. Final payment and delivery charges will be confirmed by Karari Beauty.
+            </p>
+            <p className="mt-4 inline-flex flex-wrap items-center gap-2 rounded-lg border border-[rgba(201,150,45,0.26)] bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]/70">
+              Have an account?
+              <Link href="/sign-in" className="font-bold text-[#7A183D] underline-offset-4 transition hover:text-[#C9962D] hover:underline">
+                Sign in for faster checkout.
+              </Link>
+            </p>
+          </div>
+
+          {!items.length ? (
+            <div className="mt-8">
+              <EmptyCartState />
+            </div>
+          ) : (
+            <form onSubmit={submitOrder} className="mt-6 grid gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
+              <div className="space-y-5 sm:space-y-6">
+                <section className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-4 shadow-soft sm:p-6">
+                  <h2 className="font-display text-2xl font-semibold text-[#7A183D]">Customer Details</h2>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    <Field label="Full Name" name="fullName" value={form.fullName} error={errors.fullName} required onChange={(event) => updateField("fullName", event.target.value)} />
+                    <Field label="Mobile Number" name="mobile" value={form.mobile} error={errors.mobile} required onChange={(event) => updateField("mobile", event.target.value)} />
+                    <Field label="Email" name="email" type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} />
+                    <Field label="Country" name="country" value={form.country} error={errors.country} required as="select" onChange={(event) => updateField("country", event.target.value)}>
+                      {countries.map((country) => <option key={country} value={country}>{country}</option>)}
+                    </Field>
+                  </div>
+                </section>
+
+                <section className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-4 shadow-soft sm:p-6">
+                  <h2 className="font-display text-2xl font-semibold text-[#7A183D]">Delivery Details</h2>
+                  <div className="mt-5 grid gap-4">
+                    <Field label="Address" name="address" value={form.address} error={errors.address} required as="textarea" rows={3} onChange={(event) => updateField("address", event.target.value)} />
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <Field label="City" name="city" value={form.city} error={errors.city} required onChange={(event) => updateField("city", event.target.value)} />
+                      <Field label="State" name="state" value={form.state} error={errors.state} required onChange={(event) => updateField("state", event.target.value)} />
+                      <Field label="Pincode / ZIP" name="pincode" value={form.pincode} error={errors.pincode} required onChange={(event) => updateField("pincode", event.target.value)} />
+                    </div>
+                    <Field label="Delivery Note" name="deliveryNote" value={form.deliveryNote} as="textarea" rows={3} onChange={(event) => updateField("deliveryNote", event.target.value)} />
+                  </div>
+                </section>
+
+                <section className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-4 shadow-soft sm:p-6">
+                  <h2 className="font-display text-2xl font-semibold text-[#7A183D]">Payment Preference</h2>
+                  {isInternational ? (
+                    <p className="mt-3 rounded-lg bg-[#FFF8EE] p-3 text-sm font-semibold leading-6 text-[#7A183D]">
+                      Our team will confirm delivery availability and charges for international orders.
+                    </p>
+                  ) : null}
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    {paymentOptions.map((option) => (
+                      <label key={option} className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm font-bold transition ${
+                        form.paymentPreference === option ? "border-[#C9962D] bg-[#FFF8EE] text-[#7A183D]" : "border-[rgba(122,24,61,0.14)] bg-white/70 text-[#3A2417]"
+                      }`}>
+                        <input
+                          type="radio"
+                          name="paymentPreference"
+                          value={option}
+                          checked={form.paymentPreference === option}
+                          onChange={(event) => updateField("paymentPreference", event.target.value)}
+                          className="accent-[#7A183D]"
+                        />
+                        {option}
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    {orderTypes.map((option) => (
+                      <label key={option} className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm font-bold transition ${
+                        form.orderType === option ? "border-[#C9962D] bg-[#FFF8EE] text-[#7A183D]" : "border-[rgba(122,24,61,0.14)] bg-white/70 text-[#3A2417]"
+                      }`}>
+                        <input
+                          type="radio"
+                          name="orderType"
+                          value={option}
+                          checked={form.orderType === option}
+                          onChange={(event) => updateField("orderType", event.target.value)}
+                          className="accent-[#7A183D]"
+                        />
+                        {option}
+                      </label>
+                    ))}
+                  </div>
+                </section>
+              </div>
+
+              <aside className="space-y-4 lg:sticky lg:top-32 lg:self-start">
+                <section className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/86 p-4 shadow-boutique">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#C9962D]">Order Summary</p>
+                  <div className="mt-4 space-y-3">
+                    {items.map((item) => (
+                      <div key={item.productId} className="flex gap-3 rounded-lg bg-[#FFF8EE] p-3">
+                        <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-[#FFF8EE]">
+                          <Image src={item.image} alt={item.name} fill sizes="4rem" className="object-cover" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="line-clamp-2 text-sm font-bold text-[#3A2417]">{item.name}</p>
+                          <p className="mt-1 text-xs font-semibold text-[#3A2417]/55">Qty {item.quantity} x {formatCurrency(item.price)}</p>
+                          <p className="mt-1 text-sm font-bold text-[#7A183D]">{formatCurrency((Number(item.price) || 0) * (Number(item.quantity) || 0))}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 space-y-3 border-t border-[rgba(122,24,61,0.12)] pt-4 text-sm font-semibold text-[#3A2417]/72">
+                    <div className="flex items-center justify-between">
+                      <span>Cart subtotal</span>
+                      <span className="text-[#3A2417]">{formatCurrency(subtotal)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Final amount</span>
+                      <span className="text-[#7A183D]">To be confirmed</span>
+                    </div>
+                    <p className="rounded-lg bg-[#FCE7EC]/72 p-3 leading-6">
+                      Delivery charges and final payment details will be confirmed by Karari Beauty.
+                    </p>
+                  </div>
+                </section>
+
+                <section className="grid gap-2 rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/70 p-4 shadow-soft">
+                  {trustBadges.map(({ label, icon: Icon }) => (
+                    <div key={label} className="flex items-center gap-2 rounded-lg bg-[#FFF8EE] px-3 py-2 text-xs font-bold text-[#3A2417]/72">
+                      <Icon className="h-4 w-4 text-[#C9962D]" />
+                      {label}
+                    </div>
+                  ))}
+                </section>
+
+                {errors.cart ? <p className="rounded-lg bg-white p-3 text-sm font-bold text-[#7A183D]">{errors.cart}</p> : null}
+                <button
+                  type="submit"
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417]"
+                >
+                  Submit Order Request
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </aside>
+            </form>
+          )}
+        </div>
+      </section>
+
+      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+    </main>
+  );
+}
