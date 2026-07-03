@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import { ArrowUpDown, Eye, Loader2, Pencil, Plus, Power, Search, X } from "lucide-react";
 import AdminAuthGate from "@/components/admin/AdminAuthGate";
 import AdminBadge from "@/components/admin/AdminBadge";
@@ -82,6 +81,22 @@ const emptyCategoryForm = {
   sort_order: 0
 };
 
+const emptyCampaignForm = {
+  name: "",
+  slug: "",
+  theme: "rakhi",
+  is_active: false,
+  start_date: "",
+  end_date: "",
+  hero_title: "",
+  hero_subtitle: "",
+  offer_label: "",
+  featured_category_slugs: [],
+  config: "{}"
+};
+
+const campaignThemes = ["rakhi", "diwali", "wedding", "navratri", "gifting", "custom"];
+
 function productToForm(product) {
   return {
     name: product.name || "",
@@ -120,6 +135,22 @@ function categoryToForm(category) {
   };
 }
 
+function campaignToForm(campaign) {
+  return {
+    name: campaign.name || "",
+    slug: campaign.slug || "",
+    theme: campaign.theme || "custom",
+    is_active: Boolean(campaign.active || campaign.isActive),
+    start_date: campaign.startDate || "",
+    end_date: campaign.endDate || "",
+    hero_title: campaign.heroTitle || "",
+    hero_subtitle: campaign.heroSubtitle || "",
+    offer_label: campaign.offerLabel || campaign.offer || "",
+    featured_category_slugs: campaign.featuredCategorySlugs || campaign.featuredCategories || [],
+    config: JSON.stringify(campaign.config || {}, null, 2)
+  };
+}
+
 function formToPayload(form) {
   return {
     ...form,
@@ -147,6 +178,29 @@ function categoryFormToPayload(form) {
   };
 }
 
+function campaignFormToPayload(form) {
+  let config = {};
+  try {
+    config = form.config ? JSON.parse(form.config) : {};
+  } catch {
+    throw new Error("Advanced visual settings must be valid JSON.");
+  }
+
+  return {
+    name: form.name,
+    slug: form.slug,
+    theme: form.theme,
+    is_active: form.is_active,
+    start_date: form.start_date,
+    end_date: form.end_date,
+    hero_title: form.hero_title,
+    hero_subtitle: form.hero_subtitle,
+    offer_label: form.offer_label,
+    featured_category_slugs: form.featured_category_slugs,
+    config
+  };
+}
+
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -160,6 +214,18 @@ function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function getCampaignStatus(campaign) {
+  const active = Boolean(campaign.active || campaign.isActive);
+  const now = new Date();
+  const start = campaign.startDate ? new Date(`${campaign.startDate}T00:00:00`) : null;
+  const end = campaign.endDate ? new Date(`${campaign.endDate}T23:59:59`) : null;
+
+  if (active && (!start || now >= start) && (!end || now <= end)) return { label: "Live", tone: "green" };
+  if (start && now < start) return { label: "Scheduled", tone: "gold" };
+  if (end && now > end) return { label: "Ended", tone: "muted" };
+  return { label: active ? "Active" : "Inactive", tone: active ? "wine" : "muted" };
 }
 
 function boolBadge(value, trueLabel = "Yes", falseLabel = "No") {
@@ -352,35 +418,42 @@ function OrderRows({ items, onView }) {
   ));
 }
 
-function CampaignRows({ items, onView }) {
+function CampaignRows({ items, onView, onEdit, onActivate, onDeactivate, canManageCampaigns }) {
   return items.map((item) => (
     <tr key={item.id || item.slug || item.name} className="border-b border-[rgba(122,24,61,0.08)]">
-      <td className="px-3 py-3 font-bold text-[#3A2417]">{item.name}</td>
-      <td className="px-3 py-3">{item.slug || "—"}</td>
+      <td className="px-3 py-3 font-bold text-[#3A2417]">{item.name}<span className="mt-1 block text-xs font-semibold text-[#3A2417]/48">{item.slug || "-"}</span></td>
       <td className="px-3 py-3"><AdminBadge tone="gold">{item.theme || "campaign"}</AdminBadge></td>
-      <td className="px-3 py-3">{boolBadge(item.active || item.isActive, "Active", "Inactive")}</td>
+      <td className="px-3 py-3"><AdminBadge tone={getCampaignStatus(item).tone}>{getCampaignStatus(item).label}</AdminBadge></td>
       <td className="px-3 py-3">{formatDate(item.startDate)}</td>
       <td className="px-3 py-3">{formatDate(item.endDate)}</td>
       <td className="px-3 py-3">{item.offerLabel || item.offer || "—"}</td>
       <td className="px-3 py-3">{(item.featuredCategorySlugs || item.featuredCategories || []).join(", ") || "—"}</td>
-      <td className="px-3 py-3"><button type="button" onClick={() => onView(item)} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D]">View</button></td>
+      <td className="px-3 py-3">{formatDate(item.createdAt)}</td>
+      <td className="px-3 py-3">
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => onView(item)} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D]">View</button>
+          <button type="button" onClick={() => onEdit(item)} disabled={!canManageCampaigns} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50">Edit</button>
+          <button type="button" onClick={() => onActivate(item)} disabled={!canManageCampaigns || item.active || item.isActive} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50">Activate</button>
+          <button type="button" onClick={() => onDeactivate(item)} disabled={!canManageCampaigns || !(item.active || item.isActive)} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50">Off</button>
+        </div>
+      </td>
     </tr>
   ));
 }
 
-function Table({ resource, items, onView, onEditProduct, onDeactivateProduct, canManageProducts, onEditCategory, onDeactivateCategory, canManageCategories }) {
+function Table({ resource, items, onView, onEditProduct, onDeactivateProduct, canManageProducts, onEditCategory, onDeactivateCategory, canManageCategories, onEditCampaign, onActivateCampaign, onDeactivateCampaign, canManageCampaigns }) {
   const headers = {
     products: ["Image", "Product", "Category", "Price", "Original", "Discount", "Featured", "Active", "Stock", "Created", "Action"],
     categories: ["Image", "Name", "Slug", "Description", "Count Label", "Featured", "Active", "Sort", "Products", "Action"],
     orders: ["Order", "Customer", "Contact", "Type", "Payment", "Total", "Status", "Created", "Items", "Action"],
-    campaigns: ["Campaign", "Slug", "Theme", "Active", "Start", "End", "Offer", "Featured Categories", "Action"]
+    campaigns: ["Campaign", "Theme", "Status", "Start", "End", "Offer", "Featured Categories", "Created", "Action"]
   };
 
   const rows = {
     products: <ProductRows items={items} onView={onView} onEdit={onEditProduct} onDeactivate={onDeactivateProduct} canManageProducts={canManageProducts} />,
     categories: <CategoryRows items={items} onView={onView} onEdit={onEditCategory} onDeactivate={onDeactivateCategory} canManageCategories={canManageCategories} />,
     orders: <OrderRows items={items} onView={onView} />,
-    campaigns: <CampaignRows items={items} onView={onView} />
+    campaigns: <CampaignRows items={items} onView={onView} onEdit={onEditCampaign} onActivate={onActivateCampaign} onDeactivate={onDeactivateCampaign} canManageCampaigns={canManageCampaigns} />
   };
 
   return (
@@ -951,6 +1024,162 @@ function CategoryFormDrawer({ mode, category, saving, error, canManageCategories
   );
 }
 
+function CampaignFormDrawer({ mode, campaign, categories, saving, error, canManageCampaigns, onClose, onSubmit }) {
+  const [form, setForm] = useState(() => (campaign ? campaignToForm(campaign) : emptyCampaignForm));
+  const [slugTouched, setSlugTouched] = useState(Boolean(campaign?.slug));
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [jsonError, setJsonError] = useState("");
+
+  useEffect(() => {
+    setForm(campaign ? campaignToForm(campaign) : emptyCampaignForm);
+    setSlugTouched(Boolean(campaign?.slug));
+    setAdvancedOpen(false);
+    setJsonError("");
+  }, [campaign]);
+
+  const setField = (field, value) => {
+    setForm((current) => {
+      const next = { ...current, [field]: value };
+      if (field === "name" && !slugTouched) next.slug = generateSlug(value);
+      return next;
+    });
+  };
+
+  const toggleFeaturedCategory = (slug) => {
+    setForm((current) => {
+      const selected = new Set(current.featured_category_slugs || []);
+      if (selected.has(slug)) selected.delete(slug);
+      else selected.add(slug);
+      return { ...current, featured_category_slugs: [...selected] };
+    });
+  };
+
+  const submit = (event) => {
+    event.preventDefault();
+    setJsonError("");
+
+    try {
+      onSubmit(campaignFormToPayload(form));
+    } catch (submitError) {
+      setJsonError(submitError.message || "Unable to save campaign.");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-[#3A2417]/35">
+      <aside className="h-full w-full max-w-2xl overflow-y-auto bg-[#FFF8EE] p-5 shadow-boutique">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Campaign CMS</p>
+            <h2 className="mt-2 font-display text-3xl font-semibold text-[#7A183D]">{mode === "edit" ? "Edit Campaign" : "Add Campaign"}</h2>
+            <p className="mt-2 text-sm font-semibold text-[#3A2417]/62">Manage festival campaigns, offers and featured collections.</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white p-2 text-[#7A183D]" aria-label="Close campaign form">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {error || jsonError ? <div className="mt-4 rounded-xl border border-[#7A183D]/15 bg-[#FCE7EC] p-3 text-sm font-bold text-[#7A183D]">{error || jsonError}</div> : null}
+        {!canManageCampaigns ? <div className="mt-4 rounded-xl border border-[rgba(122,24,61,0.14)] bg-white p-3 text-sm font-bold text-[#7A183D]">Connect Supabase to manage campaigns.</div> : null}
+
+        <form onSubmit={submit} className="mt-6 grid gap-5">
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Campaign Details</h3>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Campaign name *
+                <input value={form.name} onChange={(event) => setField("name", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" required />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Theme
+                <select value={form.theme} onChange={(event) => setField("theme", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]">
+                  {campaignThemes.map((theme) => <option key={theme} value={theme}>{theme}</option>)}
+                </select>
+              </label>
+            </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Start date
+                <input type="date" value={form.start_date} onChange={(event) => setField("start_date", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                End date
+                <input type="date" value={form.end_date} onChange={(event) => setField("end_date", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Homepage Messaging</h3>
+            <div className="mt-4 grid gap-4">
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Hero title
+                <input value={form.hero_title} onChange={(event) => setField("hero_title", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Hero subtitle
+                <input value={form.hero_subtitle} onChange={(event) => setField("hero_subtitle", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Offer label
+                <input value={form.offer_label} onChange={(event) => setField("offer_label", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Featured Collections</h3>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <label key={category.slug} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[rgba(122,24,61,0.14)] bg-white px-3 text-sm font-bold text-[#7A183D]">
+                  <input type="checkbox" checked={(form.featured_category_slugs || []).includes(category.slug)} onChange={() => toggleFeaturedCategory(category.slug)} />
+                  {category.name}
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Visibility</h3>
+            <label className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 text-sm font-bold text-[#3A2417]">
+              <input type="checkbox" checked={form.is_active} onChange={(event) => setField("is_active", event.target.checked)} />
+              Make this campaign active
+            </label>
+            <p className="mt-2 text-xs font-semibold text-[#3A2417]/52">Only one campaign can be active at a time.</p>
+          </section>
+
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72">
+            <button type="button" onClick={() => setAdvancedOpen((current) => !current)} className="flex min-h-14 w-full items-center justify-between gap-3 px-4 text-left font-display text-xl font-semibold text-[#7A183D]">
+              Advanced visual settings
+              <span className="text-sm font-bold text-[#C9962D]">{advancedOpen ? "Hide" : "Show"}</span>
+            </button>
+            {advancedOpen ? (
+              <div className="grid gap-4 border-t border-[rgba(122,24,61,0.1)] p-4">
+                <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                  Slug
+                  <input value={form.slug} onChange={(event) => { setSlugTouched(true); setField("slug", event.target.value); }} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" required />
+                </label>
+                <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                  Config JSON
+                  <textarea value={form.config} onChange={(event) => setField("config", event.target.value)} rows={7} className="rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 font-mono text-xs outline-none focus:border-[#C9962D]" />
+                </label>
+              </div>
+            ) : null}
+          </section>
+
+          <div className="flex flex-col gap-2 border-t border-[rgba(122,24,61,0.12)] pt-4 sm:flex-row sm:justify-end">
+            <button type="button" onClick={onClose} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-5 text-sm font-bold text-[#7A183D]">Cancel</button>
+            <button type="submit" disabled={saving || !canManageCampaigns} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:opacity-70">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {mode === "edit" ? "Save Changes" : "Create Campaign"}
+            </button>
+          </div>
+        </form>
+      </aside>
+    </div>
+  );
+}
+
 function ManagementContent({ resource }) {
   const config = resourceConfig[resource];
   const [items, setItems] = useState([]);
@@ -963,6 +1192,7 @@ function ManagementContent({ resource }) {
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [formState, setFormState] = useState({ open: false, mode: "create", product: null, error: "", saving: false });
   const [categoryFormState, setCategoryFormState] = useState({ open: false, mode: "create", category: null, error: "", saving: false });
+  const [campaignFormState, setCampaignFormState] = useState({ open: false, mode: "create", campaign: null, error: "", saving: false });
   const [notice, setNotice] = useState("");
   const [state, setState] = useState({ loading: true, error: "" });
 
@@ -995,7 +1225,7 @@ function ManagementContent({ resource }) {
           setState({ loading: false, error: "" });
         }
 
-        if (resource === "products") {
+        if (["products", "campaigns"].includes(resource)) {
           const categoryResponse = await fetch("/api/admin/categories", {
             headers: {
               Authorization: `Bearer ${token}`
@@ -1030,6 +1260,7 @@ function ManagementContent({ resource }) {
   const visibleItems = useMemo(() => sortItems(filterItems(items, resource, query, filters), resource, sortBy), [filters, items, query, resource, sortBy]);
   const canManageProducts = resource === "products" && meta.mode === "supabase";
   const canManageCategories = resource === "categories" && meta.mode === "supabase";
+  const canManageCampaigns = resource === "campaigns" && meta.mode === "supabase";
 
   const openProductForm = (mode, product = null) => {
     setNotice("");
@@ -1041,6 +1272,12 @@ function ManagementContent({ resource }) {
     setNotice("");
     setSelectedItem(null);
     setCategoryFormState({ open: true, mode, category, error: "", saving: false });
+  };
+
+  const openCampaignForm = (mode, campaign = null) => {
+    setNotice("");
+    setSelectedItem(null);
+    setCampaignFormState({ open: true, mode, campaign, error: "", saving: false });
   };
 
   const viewItem = async (item) => {
@@ -1179,6 +1416,91 @@ function ManagementContent({ resource }) {
     }
   };
 
+  const submitCampaign = async (payload) => {
+    if (!canManageCampaigns) {
+      setCampaignFormState((current) => ({ ...current, error: "Connect Supabase to manage campaigns." }));
+      return;
+    }
+
+    setCampaignFormState((current) => ({ ...current, saving: true, error: "" }));
+
+    try {
+      const token = await getAdminToken();
+      const editing = campaignFormState.mode === "edit";
+      const endpoint = editing ? `/api/admin/campaigns/${campaignFormState.campaign.id}` : "/api/admin/campaigns";
+      const response = await fetch(endpoint, {
+        method: editing ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to save campaign.");
+
+      setNotice(editing ? "Campaign updated successfully." : "Campaign created successfully.");
+      setCampaignFormState({ open: false, mode: "create", campaign: null, error: "", saving: false });
+      loadItems();
+    } catch (error) {
+      setCampaignFormState((current) => ({ ...current, saving: false, error: error.message || "Unable to save campaign." }));
+    }
+  };
+
+  const activateCampaign = async (campaign) => {
+    if (!canManageCampaigns) {
+      setNotice("Connect Supabase to manage campaigns.");
+      return;
+    }
+
+    const confirmed = window.confirm(`Activate ${campaign.name}? Other campaigns will be deactivated.`);
+    if (!confirmed) return;
+
+    try {
+      const token = await getAdminToken();
+      const response = await fetch(`/api/admin/campaigns/${campaign.id}/activate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to activate campaign.");
+
+      setNotice("Campaign activated.");
+      loadItems();
+    } catch (error) {
+      setNotice(error.message || "Unable to activate campaign.");
+    }
+  };
+
+  const deactivateCampaign = async (campaign) => {
+    if (!canManageCampaigns) {
+      setNotice("Connect Supabase to manage campaigns.");
+      return;
+    }
+
+    const confirmed = window.confirm(`Deactivate ${campaign.name}? The homepage will use the normal fallback if no campaign is active.`);
+    if (!confirmed) return;
+
+    try {
+      const token = await getAdminToken();
+      const response = await fetch(`/api/admin/campaigns/${campaign.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to deactivate campaign.");
+
+      setNotice(result.message || "Campaign deactivated.");
+      loadItems();
+    } catch (error) {
+      setNotice(error.message || "Unable to deactivate campaign.");
+    }
+  };
+
   return (
     <div className="mx-auto max-w-7xl">
       <section className="rounded-3xl border border-[rgba(122,24,61,0.14)] bg-white/74 p-5 shadow-boutique sm:p-7">
@@ -1189,6 +1511,7 @@ function ManagementContent({ resource }) {
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[#3A2417]/68">{config.description}</p>
             {resource === "products" && !canManageProducts ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage products. Fallback catalog stays read-only.</p> : null}
             {resource === "categories" && !canManageCategories ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage categories. Fallback categories stay read-only.</p> : null}
+            {resource === "campaigns" && !canManageCampaigns ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage campaigns. Fallback campaigns stay read-only.</p> : null}
           </div>
           <div className="flex flex-wrap gap-2">
             <AdminBadge tone={meta.mode === "supabase" ? "green" : meta.mode === "fallback" ? "gold" : "muted"}>{meta.mode || "loading"}</AdminBadge>
@@ -1203,6 +1526,12 @@ function ManagementContent({ resource }) {
               <button type="button" onClick={() => openCategoryForm("create")} disabled={!canManageCategories} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#7A183D] px-4 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:cursor-not-allowed disabled:opacity-55">
                 <Plus className="h-4 w-4" />
                 Add Category
+              </button>
+            ) : null}
+            {resource === "campaigns" ? (
+              <button type="button" onClick={() => openCampaignForm("create")} disabled={!canManageCampaigns} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#7A183D] px-4 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:cursor-not-allowed disabled:opacity-55">
+                <Plus className="h-4 w-4" />
+                Add Campaign
               </button>
             ) : null}
           </div>
@@ -1279,6 +1608,10 @@ function ManagementContent({ resource }) {
             onEditCategory={(category) => openCategoryForm("edit", category)}
             onDeactivateCategory={deactivateCategory}
             canManageCategories={canManageCategories}
+            onEditCampaign={(campaign) => openCampaignForm("edit", campaign)}
+            onActivateCampaign={activateCampaign}
+            onDeactivateCampaign={deactivateCampaign}
+            canManageCampaigns={canManageCampaigns}
           />
         ) : (
           <div className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-8 text-center shadow-soft">
@@ -1312,6 +1645,18 @@ function ManagementContent({ resource }) {
           canManageCategories={canManageCategories}
           onClose={() => setCategoryFormState({ open: false, mode: "create", category: null, error: "", saving: false })}
           onSubmit={submitCategory}
+        />
+      ) : null}
+      {campaignFormState.open ? (
+        <CampaignFormDrawer
+          mode={campaignFormState.mode}
+          campaign={campaignFormState.campaign}
+          categories={categoryOptions}
+          saving={campaignFormState.saving}
+          error={campaignFormState.error}
+          canManageCampaigns={canManageCampaigns}
+          onClose={() => setCampaignFormState({ open: false, mode: "create", campaign: null, error: "", saving: false })}
+          onSubmit={submitCampaign}
         />
       ) : null}
     </div>

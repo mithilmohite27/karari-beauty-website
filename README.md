@@ -488,3 +488,55 @@ Category fields:
 Next admin phase:
 
 - Seasonal campaign manager.
+
+## Admin Seasonal Campaign Manager Phase 6B
+
+The admin campaigns section now supports seasonal campaign management:
+
+- Add campaign from `/admin/campaigns`.
+- Edit campaign details.
+- Activate a campaign.
+- Deactivate a campaign instead of hard deleting it.
+- Manage featured category slugs through category checkboxes.
+- Keep advanced visual settings as collapsed JSON.
+
+Campaign admin API routes:
+
+- `POST /api/admin/campaigns`
+- `GET /api/admin/campaigns/[id]`
+- `PATCH /api/admin/campaigns/[id]`
+- `DELETE /api/admin/campaigns/[id]`
+- `POST /api/admin/campaigns/[id]/activate`
+
+Security and behavior:
+
+- Mutation routes verify a signed-in active admin server-side.
+- Only `owner` and `admin` roles can mutate campaigns.
+- `SUPABASE_SERVICE_ROLE_KEY` remains server-only.
+- Missing Supabase setup returns `Supabase setup required` for campaign mutations.
+- Delete is a safe soft deactivate.
+- Only one campaign can be active at a time; activating one campaign deactivates the others server-side.
+
+Campaign fields:
+
+- Name
+- Slug
+- Theme
+- Active
+- Start date
+- End date
+- Hero title
+- Hero subtitle
+- Offer label
+- Featured category slugs
+- Config JSON
+
+Storefront behavior:
+
+- Public seasonal homepage continues to use the existing active campaign service.
+- If no active in-date campaign exists, the storefront falls back safely.
+- This phase does not redesign campaign visuals.
+
+Next admin phase:
+
+- Orders dashboard and status workflow.
