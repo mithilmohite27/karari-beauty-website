@@ -4,12 +4,9 @@ import { getActiveCategories, getCategoryBySlug } from "@/lib/data/categories";
 import { getProducts, getProductsByCategorySlug } from "@/lib/data/products";
 import { absoluteUrl, getDefaultOgImage } from "@/lib/seo";
 
-export const dynamicParams = false;
-
-export async function generateStaticParams() {
-  const categories = await getActiveCategories();
-  return categories.map((category) => ({ slug: category.slug }));
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

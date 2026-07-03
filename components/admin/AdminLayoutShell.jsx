@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, CalendarDays, FolderTree, Image as ImageIcon, LogOut, Menu, Package, Settings, ShoppingBag, X } from "lucide-react";
+import { BarChart3, CalendarDays, FolderTree, Image as ImageIcon, LogOut, Menu, Package, Settings, ShoppingBag, Users, X } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { label: "Products", href: "/admin/products", icon: Package },
   { label: "Categories", href: "/admin/categories", icon: FolderTree },
   { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
+  { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Campaigns", href: "/admin/campaigns", icon: CalendarDays },
   { label: "Media", icon: ImageIcon },
   { label: "Settings", icon: Settings }

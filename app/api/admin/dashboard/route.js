@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentAdmin } from "@/lib/admin/auth";
 import { getActiveCategories } from "@/lib/data/categories";
+import { getAdminOrders } from "@/lib/data/orders";
 import { getProducts } from "@/lib/data/products";
 
 function getBearerToken(request) {
@@ -20,7 +21,11 @@ export async function GET(request) {
     return NextResponse.json({ configured: true, ok: false, reason: "not_authorized" }, { status: 401 });
   }
 
-  const [categories, products] = await Promise.all([getActiveCategories(), getProducts()]);
+  const [categories, products, ordersResult] = await Promise.all([
+    getActiveCategories(),
+    getProducts(),
+    getAdminOrders().catch(() => ({ data: [] }))
+  ]);
 
   return NextResponse.json({
     configured: true,
@@ -29,7 +34,7 @@ export async function GET(request) {
       totalProducts: products.length,
       activeCategories: categories.length,
       featuredProducts: products.filter((product) => product.isFeatured).length,
-      recentOrders: 0
+      recentOrders: ordersResult.data.length
     }
   });
 }

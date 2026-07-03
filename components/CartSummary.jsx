@@ -30,7 +30,7 @@ export default function CartSummary({ subtotal, itemCount, mode = "page", onCont
         </p>
         <p className="flex gap-2 rounded-lg bg-[#FCE7EC]/70 p-3 leading-6">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#C9962D]" />
-          Secure order support from Karari Beauty. Checkout is coming next.
+          Secure order support from Karari Beauty. Share your details at checkout and our team will confirm the order.
         </p>
       </div>
 

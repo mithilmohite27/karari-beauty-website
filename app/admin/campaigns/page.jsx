@@ -6,7 +6,7 @@ export const metadata = {
   title: {
     absolute: "Admin Campaigns | Karari Beauty"
   },
-  description: "Read-only Karari Beauty seasonal campaign management view.",
+  description: "Create, edit, activate and deactivate Karari Beauty seasonal campaigns.",
   robots: {
     index: false,
     follow: false

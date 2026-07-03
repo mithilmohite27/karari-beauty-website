@@ -11,7 +11,7 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 const resourceConfig = {
   products: {
     title: "Products",
-    description: "Manage boutique products with image URL fields. Uploads come in the next phase.",
+    description: "Create, edit, upload images and manage boutique product visibility.",
     endpoint: "/api/admin/products",
     searchPlaceholder: "Search product name, slug or SKU",
     emptyTitle: "No products found",
@@ -20,7 +20,7 @@ const resourceConfig = {
   },
   categories: {
     title: "Categories",
-    description: "Read-only category overview for storefront collections.",
+    description: "Create, edit and manage storefront collection categories.",
     endpoint: "/api/admin/categories",
     searchPlaceholder: "Search category name or slug",
     emptyTitle: "No categories found",
@@ -29,16 +29,25 @@ const resourceConfig = {
   },
   orders: {
     title: "Orders",
-    description: "Read-only customer order requests. Status updates come in a future phase.",
+    description: "Manage customer order requests, status updates and internal timeline notes.",
     endpoint: "/api/admin/orders",
-    searchPlaceholder: "Search order number, customer or phone",
+    searchPlaceholder: "Search order number, customer, phone or email",
     emptyTitle: "No live orders yet",
     emptyText: "Customer order requests will appear here after checkout is connected to Supabase.",
     defaultSort: "newest"
   },
+  customers: {
+    title: "Customers",
+    description: "Manage customer details, order history and communication.",
+    endpoint: "/api/admin/customers",
+    searchPlaceholder: "Search name, phone, email, city or country",
+    emptyTitle: "No customers yet",
+    emptyText: "Customer profiles will appear here after checkout orders are created.",
+    defaultSort: "newest"
+  },
   campaigns: {
     title: "Campaigns",
-    description: "Read-only seasonal campaign view. Campaign editing and activation come next.",
+    description: "Create, edit, activate and deactivate seasonal campaigns. Manage campaign dates, offers and featured categories.",
     endpoint: "/api/admin/campaigns",
     searchPlaceholder: "Search campaign name, slug or theme",
     emptyTitle: "No campaigns found",
@@ -96,6 +105,66 @@ const emptyCampaignForm = {
 };
 
 const campaignThemes = ["rakhi", "diwali", "wedding", "navratri", "gifting", "custom"];
+
+const orderStatusOptions = [
+  { value: "new", label: "New Order", tone: "gold" },
+  { value: "confirmed", label: "Confirmed", tone: "blue" },
+  { value: "processing", label: "Processing", tone: "purple" },
+  { value: "packed", label: "Packed", tone: "amber" },
+  { value: "shipped", label: "Shipped", tone: "teal" },
+  { value: "delivered", label: "Delivered", tone: "green" },
+  { value: "cancelled", label: "Cancelled", tone: "red" }
+];
+
+const customerMessageTemplates = [
+  {
+    value: "received",
+    label: "Order Received",
+    text: "Hi {customerName}, thank you for your order request with Karari Beauty. Your order {orderNumber} has been received. Our team will confirm details shortly."
+  },
+  {
+    value: "confirmed",
+    label: "Order Confirmed",
+    text: "Hi {customerName}, your Karari Beauty order {orderNumber} is confirmed. We will update you once it is packed."
+  },
+  {
+    value: "packed",
+    label: "Packed",
+    text: "Hi {customerName}, your Karari Beauty order {orderNumber} has been packed and is ready for dispatch."
+  },
+  {
+    value: "shipped",
+    label: "Shipped",
+    text: "Hi {customerName}, your Karari Beauty order {orderNumber} has been shipped. Thank you for shopping with Karari Beauty."
+  },
+  {
+    value: "delivered",
+    label: "Delivered",
+    text: "Hi {customerName}, your Karari Beauty order {orderNumber} has been delivered. We hope you loved your purchase."
+  },
+  {
+    value: "follow-up",
+    label: "Custom Follow-up",
+    text: "Hi {customerName}, this is Karari Beauty regarding your order {orderNumber}. We wanted to share an update with you."
+  }
+];
+
+function getOrderStatusMeta(status) {
+  return orderStatusOptions.find((item) => item.value === status) || { value: status, label: status || "New Order", tone: "muted" };
+}
+
+function normalizeWhatsAppPhone(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.length === 10) return `91${digits}`;
+  return digits;
+}
+
+function buildCustomerMessage(template, customer, order) {
+  return template.text
+    .replaceAll("{customerName}", customer.fullName || "there")
+    .replaceAll("{orderNumber}", order?.orderNumber || "your order");
+}
 
 function productToForm(product) {
   return {
@@ -216,6 +285,13 @@ function formatDate(value) {
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+function formatDateTime(value) {
+  if (!value) return "Not set";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
 function getCampaignStatus(campaign) {
   const active = Boolean(campaign.active || campaign.isActive);
   const now = new Date();
@@ -236,6 +312,7 @@ function textForSearch(item, resource) {
   if (resource === "products") return [item.name, item.slug, item.sku, item.category, item.categorySlug].join(" ");
   if (resource === "categories") return [item.name, item.slug, item.description].join(" ");
   if (resource === "orders") return [item.orderNumber, item.customerName, item.customerPhone, item.customerEmail, item.status].join(" ");
+  if (resource === "customers") return [item.fullName, item.phone, item.email, item.city, item.country].join(" ");
   return [item.name, item.slug, item.theme, item.offer, item.offerLabel].join(" ");
 }
 
@@ -276,6 +353,12 @@ function sortItems(items, resource, sortBy) {
   if (sortBy === "name") return next.sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
   if (sortBy === "price-low") return next.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
   if (sortBy === "price-high") return next.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+  if (sortBy === "total-low") return next.sort((a, b) => Number(a.totalAmount || 0) - Number(b.totalAmount || 0));
+  if (sortBy === "total-high") return next.sort((a, b) => Number(b.totalAmount || 0) - Number(a.totalAmount || 0));
+  if (sortBy === "most-orders") return next.sort((a, b) => Number(b.totalOrders || 0) - Number(a.totalOrders || 0));
+  if (sortBy === "highest-spent") return next.sort((a, b) => Number(b.totalSpent || 0) - Number(a.totalSpent || 0));
+  if (sortBy === "recently-ordered") return next.sort((a, b) => new Date(b.lastOrderDate || 0) - new Date(a.lastOrderDate || 0));
+  if (sortBy === "oldest") return next.sort((a, b) => new Date(a.createdAt || a.startDate || 0) - new Date(b.createdAt || b.startDate || 0));
   if (sortBy === "sort-order") return next.sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0));
   if (resource === "orders" || sortBy === "newest") return next.sort((a, b) => new Date(b.createdAt || b.startDate || 0) - new Date(a.createdAt || a.startDate || 0));
   return next;
@@ -298,7 +381,7 @@ function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeacti
       <aside className="h-full w-full max-w-md overflow-y-auto bg-[#FFF8EE] p-5 shadow-boutique">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Read-only Details</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Details</p>
             <h2 className="mt-2 font-display text-2xl font-semibold text-[#7A183D]">{item.name || item.orderNumber || item.slug}</h2>
           </div>
           <button type="button" onClick={onClose} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white p-2 text-[#7A183D]" aria-label="Close details">
@@ -418,6 +501,44 @@ function OrderRows({ items, onView }) {
   ));
 }
 
+function ManagedOrderRows({ items, onView }) {
+  return items.map((item) => {
+    const status = getOrderStatusMeta(item.status);
+
+    return (
+      <tr key={item.id || item.orderNumber} className="border-b border-[rgba(122,24,61,0.08)]">
+        <td className="px-3 py-3 font-bold text-[#7A183D]">{item.orderNumber}</td>
+        <td className="px-3 py-3 font-bold text-[#3A2417]">{item.customerName || "-"}</td>
+        <td className="px-3 py-3">{item.customerPhone || item.customerEmail || "-"}</td>
+        <td className="px-3 py-3"><AdminBadge tone="gold">{item.orderType === "international" ? "International" : "Domestic"}</AdminBadge></td>
+        <td className="px-3 py-3 font-bold text-[#7A183D]">{formatCurrency(item.totalAmount)}</td>
+        <td className="px-3 py-3"><AdminBadge tone={status.tone}>{status.label}</AdminBadge></td>
+        <td className="px-3 py-3">{formatDate(item.createdAt)}</td>
+        <td className="px-3 py-3">{item.itemsCount || 0}</td>
+        <td className="px-3 py-3"><button type="button" onClick={() => onView(item)} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D]">Manage</button></td>
+      </tr>
+    );
+  });
+}
+
+function CustomerRows({ items, onView }) {
+  return items.map((item) => (
+    <tr key={item.id || item.email || item.phone} className="border-b border-[rgba(122,24,61,0.08)]">
+      <td className="px-3 py-3 font-bold text-[#3A2417]">
+        {item.fullName || "Customer"}
+        <span className="mt-1 block text-xs font-semibold text-[#3A2417]/48">{formatDate(item.createdAt)}</span>
+      </td>
+      <td className="px-3 py-3">{item.phone || "-"}</td>
+      <td className="px-3 py-3">{item.email || "-"}</td>
+      <td className="px-3 py-3">{[item.city, item.country].filter(Boolean).join(", ") || "-"}</td>
+      <td className="px-3 py-3 font-bold text-[#7A183D]">{item.totalOrders || 0}</td>
+      <td className="px-3 py-3 font-bold text-[#7A183D]">{formatCurrency(item.totalSpent)}</td>
+      <td className="px-3 py-3">{formatDate(item.lastOrderDate)}</td>
+      <td className="px-3 py-3"><button type="button" onClick={() => onView(item)} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D]">View</button></td>
+    </tr>
+  ));
+}
+
 function CampaignRows({ items, onView, onEdit, onActivate, onDeactivate, canManageCampaigns }) {
   return items.map((item) => (
     <tr key={item.id || item.slug || item.name} className="border-b border-[rgba(122,24,61,0.08)]">
@@ -445,14 +566,16 @@ function Table({ resource, items, onView, onEditProduct, onDeactivateProduct, ca
   const headers = {
     products: ["Image", "Product", "Category", "Price", "Original", "Discount", "Featured", "Active", "Stock", "Created", "Action"],
     categories: ["Image", "Name", "Slug", "Description", "Count Label", "Featured", "Active", "Sort", "Products", "Action"],
-    orders: ["Order", "Customer", "Contact", "Type", "Payment", "Total", "Status", "Created", "Items", "Action"],
+    orders: ["Order", "Customer", "Contact", "Type", "Total", "Status", "Created", "Items", "Action"],
+    customers: ["Customer", "Phone", "Email", "Location", "Orders", "Total Spent", "Last Order", "Action"],
     campaigns: ["Campaign", "Theme", "Status", "Start", "End", "Offer", "Featured Categories", "Created", "Action"]
   };
 
   const rows = {
     products: <ProductRows items={items} onView={onView} onEdit={onEditProduct} onDeactivate={onDeactivateProduct} canManageProducts={canManageProducts} />,
     categories: <CategoryRows items={items} onView={onView} onEdit={onEditCategory} onDeactivate={onDeactivateCategory} canManageCategories={canManageCategories} />,
-    orders: <OrderRows items={items} onView={onView} />,
+    orders: <ManagedOrderRows items={items} onView={onView} />,
+    customers: <CustomerRows items={items} onView={onView} />,
     campaigns: <CampaignRows items={items} onView={onView} onEdit={onEditCampaign} onActivate={onActivateCampaign} onDeactivate={onDeactivateCampaign} canManageCampaigns={canManageCampaigns} />
   };
 
@@ -468,6 +591,259 @@ function Table({ resource, items, onView, onEditProduct, onDeactivateProduct, ca
         </thead>
         <tbody className="text-[#3A2417]/72">{rows[resource]}</tbody>
       </table>
+    </div>
+  );
+}
+
+function OrderDetailDrawer({ order, saving, error, canManageOrders, onClose, onSave }) {
+  const [status, setStatus] = useState(order?.status || "new");
+  const [note, setNote] = useState("");
+
+  useEffect(() => {
+    setStatus(order?.status || "new");
+    setNote("");
+  }, [order?.id, order?.status]);
+
+  if (!order) return null;
+
+  const statusMeta = getOrderStatusMeta(order.status);
+  const items = order.items || [];
+  const timeline = order.timeline || [];
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-[#3A2417]/35">
+      <aside className="h-full w-full max-w-2xl overflow-y-auto bg-[#FFF8EE] p-4 shadow-boutique sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Order Management</p>
+            <h2 className="mt-2 font-display text-2xl font-semibold text-[#7A183D]">{order.orderNumber}</h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <AdminBadge tone={statusMeta.tone}>{statusMeta.label}</AdminBadge>
+              <AdminBadge tone="gold">{order.orderType === "international" ? "International" : "Domestic"}</AdminBadge>
+            </div>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white p-2 text-[#7A183D]" aria-label="Close order details">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {order.detailLoading ? (
+          <div className="mt-5 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-6 text-sm font-bold text-[#7A183D]">Loading order details...</div>
+        ) : null}
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Order Summary</h3>
+            <div className="mt-3 space-y-2 text-sm font-semibold text-[#3A2417]/72">
+              <p className="flex justify-between gap-3"><span>Order date</span><span className="text-right text-[#3A2417]">{formatDateTime(order.createdAt)}</span></p>
+              <p className="flex justify-between gap-3"><span>Total amount</span><span className="text-right font-bold text-[#7A183D]">{formatCurrency(order.totalAmount)}</span></p>
+              <p className="flex justify-between gap-3"><span>Payment preference</span><span className="text-right text-[#3A2417]">{order.paymentPreference || "Not selected"}</span></p>
+              <p className="flex justify-between gap-3"><span>Subtotal</span><span className="text-right text-[#3A2417]">{formatCurrency(order.subtotal)}</span></p>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Customer Details</h3>
+            <div className="mt-3 space-y-2 text-sm font-semibold text-[#3A2417]/72">
+              <p>{order.customerName || "Name not provided"}</p>
+              <p>{order.customerPhone || "Phone not provided"}</p>
+              <p>{order.customerEmail || "Email not provided"}</p>
+            </div>
+          </section>
+        </div>
+
+        <section className="mt-4 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+          <h3 className="font-display text-xl font-semibold text-[#7A183D]">Delivery Details</h3>
+          <div className="mt-3 text-sm font-semibold leading-6 text-[#3A2417]/72">
+            <p>{[order.deliveryCity, order.deliveryCountry].filter(Boolean).join(", ") || "Delivery city/country not provided"}</p>
+            <p className="mt-1">{order.deliveryAddress || "Address not provided"}</p>
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+          <h3 className="font-display text-xl font-semibold text-[#7A183D]">Ordered Items</h3>
+          <div className="mt-3 space-y-3">
+            {items.length ? items.map((item) => (
+              <div key={item.id || item.productName} className="grid grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-xl border border-[rgba(122,24,61,0.1)] bg-[#FFF8EE] p-3">
+                <span className="block h-14 w-14 overflow-hidden rounded-lg bg-white">
+                  {item.productImage ? <img src={item.productImage} alt={item.productName} className="h-full w-full object-cover" /> : null}
+                </span>
+                <div className="min-w-0">
+                  <p className="font-bold text-[#3A2417]">{item.productName}</p>
+                  <p className="mt-1 text-sm font-semibold text-[#3A2417]/62">Qty {item.quantity} x {formatCurrency(item.unitPrice)}</p>
+                  <p className="mt-1 text-sm font-bold text-[#7A183D]">{formatCurrency(item.lineTotal)}</p>
+                </div>
+              </div>
+            )) : <p className="text-sm font-semibold text-[#3A2417]/62">No items found for this order.</p>}
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+          <h3 className="font-display text-xl font-semibold text-[#7A183D]">Status Management</h3>
+          <div className="mt-3 grid gap-3">
+            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+              Order status
+              <select value={status} onChange={(event) => setStatus(event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 outline-none focus:border-[#C9962D]">
+                {orderStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+              Internal note
+              <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={4} placeholder="Add a private update for this order." className="rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 py-2 outline-none focus:border-[#C9962D]" />
+            </label>
+            {error ? <p className="rounded-lg border border-rose-500/20 bg-rose-50 p-3 text-sm font-bold text-rose-700">{error}</p> : null}
+            <button type="button" disabled={saving || !canManageOrders} onClick={() => onSave(order, { status, note })} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:cursor-not-allowed disabled:opacity-60">
+              {saving ? "Saving..." : "Save order update"}
+            </button>
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+          <h3 className="font-display text-xl font-semibold text-[#7A183D]">Order Timeline</h3>
+          <div className="mt-4 space-y-3">
+            {timeline.length ? timeline.map((entry) => {
+              const fromStatus = getOrderStatusMeta(entry.fromStatus);
+              const toStatus = getOrderStatusMeta(entry.toStatus);
+
+              return (
+                <div key={entry.id} className="rounded-xl border border-[rgba(122,24,61,0.1)] bg-[#FFF8EE] p-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {entry.fromStatus ? <AdminBadge tone={fromStatus.tone}>{fromStatus.label}</AdminBadge> : null}
+                    <span className="text-xs font-bold text-[#C9962D]">to</span>
+                    <AdminBadge tone={toStatus.tone}>{toStatus.label}</AdminBadge>
+                  </div>
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">{formatDateTime(entry.createdAt)} by {entry.changedByName || "Karari Admin"}</p>
+                  {entry.note ? <p className="mt-2 text-sm font-semibold leading-6 text-[#3A2417]/72">{entry.note}</p> : null}
+                </div>
+              );
+            }) : (
+              <p className="rounded-xl border border-[rgba(122,24,61,0.1)] bg-[#FFF8EE] p-3 text-sm font-semibold text-[#3A2417]/62">No timeline updates yet. Update the order status to start tracking progress.</p>
+            )}
+          </div>
+        </section>
+      </aside>
+    </div>
+  );
+}
+
+function CustomerDetailDrawer({ customer, onClose }) {
+  const [selectedOrderId, setSelectedOrderId] = useState(customer?.orders?.[0]?.id || "");
+  const [selectedTemplate, setSelectedTemplate] = useState(customerMessageTemplates[0].value);
+  const [copyState, setCopyState] = useState("");
+
+  useEffect(() => {
+    setSelectedOrderId(customer?.orders?.[0]?.id || "");
+    setSelectedTemplate(customerMessageTemplates[0].value);
+    setCopyState("");
+  }, [customer?.id, customer?.orders]);
+
+  if (!customer) return null;
+
+  const orders = customer.orders || [];
+  const selectedOrder = orders.find((order) => order.id === selectedOrderId) || orders[0] || null;
+  const template = customerMessageTemplates.find((item) => item.value === selectedTemplate) || customerMessageTemplates[0];
+  const message = buildCustomerMessage(template, customer, selectedOrder);
+  const phone = normalizeWhatsAppPhone(customer.phone);
+  const whatsappUrl = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}` : "";
+  const latestStatus = getOrderStatusMeta(customer.latestOrderStatus);
+
+  const copyMessage = async () => {
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopyState("Message copied");
+    } catch {
+      setCopyState("Unable to copy message. Please select and copy it manually.");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-[#3A2417]/35">
+      <aside className="h-full w-full max-w-2xl overflow-y-auto bg-[#FFF8EE] p-4 shadow-boutique sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Customer Profile</p>
+            <h2 className="mt-2 font-display text-2xl font-semibold text-[#7A183D]">{customer.fullName || "Customer"}</h2>
+            <p className="mt-2 text-sm font-semibold text-[#3A2417]/62">{[customer.city, customer.country].filter(Boolean).join(", ") || "Location not provided"}</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white p-2 text-[#7A183D]" aria-label="Close customer details">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {customer.detailLoading ? (
+          <div className="mt-5 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-6 text-sm font-bold text-[#7A183D]">Loading customer details...</div>
+        ) : null}
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Customer Summary</h3>
+            <div className="mt-3 space-y-2 text-sm font-semibold text-[#3A2417]/72">
+              <p>{customer.phone || "Phone not provided"}</p>
+              <p>{customer.email || "Email not provided"}</p>
+              <p>{[customer.city, customer.country].filter(Boolean).join(", ") || "City/country not provided"}</p>
+              <p>{customer.address || "Address not provided"}</p>
+              <p>Customer since {formatDate(customer.createdAt)}</p>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Customer Stats</h3>
+            <div className="mt-3 space-y-2 text-sm font-semibold text-[#3A2417]/72">
+              <p className="flex justify-between gap-3"><span>Total orders</span><span className="font-bold text-[#7A183D]">{customer.totalOrders || 0}</span></p>
+              <p className="flex justify-between gap-3"><span>Total spent</span><span className="font-bold text-[#7A183D]">{formatCurrency(customer.totalSpent)}</span></p>
+              <p className="flex justify-between gap-3"><span>Last order</span><span className="text-right text-[#3A2417]">{formatDate(customer.lastOrderDate)}</span></p>
+              <div className="flex items-center justify-between gap-3"><span>Latest status</span><AdminBadge tone={latestStatus.tone}>{latestStatus.label}</AdminBadge></div>
+            </div>
+          </section>
+        </div>
+
+        <section className="mt-4 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+          <h3 className="font-display text-xl font-semibold text-[#7A183D]">Order History</h3>
+          <div className="mt-3 space-y-3">
+            {orders.length ? orders.map((order) => {
+              const status = getOrderStatusMeta(order.status);
+              return (
+                <div key={order.id} className="rounded-xl border border-[rgba(122,24,61,0.1)] bg-[#FFF8EE] p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-bold text-[#7A183D]">{order.orderNumber}</p>
+                    <AdminBadge tone={status.tone}>{status.label}</AdminBadge>
+                  </div>
+                  <p className="mt-2 text-sm font-semibold text-[#3A2417]/62">{formatDate(order.createdAt)} · {formatCurrency(order.totalAmount)}</p>
+                </div>
+              );
+            }) : <p className="text-sm font-semibold text-[#3A2417]/62">No orders found for this customer.</p>}
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+          <h3 className="font-display text-xl font-semibold text-[#7A183D]">Notification Helper</h3>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[#3A2417]/62">Generate a WhatsApp message for manual customer communication. Nothing is sent automatically.</p>
+          <div className="mt-4 grid gap-3">
+            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+              Select order
+              <select value={selectedOrder?.id || ""} onChange={(event) => setSelectedOrderId(event.target.value)} disabled={!orders.length} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 outline-none focus:border-[#C9962D]">
+                {orders.length ? orders.map((order) => <option key={order.id} value={order.id}>{order.orderNumber}</option>) : <option value="">No orders available</option>}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+              Message template
+              <select value={selectedTemplate} onChange={(event) => setSelectedTemplate(event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 outline-none focus:border-[#C9962D]">
+                {customerMessageTemplates.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+              </select>
+            </label>
+            <div className="rounded-xl border border-[rgba(122,24,61,0.12)] bg-[#FFF8EE] p-3">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">Message Preview</p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-[#3A2417]/72">{message}</p>
+            </div>
+            {!phone ? <p className="rounded-lg border border-amber-500/20 bg-amber-50 p-3 text-sm font-bold text-amber-700">Phone number not available</p> : null}
+            {copyState ? <p className="rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] p-3 text-sm font-bold text-[#7A183D]">{copyState}</p> : null}
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button type="button" onClick={copyMessage} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-4 text-sm font-bold text-[#7A183D] transition hover:border-[#C9962D]">Copy Message</button>
+              <a href={whatsappUrl || undefined} target="_blank" rel="noopener noreferrer" aria-disabled={!phone} className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-lg px-4 text-sm font-bold transition ${phone ? "bg-[#7A183D] text-white hover:bg-[#5f102f]" : "pointer-events-none bg-[#3A2417]/18 text-[#3A2417]/42"}`}>Open WhatsApp</a>
+            </div>
+          </div>
+        </section>
+      </aside>
     </div>
   );
 }
@@ -1193,6 +1569,7 @@ function ManagementContent({ resource }) {
   const [formState, setFormState] = useState({ open: false, mode: "create", product: null, error: "", saving: false });
   const [categoryFormState, setCategoryFormState] = useState({ open: false, mode: "create", category: null, error: "", saving: false });
   const [campaignFormState, setCampaignFormState] = useState({ open: false, mode: "create", campaign: null, error: "", saving: false });
+  const [orderState, setOrderState] = useState({ saving: false, error: "" });
   const [notice, setNotice] = useState("");
   const [state, setState] = useState({ loading: true, error: "" });
 
@@ -1256,11 +1633,12 @@ function ManagementContent({ resource }) {
   }, [loadItems]);
 
   const categories = useMemo(() => [...new Set(items.map((item) => item.categorySlug).filter(Boolean))], [items]);
-  const statuses = useMemo(() => [...new Set(items.map((item) => item.status).filter(Boolean))], [items]);
   const visibleItems = useMemo(() => sortItems(filterItems(items, resource, query, filters), resource, sortBy), [filters, items, query, resource, sortBy]);
   const canManageProducts = resource === "products" && meta.mode === "supabase";
   const canManageCategories = resource === "categories" && meta.mode === "supabase";
   const canManageCampaigns = resource === "campaigns" && meta.mode === "supabase";
+  const canManageOrders = resource === "orders" && meta.mode === "supabase";
+  const canViewCustomers = resource === "customers" && meta.mode === "supabase";
 
   const openProductForm = (mode, product = null) => {
     setNotice("");
@@ -1283,6 +1661,43 @@ function ManagementContent({ resource }) {
   const viewItem = async (item) => {
     setSelectedItem(item);
     setSelectedGallery([]);
+    setOrderState({ saving: false, error: "" });
+
+    if (resource === "orders" && item?.id && meta.mode === "supabase") {
+      setSelectedItem({ ...item, detailLoading: true });
+
+      try {
+        const token = await getAdminToken();
+        const response = await fetch(`/api/admin/orders/${item.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load order.");
+        setSelectedItem(result.data);
+      } catch (error) {
+        setSelectedItem({ ...item, detailLoading: false });
+        setOrderState({ saving: false, error: error.message || "Unable to load order." });
+      }
+      return;
+    }
+
+    if (resource === "customers" && item?.id && meta.mode === "supabase") {
+      setSelectedItem({ ...item, detailLoading: true });
+
+      try {
+        const token = await getAdminToken();
+        const response = await fetch(`/api/admin/customers/${item.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.error || "Unable to load customer.");
+        setSelectedItem(result.data);
+      } catch (error) {
+        setSelectedItem({ ...item, detailLoading: false });
+        setNotice(error.message || "Unable to load customer.");
+      }
+      return;
+    }
 
     if (resource !== "products" || !item?.id || meta.mode !== "supabase") return;
 
@@ -1295,6 +1710,36 @@ function ManagementContent({ resource }) {
       if (response.ok && result.ok) setSelectedGallery(result.data || []);
     } catch {
       setSelectedGallery([]);
+    }
+  };
+
+  const updateOrder = async (order, payload) => {
+    if (!canManageOrders) {
+      setOrderState({ saving: false, error: "Connect Supabase to manage orders." });
+      return;
+    }
+
+    setOrderState({ saving: true, error: "" });
+
+    try {
+      const token = await getAdminToken();
+      const response = await fetch(`/api/admin/orders/${order.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to update order.");
+
+      setSelectedItem(result.data);
+      setOrderState({ saving: false, error: "" });
+      setNotice("Order updated successfully.");
+      loadItems();
+    } catch (error) {
+      setOrderState({ saving: false, error: error.message || "Unable to update order." });
     }
   };
 
@@ -1506,15 +1951,17 @@ function ManagementContent({ resource }) {
       <section className="rounded-3xl border border-[rgba(122,24,61,0.14)] bg-white/74 p-5 shadow-boutique sm:p-7">
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Read-only Management</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Admin Management</p>
             <h1 className="mt-3 font-display text-3xl font-semibold text-[#7A183D] sm:text-5xl">{config.title}</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[#3A2417]/68">{config.description}</p>
             {resource === "products" && !canManageProducts ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage products. Fallback catalog stays read-only.</p> : null}
             {resource === "categories" && !canManageCategories ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage categories. Fallback categories stay read-only.</p> : null}
             {resource === "campaigns" && !canManageCampaigns ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage campaigns. Fallback campaigns stay read-only.</p> : null}
+            {resource === "orders" && !canManageOrders ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage live orders. Fallback mode does not show customer orders.</p> : null}
+            {resource === "customers" && !canViewCustomers ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to view customers. Fallback mode does not show customer profiles.</p> : null}
           </div>
           <div className="flex flex-wrap gap-2">
-            <AdminBadge tone={meta.mode === "supabase" ? "green" : meta.mode === "fallback" ? "gold" : "muted"}>{meta.mode || "loading"}</AdminBadge>
+            <AdminBadge tone={meta.mode === "supabase" ? "green" : meta.mode === "fallback" ? "gold" : "muted"}>{meta.mode === "supabase" ? "Live database" : meta.mode === "fallback" ? "Local fallback" : meta.mode || "loading"}</AdminBadge>
             <AdminBadge tone="wine">{visibleItems.length} {visibleItems.length === 1 ? "item" : "items"}</AdminBadge>
             {resource === "products" ? (
               <button type="button" onClick={() => openProductForm("create")} disabled={!canManageProducts} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#7A183D] px-4 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:cursor-not-allowed disabled:opacity-55">
@@ -1566,7 +2013,7 @@ function ManagementContent({ resource }) {
             <>
               <select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 text-sm font-bold text-[#3A2417]">
                 <option value="">All status</option>
-                {statuses.map((status) => <option key={status} value={status}>{status}</option>)}
+                {orderStatusOptions.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
               </select>
               <select value={filters.orderType} onChange={(event) => setFilters((current) => ({ ...current, orderType: event.target.value }))} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 text-sm font-bold text-[#3A2417]">
                 <option value="">All types</option>
@@ -1580,10 +2027,17 @@ function ManagementContent({ resource }) {
             <ArrowUpDown className="h-4 w-4 text-[#C9962D]" />
             <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="bg-transparent text-sm font-bold text-[#3A2417] outline-none">
               <option value="newest">Newest</option>
-              <option value="name">Name</option>
+              {!["orders", "customers"].includes(resource) ? <option value="name">Name</option> : null}
               {resource === "products" ? <option value="price-low">Price low</option> : null}
               {resource === "products" ? <option value="price-high">Price high</option> : null}
               {resource === "categories" ? <option value="sort-order">Sort order</option> : null}
+              {resource === "orders" ? <option value="oldest">Oldest</option> : null}
+              {resource === "orders" ? <option value="total-high">Total high to low</option> : null}
+              {resource === "orders" ? <option value="total-low">Total low to high</option> : null}
+              {resource === "customers" ? <option value="oldest">Oldest</option> : null}
+              {resource === "customers" ? <option value="most-orders">Most orders</option> : null}
+              {resource === "customers" ? <option value="highest-spent">Highest spent</option> : null}
+              {resource === "customers" ? <option value="recently-ordered">Recently ordered</option> : null}
             </select>
           </label>
         </div>
@@ -1617,12 +2071,28 @@ function ManagementContent({ resource }) {
           <div className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-8 text-center shadow-soft">
             <p className="font-display text-2xl font-semibold text-[#7A183D]">{config.emptyTitle}</p>
             <p className="mx-auto mt-3 max-w-md text-sm font-semibold leading-6 text-[#3A2417]/64">{config.emptyText}</p>
-            {resource === "orders" ? <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">Demo/fallback mode does not show fake customer orders.</p> : null}
+            {["orders", "customers"].includes(resource) ? <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">Demo/fallback mode does not show fake customer data.</p> : null}
           </div>
         )}
       </section>
 
-      <DetailsDrawer item={selectedItem} resource={resource} gallery={selectedGallery} onClose={() => setSelectedItem(null)} onEdit={(product) => openProductForm("edit", product)} onDeactivate={deactivateProduct} canManageProducts={canManageProducts} />
+      {resource === "orders" ? (
+        <OrderDetailDrawer
+          order={selectedItem}
+          saving={orderState.saving}
+          error={orderState.error}
+          canManageOrders={canManageOrders}
+          onClose={() => setSelectedItem(null)}
+          onSave={updateOrder}
+        />
+      ) : resource === "customers" ? (
+        <CustomerDetailDrawer
+          customer={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      ) : (
+        <DetailsDrawer item={selectedItem} resource={resource} gallery={selectedGallery} onClose={() => setSelectedItem(null)} onEdit={(product) => openProductForm("edit", product)} onDeactivate={deactivateProduct} canManageProducts={canManageProducts} />
+      )}
       {formState.open ? (
         <ProductFormDrawer
           mode={formState.mode}

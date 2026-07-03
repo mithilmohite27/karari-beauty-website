@@ -6,7 +6,7 @@ export const metadata = {
   title: {
     absolute: "Admin Orders | Karari Beauty"
   },
-  description: "Read-only Karari Beauty order management view.",
+  description: "Manage Karari Beauty orders, status updates and timelines.",
   robots: {
     index: false,
     follow: false

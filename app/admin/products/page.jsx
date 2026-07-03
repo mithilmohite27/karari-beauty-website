@@ -6,7 +6,7 @@ export const metadata = {
   title: {
     absolute: "Admin Products | Karari Beauty"
   },
-  description: "Read-only Karari Beauty product management view.",
+  description: "Create, edit and manage Karari Beauty products.",
   robots: {
     index: false,
     follow: false

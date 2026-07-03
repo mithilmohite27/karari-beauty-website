@@ -1,6 +1,6 @@
 # Karari Beauty Website
 
-Premium Phase 1 website for Karari Beauty with a normal boutique product showcase and a configurable Raksha Bandhan 2026 seasonal homepage.
+Premium Karari Beauty ecommerce website with storefront collections, product pages, checkout/order requests and a Supabase-backed admin CMS.
 
 ## Run Locally
 
@@ -18,7 +18,7 @@ Open `http://localhost:3000`.
 - `data/businessSettings.js` - Business name, WhatsApp number, social handles, UPI placeholder and international messaging.
 - `data/categories.js` - Main category showcase data.
 - `data/products.js` - Local dummy product catalog.
-- `data/seasonalCampaign.js` - Campaign activation and Raksha Bandhan 2026 settings.
+- `data/seasonalCampaign.js` - Local fallback Raksha Bandhan campaign settings when Supabase is not configured.
 - `data/giftCombos.js` - Gift combo and hamper data.
 - `data/frequentlyBoughtTogether.js` - Frequently bought together product groups.
 - `lib/whatsapp.js` - WhatsApp inquiry URL generator and currency formatter.
@@ -40,13 +40,13 @@ whatsappNumber: "919999999999"
 
 ## Turn Seasonal Campaign On or Off
 
-Update `active` in `data/seasonalCampaign.js`.
+For the live website, manage seasonal campaigns from `/admin/campaigns`.
 
-```js
-active: true
-```
+- Activate one campaign to show the seasonal homepage state.
+- Deactivate the active campaign to return to the normal Karari Beauty homepage.
+- A refresh is enough after admin changes; a code redeploy should not be required.
 
-Set it to `false` to show the normal Karari Beauty homepage.
+`data/seasonalCampaign.js` is only a local fallback when Supabase is not configured or a Supabase read fails.
 
 ## Phase 1 Scope
 
@@ -206,6 +206,15 @@ Fallback behavior remains:
 - If Supabase env vars are missing, service functions return local data from `data/products.js`, `data/categories.js` and `data/seasonalCampaign.js`.
 - If a Supabase read fails, the service logs a safe server-side warning and returns local fallback data.
 - Current cart, wishlist and recently viewed state still use localStorage.
+
+Live CMS behavior:
+
+- Homepage, collection pages and product detail pages are rendered dynamically so admin product/category/campaign changes can appear after refresh.
+- If Supabase is configured and no active in-date campaign exists, the homepage shows the normal non-seasonal storefront.
+- If admin changes do not reflect on Vercel, verify these environment variables are set and redeploy after changing env vars:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY`
 
 ### Order API
 
@@ -540,3 +549,138 @@ Storefront behavior:
 Next admin phase:
 
 - Orders dashboard and status workflow.
+
+## Admin Orders Dashboard Phase 7
+
+The admin orders section now supports professional order management:
+
+- View live customer orders from `/admin/orders`.
+- Search by order number, customer name, phone or email.
+- Filter by order status.
+- Sort by newest, oldest, total high to low, or total low to high.
+- Open an order management drawer.
+- Review customer details, delivery details, ordered items and payment preference.
+- Update order status.
+- Add internal admin notes.
+- Track order timeline/history.
+
+Order admin API routes:
+
+- `GET /api/admin/orders`
+- `GET /api/admin/orders/[id]`
+- `PATCH /api/admin/orders/[id]`
+
+Order statuses:
+
+- New Order
+- Confirmed
+- Processing
+- Packed
+- Shipped
+- Delivered
+- Cancelled
+
+New SQL table:
+
+- `order_status_history`
+
+The timeline table stores:
+
+- order id
+- previous status
+- new status
+- internal note
+- admin user id
+- admin display name
+- created date
+
+Security and behavior:
+
+- Order admin routes require signed-in active admin access.
+- Order mutations require `owner` or `admin` role.
+- `SUPABASE_SERVICE_ROLE_KEY` remains server-only.
+- No public read policy is added for `order_status_history`.
+- Orders are not hard deleted in this phase.
+- Public storefront pages are not redesigned.
+- Payment gateway, shipping API, WhatsApp automation and AI are not included.
+
+Important Supabase step:
+
+After deploying this phase, run updated `supabase/schema.sql` or the new `order_status_history` migration in Supabase SQL editor before testing live admin timeline.
+
+Testing:
+
+- Run `npm run lint`.
+- Run `npm run build`.
+- Open `/admin/orders`.
+- Open an order detail drawer.
+- Update status with an internal note.
+- Confirm a row is created in `order_status_history`.
+
+## Admin Customers Phase 8
+
+The admin customers section now supports customer management and manual communication helpers:
+
+- View customers from `/admin/customers`.
+- Search by customer name, phone, email, city or country.
+- Sort by newest, oldest, most orders, highest spent or recently ordered.
+- Open a customer detail drawer.
+- Review customer contact details, location, order history and customer stats.
+- Generate manual WhatsApp message text.
+- Copy generated message.
+- Open a `wa.me` link when a phone number is available.
+
+Customer admin API routes:
+
+- `GET /api/admin/customers`
+- `GET /api/admin/customers/[id]`
+
+Notification helper behavior:
+
+- Messages are generated from admin-selected templates.
+- Messages are not sent automatically.
+- Admin can copy the message manually.
+- Admin can open WhatsApp manually if the customer has a phone number.
+- Indian 10-digit numbers are normalized with `91`.
+- Existing international numbers keep their detected country code digits.
+
+Customer message templates:
+
+- Order Received
+- Order Confirmed
+- Packed
+- Shipped
+- Delivered
+- Custom Follow-up
+
+Security and behavior:
+
+- Customer routes require signed-in active admin access.
+- Customer data is never exposed through public routes.
+- `SUPABASE_SERVICE_ROLE_KEY` remains server-only.
+- No public read policy is added for customers.
+- No fake customers are shown in fallback mode.
+- WhatsApp API automation, payment gateway, shipping API and AI are not included.
+
+Supabase SQL:
+
+- No new SQL is needed for Phase 8.
+- Phase 8 uses the existing `customers` table and linked `orders` rows.
+
+## Admin + Storefront Integration Audit
+
+Key audit fixes:
+
+- Campaign admin copy now reflects active CRUD and activation features.
+- Homepage campaign reads no longer fall back to the local Raksha campaign when Supabase is configured and no active in-date campaign exists.
+- Homepage, collection pages and product pages are dynamic so CMS changes can appear after refresh without code redeploy.
+- Collection routes allow newly created active category slugs to resolve without redeploy.
+- Admin source labels use client-friendly wording such as `Live database` and `Local fallback`.
+- Completed admin dashboard modules link to their management pages instead of showing coming-soon copy.
+
+Expected live behavior:
+
+- Active in-date Supabase campaign shows the seasonal homepage.
+- No active in-date Supabase campaign shows the normal Karari Beauty homepage.
+- Product and category admin changes reflect on public pages after refresh.
+- A refresh may be required after admin updates, but a code redeploy should not be required.

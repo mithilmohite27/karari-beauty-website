@@ -111,6 +111,17 @@ create table if not exists public.order_items (
   created_at timestamptz default now()
 );
 
+create table if not exists public.order_status_history (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid references public.orders(id) on delete cascade,
+  from_status text,
+  to_status text not null,
+  note text,
+  changed_by uuid references auth.users(id) on delete set null,
+  changed_by_name text,
+  created_at timestamptz default now()
+);
+
 create table if not exists public.seasonal_campaigns (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -176,6 +187,8 @@ create index if not exists idx_product_images_sort_order on public.product_image
 create index if not exists idx_orders_status on public.orders(status);
 create index if not exists idx_orders_created_at on public.orders(created_at desc);
 create index if not exists idx_order_items_order_id on public.order_items(order_id);
+create index if not exists idx_order_status_history_order_id on public.order_status_history(order_id);
+create index if not exists idx_order_status_history_created_at on public.order_status_history(created_at desc);
 
 create index if not exists idx_seasonal_campaigns_slug on public.seasonal_campaigns(slug);
 create index if not exists idx_seasonal_campaigns_active_dates on public.seasonal_campaigns(is_active, start_date, end_date);
@@ -186,11 +199,12 @@ alter table public.product_images enable row level security;
 alter table public.customers enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
+alter table public.order_status_history enable row level security;
 alter table public.seasonal_campaigns enable row level security;
 alter table public.admin_profiles enable row level security;
 
 -- Public storefront reads are allowed only for active catalog/campaign records.
--- Customer, order, order_items and admin_profiles data intentionally have no public read policy.
+-- Customer, order, order_items, order_status_history and admin_profiles data intentionally have no public read policy.
 -- Future order creation should happen through a server-side API/function using the service role key.
 
 drop policy if exists "Public can read active categories" on public.categories;

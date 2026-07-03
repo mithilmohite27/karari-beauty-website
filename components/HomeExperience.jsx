@@ -679,17 +679,22 @@ const heroSlides = [
   }
 ];
 
-function HeroCarousel({ seasonalCampaign = localSeasonalCampaign }) {
+function HeroCarousel({ campaignActive, seasonalCampaign = localSeasonalCampaign }) {
   const [activeSlide, setActiveSlide] = useState(0);
-  const slide = heroSlides[activeSlide];
+  const slides = useMemo(() => (campaignActive ? heroSlides : heroSlides.filter((item) => item.key !== "raksha-bandhan")), [campaignActive]);
+  const slide = slides[activeSlide] || slides[0];
+
+  useEffect(() => {
+    setActiveSlide(0);
+  }, [campaignActive]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActiveSlide((current) => (current + 1) % heroSlides.length);
+      setActiveSlide((current) => (current + 1) % slides.length);
     }, 5000);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   return (
     <section
@@ -768,7 +773,7 @@ function HeroCarousel({ seasonalCampaign = localSeasonalCampaign }) {
         </div>
 
         <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-[rgba(122,24,61,0.1)] bg-white/78 px-3 py-2 shadow-soft backdrop-blur">
-          {heroSlides.map((item, index) => (
+          {slides.map((item, index) => (
             <button
               type="button"
               key={item.key}
@@ -1269,7 +1274,7 @@ export default function HomeExperience({
   return (
     <main className="min-h-screen bg-silk">
       <Header campaignActive={campaignActive} onViewProduct={openProduct} recentlyViewed={recentlyViewed} categories={categories} products={products} seasonalCampaign={seasonalCampaign} />
-      <HeroCarousel seasonalCampaign={seasonalCampaign} />
+      <HeroCarousel campaignActive={campaignActive} seasonalCampaign={seasonalCampaign} />
       <CategorySection selectedCategory={selectedCategory} categories={categories} />
       <ProductSection onView={openProduct} seasonal={campaignActive} selectedCategory={selectedCategory} onClearCategory={() => setSelectedCategory(null)} products={products} />
       {campaignActive ? (

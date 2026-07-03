@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowRight, Boxes, CalendarDays, FolderTree, Package, ShoppingBag, Sparkles } from "lucide-react";
 
 function AdminStatCard({ label, value, helper, icon: Icon }) {
@@ -19,9 +20,9 @@ function AdminStatCard({ label, value, helper, icon: Icon }) {
   );
 }
 
-function QuickAction({ title, text, icon: Icon }) {
-  return (
-    <article className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-5 shadow-soft">
+function QuickAction({ title, text, icon: Icon, href, status = "Manage" }) {
+  const content = (
+    <>
       <div className="flex items-center gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFF8EE] text-[#C9962D]">
           <Icon className="h-5 w-5" />
@@ -30,9 +31,19 @@ function QuickAction({ title, text, icon: Icon }) {
       </div>
       <p className="mt-3 text-sm font-semibold leading-6 text-[#3A2417]/62">{text}</p>
       <p className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">
-        Coming soon
+        {status}
         <ArrowRight className="h-3.5 w-3.5" />
       </p>
+    </>
+  );
+
+  return href ? (
+    <Link href={href} className="block rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-[#C9962D]/50">
+      {content}
+    </Link>
+  ) : (
+    <article className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-5 shadow-soft">
+      {content}
     </article>
   );
 }
@@ -42,7 +53,7 @@ export default function AdminDashboard({ stats }) {
     { label: "Total Products", value: stats.totalProducts, helper: "Catalog items available through the service layer.", icon: Package },
     { label: "Active Categories", value: stats.activeCategories, helper: "Collection pages ready for storefront browsing.", icon: FolderTree },
     { label: "Featured Products", value: stats.featuredProducts, helper: "Highlighted products for homepage and seasonal sections.", icon: Sparkles },
-    { label: "Recent Orders", value: stats.recentOrders, helper: "Connect Supabase to view live order activity.", icon: ShoppingBag }
+    { label: "Recent Orders", value: stats.recentOrders, helper: "Live customer order requests available in the orders dashboard.", icon: ShoppingBag }
   ];
 
   return (
@@ -64,13 +75,13 @@ export default function AdminDashboard({ stats }) {
       <section className="mt-6">
         <div className="mb-4 flex items-center gap-2">
           <Boxes className="h-5 w-5 text-[#C9962D]" />
-          <h2 className="font-display text-2xl font-semibold text-[#7A183D]">Next Admin Modules</h2>
+          <h2 className="font-display text-2xl font-semibold text-[#7A183D]">Admin Shortcuts</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <QuickAction title="Products" text="Product management coming next." icon={Package} />
-          <QuickAction title="Categories" text="Category management coming next." icon={FolderTree} />
-          <QuickAction title="Orders" text="Order dashboard coming next." icon={ShoppingBag} />
-          <QuickAction title="Campaigns" text="Seasonal campaign manager coming next." icon={CalendarDays} />
+          <QuickAction title="Products" text="Manage products, pricing, images and visibility." icon={Package} href="/admin/products" />
+          <QuickAction title="Categories" text="Manage storefront collections and category visibility." icon={FolderTree} href="/admin/categories" />
+          <QuickAction title="Orders" text="Manage order requests, statuses and timelines." icon={ShoppingBag} href="/admin/orders" />
+          <QuickAction title="Campaigns" text="Manage seasonal campaigns, offers and activation." icon={CalendarDays} href="/admin/campaigns" />
         </div>
       </section>
     </div>
