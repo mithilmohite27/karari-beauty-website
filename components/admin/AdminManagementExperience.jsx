@@ -359,6 +359,7 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
   const [form, setForm] = useState(() => (product ? productToForm(product) : emptyProductForm));
   const [slugTouched, setSlugTouched] = useState(Boolean(product?.slug));
   const [skuTouched, setSkuTouched] = useState(Boolean(product?.sku));
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [gallery, setGallery] = useState([]);
   const [galleryUrl, setGalleryUrl] = useState("");
   const [imageState, setImageState] = useState({ loading: false, galleryLoading: false, error: "" });
@@ -367,6 +368,7 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
     setForm(product ? productToForm(product) : emptyProductForm);
     setSlugTouched(Boolean(product?.slug));
     setSkuTouched(Boolean(product?.sku));
+    setAdvancedOpen(false);
   }, [product]);
 
   const buildSku = useCallback((values) => generateSku({
@@ -591,7 +593,7 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Product CMS</p>
             <h2 className="mt-2 font-display text-3xl font-semibold text-[#7A183D]">{mode === "edit" ? "Edit Product" : "Add Product"}</h2>
-            <p className="mt-2 text-sm font-semibold text-[#3A2417]/62">Use an image URL or existing local asset path. File upload comes in Phase 5B.</p>
+            <p className="mt-2 text-sm font-semibold text-[#3A2417]/62">{mode === "edit" ? "Update product details, pricing, images and visibility." : "Add product details, pricing, image and visibility."}</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white p-2 text-[#7A183D]" aria-label="Close product form">
             <X className="h-4 w-4" />
@@ -600,98 +602,65 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
 
         {error || imageState.error ? <div className="mt-4 rounded-xl border border-[#7A183D]/15 bg-[#FCE7EC] p-3 text-sm font-bold text-[#7A183D]">{error || imageState.error}</div> : null}
 
-        <form onSubmit={submit} className="mt-5 grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              Product name *
-              <input value={form.name} onChange={(event) => setField("name", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" required />
-            </label>
-            <div className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              <div className="flex items-center justify-between gap-2">
-                <span>Product URL slug *</span>
-                <button type="button" onClick={regenerateSlug} className="rounded-full border border-[rgba(122,24,61,0.14)] bg-white px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-[#7A183D]">Regenerate</button>
-              </div>
-              <input value={form.slug} onChange={(event) => { setSlugTouched(true); setField("slug", event.target.value); }} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" required />
-              <p className="text-xs font-semibold text-[#3A2417]/52">Used in product page URL. Example: /products/{form.slug || "pearl-glow-jewellery-set"}</p>
-              {slugWarning ? <p className="text-xs font-bold text-[#7A183D]">{slugWarning}</p> : null}
+        <form onSubmit={submit} className="mt-6 grid gap-6">
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Basic Details</h3>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Product name *
+                <input value={form.name} onChange={(event) => setField("name", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" required />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Category *
+                <select value={form.category_id} onChange={(event) => selectCategory(event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]">
+                  <option value="">Select category</option>
+                  {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+                </select>
+              </label>
             </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              Category *
-              <select value={form.category_id} onChange={(event) => selectCategory(event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]">
-                <option value="">Select category</option>
-                {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
-              </select>
-            </label>
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              Price *
-              <input type="number" min="0" step="0.01" value={form.price} onChange={(event) => setField("price", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" required />
-            </label>
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              Stock status *
-              <select value={form.stock_status} onChange={(event) => setField("stock_status", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]">
-                <option value="in_stock">In stock</option>
-                <option value="low_stock">Low stock</option>
-                <option value="out_of_stock">Out of stock</option>
-                <option value="made_to_order">Made to order</option>
-              </select>
-            </label>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              <div className="flex items-center justify-between gap-2">
-                <span>Product SKU</span>
-                <button type="button" onClick={regenerateSku} className="rounded-full border border-[rgba(122,24,61,0.14)] bg-white px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-[#7A183D]">Regenerate</button>
-              </div>
-              <input value={form.sku} onChange={(event) => { setSkuTouched(true); setField("sku", event.target.value.toUpperCase()); }} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
-              <p className="text-xs font-semibold text-[#3A2417]/52">Internal product code for stock and billing.</p>
-              {skuWarning ? <p className="text-xs font-bold text-[#7A183D]">{skuWarning}</p> : null}
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Selling price *
+                <input type="number" min="0" step="0.01" value={form.price} onChange={(event) => setField("price", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" required />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Original price
+                <input type="number" min="0" step="0.01" value={form.original_price} onChange={(event) => setField("original_price", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Discount label
+                <input value={form.discount_label} onChange={(event) => setField("discount_label", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Stock status *
+                <select value={form.stock_status} onChange={(event) => setField("stock_status", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]">
+                  <option value="in_stock">In stock</option>
+                  <option value="low_stock">Low stock</option>
+                  <option value="out_of_stock">Out of stock</option>
+                  <option value="made_to_order">Made to order</option>
+                </select>
+              </label>
             </div>
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              Original price
-              <input type="number" min="0" step="0.01" value={form.original_price} onChange={(event) => setField("original_price", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
-            </label>
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              Rating
-              <input type="number" min="0" max="5" step="0.1" value={form.rating} onChange={(event) => setField("rating", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
-            </label>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              Discount label
-              <input value={form.discount_label} onChange={(event) => setField("discount_label", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
-            </label>
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              Badge
-              <input value={form.badge} onChange={(event) => setField("badge", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
-            </label>
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              Offer
-              <input value={form.offer} onChange={(event) => setField("offer", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
-            </label>
-          </div>
+          </section>
 
           <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="mb-4 font-display text-xl font-semibold text-[#7A183D]">Product Image</h3>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
               <div className="h-36 w-36 shrink-0 overflow-hidden rounded-xl border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE]">
                 {form.image_url ? <img src={form.image_url} alt="Product preview" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center px-3 text-center text-xs font-bold text-[#3A2417]/42">No image</div>}
               </div>
               <div className="min-w-0 flex-1 space-y-3">
                 <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-                  Main image URL or local asset path
+                  Image URL / existing path
                   <input value={form.image_url} onChange={(event) => setField("image_url", event.target.value)} placeholder="/products/example.png or https://..." className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
                 </label>
                 <div className="flex flex-wrap gap-2">
                   <label className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg bg-[#7A183D] px-4 text-sm font-bold text-white ${!canManageProducts ? "pointer-events-none opacity-55" : ""}`}>
                     {imageState.loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    Upload / Replace
+                    Upload / Replace Image
                     <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleMainUpload} disabled={!canManageProducts || imageState.loading} className="hidden" />
                   </label>
-                  <button type="button" onClick={() => setField("image_url", "")} className="min-h-10 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-4 text-sm font-bold text-[#7A183D]">Clear main image</button>
+                  <button type="button" onClick={() => setField("image_url", "")} className="min-h-10 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-4 text-sm font-bold text-[#7A183D]">Clear image</button>
                 </div>
                 {!canManageProducts ? <p className="text-xs font-bold text-[#7A183D]">Connect Supabase Storage to upload images.</p> : null}
               </div>
@@ -734,37 +703,88 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
             ) : null}
           </section>
 
-          <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-            Short description
-            <input value={form.short_description} onChange={(event) => setField("short_description", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
-          </label>
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Product Description</h3>
+            <div className="mt-4 grid gap-4">
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Short description
+                <input value={form.short_description} onChange={(event) => setField("short_description", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Full description
+                <textarea value={form.description} onChange={(event) => setField("description", event.target.value)} rows={4} className="rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 outline-none focus:border-[#C9962D]" />
+              </label>
+            </div>
+          </section>
 
-          <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-            Full description
-            <textarea value={form.description} onChange={(event) => setField("description", event.target.value)} rows={4} className="rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 outline-none focus:border-[#C9962D]" />
-          </label>
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Display Options</h3>
+            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 text-sm font-bold text-[#3A2417]">
+                <input type="checkbox" checked={form.is_featured} onChange={(event) => setField("is_featured", event.target.checked)} />
+                Show as featured
+              </label>
+              <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 text-sm font-bold text-[#3A2417]">
+                <input type="checkbox" checked={form.is_active} onChange={(event) => setField("is_active", event.target.checked)} />
+                Product active
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Rating
+                <input type="number" min="0" max="5" step="0.1" value={form.rating} onChange={(event) => setField("rating", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+            </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Badge
+                <input value={form.badge} onChange={(event) => setField("badge", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Offer note
+                <input value={form.offer} onChange={(event) => setField("offer", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+            </div>
+          </section>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417] sm:col-span-2">
-              Tags
-              <input value={form.tags} onChange={(event) => setField("tags", event.target.value)} placeholder="rakhi, festive, gift" className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
-            </label>
-            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
-              Sort order
-              <input type="number" value={form.sort_order} onChange={(event) => setField("sort_order", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
-            </label>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 text-sm font-bold text-[#3A2417]">
-              <input type="checkbox" checked={form.is_active} onChange={(event) => setField("is_active", event.target.checked)} />
-              Active
-            </label>
-            <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 text-sm font-bold text-[#3A2417]">
-              <input type="checkbox" checked={form.is_featured} onChange={(event) => setField("is_featured", event.target.checked)} />
-              Featured
-            </label>
-          </div>
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72">
+            <button type="button" onClick={() => setAdvancedOpen((current) => !current)} className="flex min-h-14 w-full items-center justify-between gap-3 px-4 text-left font-display text-xl font-semibold text-[#7A183D]">
+              Advanced product details
+              <span className="text-sm font-bold text-[#C9962D]">{advancedOpen ? "Hide" : "Show"}</span>
+            </button>
+            {advancedOpen ? (
+              <div className="grid gap-4 border-t border-[rgba(122,24,61,0.1)] p-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                    <div className="flex items-center justify-between gap-2">
+                      <span>Slug</span>
+                      <button type="button" onClick={regenerateSlug} className="text-xs font-bold text-[#7A183D] underline-offset-4 hover:underline">Regenerate</button>
+                    </div>
+                    <input value={form.slug} onChange={(event) => { setSlugTouched(true); setField("slug", event.target.value); }} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" required />
+                    <p className="text-xs font-semibold text-[#3A2417]/52">Auto-generated. Edit only if needed.</p>
+                    {slugWarning ? <p className="text-xs font-bold text-[#7A183D]">{slugWarning}</p> : null}
+                  </div>
+                  <div className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                    <div className="flex items-center justify-between gap-2">
+                      <span>SKU</span>
+                      <button type="button" onClick={regenerateSku} className="text-xs font-bold text-[#7A183D] underline-offset-4 hover:underline">Regenerate</button>
+                    </div>
+                    <input value={form.sku} onChange={(event) => { setSkuTouched(true); setField("sku", event.target.value.toUpperCase()); }} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+                    <p className="text-xs font-semibold text-[#3A2417]/52">Auto-generated. Edit only if needed.</p>
+                    {skuWarning ? <p className="text-xs font-bold text-[#7A183D]">{skuWarning}</p> : null}
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <label className="grid gap-1 text-sm font-bold text-[#3A2417] sm:col-span-2">
+                    Tags
+                    <input value={form.tags} onChange={(event) => setField("tags", event.target.value)} placeholder="rakhi, festive, gift" className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+                  </label>
+                  <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                    Sort order
+                    <input type="number" value={form.sort_order} onChange={(event) => setField("sort_order", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+                  </label>
+                </div>
+              </div>
+            ) : null}
+          </section>
 
           <div className="flex flex-col gap-2 border-t border-[rgba(122,24,61,0.12)] pt-4 sm:flex-row sm:justify-end">
             <button type="button" onClick={onClose} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-5 text-sm font-bold text-[#7A183D]">Cancel</button>
