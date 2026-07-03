@@ -1,6 +1,8 @@
 import HomeExperience from "@/components/HomeExperience";
 import { businessSettings } from "@/data/businessSettings";
-import { seasonalCampaign } from "@/data/seasonalCampaign";
+import { getActiveCategories } from "@/lib/data/categories";
+import { getProducts } from "@/lib/data/products";
+import { getActiveSeasonalCampaign } from "@/lib/data/seasonalCampaigns";
 import { absoluteUrl, defaultSeo, getSiteUrl } from "@/lib/seo";
 
 function StoreJsonLd() {
@@ -27,11 +29,17 @@ function StoreJsonLd() {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />;
 }
 
-export default function Home() {
+export default async function Home() {
+  const [categories, products, seasonalCampaign] = await Promise.all([
+    getActiveCategories(),
+    getProducts(),
+    getActiveSeasonalCampaign()
+  ]);
+
   return (
     <>
       <StoreJsonLd />
-      <HomeExperience campaignActive={seasonalCampaign.active} />
+      <HomeExperience categories={categories} products={products} seasonalCampaign={seasonalCampaign} campaignActive={Boolean(seasonalCampaign?.active)} />
     </>
   );
 }

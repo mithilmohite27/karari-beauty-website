@@ -7,7 +7,7 @@ import { ArrowRight, BadgeCheck, ChevronRight, Globe2, MessageCircle, PackageChe
 import EmptyCartState from "@/components/EmptyCartState";
 import { Header } from "@/components/HomeExperience";
 import QuickViewModal from "@/components/QuickViewModal";
-import { products } from "@/data/products";
+import { products as localProducts } from "@/data/products";
 import {
   addRecentlyViewed,
   clearCart,
@@ -41,12 +41,6 @@ const initialForm = {
   paymentPreference: "GPay / UPI",
   orderType: "Domestic Order"
 };
-
-function createOrderId() {
-  const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, "");
-  const randomPart = Math.random().toString(36).slice(2, 7).toUpperCase();
-  return `KB-${datePart}-${randomPart}`;
-}
 
 function buildWhatsAppOrderUrl(order) {
   const message = [
@@ -84,10 +78,12 @@ function Field({ label, name, value, error, required, as = "input", children, ..
   );
 }
 
-export default function CheckoutPageExperience() {
+export default function CheckoutPageExperience({ products = localProducts }) {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [submittedOrder, setSubmittedOrder] = useState(null);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -156,43 +152,74 @@ export default function CheckoutPageExperience() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const submitOrder = (event) => {
+  const submitOrder = async (event) => {
     event.preventDefault();
     if (!validate()) return;
+    setSubmitError("");
+    setSubmitting(true);
 
-    const order = {
-      orderId: createOrderId(),
-      customer: {
-        fullName: form.fullName.trim(),
-        mobile: form.mobile.trim(),
-        email: form.email.trim()
-      },
-      delivery: {
-        country: form.country,
-        address: form.address.trim(),
-        city: form.city.trim(),
-        state: form.state.trim(),
-        pincode: form.pincode.trim(),
-        note: form.deliveryNote.trim()
-      },
-      paymentPreference: form.paymentPreference,
-      orderType: form.orderType,
-      items,
-      subtotal,
-      status: "Order Request Received",
-      createdAt: new Date().toISOString()
-    };
+    try {
+      const payload = {
+        customer: {
+          fullName: form.fullName.trim(),
+          mobile: form.mobile.trim(),
+          email: form.email.trim()
+        },
+        delivery: {
+          country: form.country,
+          address: form.address.trim(),
+          city: form.city.trim(),
+          state: form.state.trim(),
+          pincode: form.pincode.trim(),
+          note: form.deliveryNote.trim()
+        },
+        paymentPreference: form.paymentPreference,
+        orderType: form.orderType,
+        items
+      };
 
-    saveOrderRequest(order);
-    clearCart();
-    setItems([]);
-    setSubmittedOrder(order);
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "Unable to submit order request.");
+      }
+
+      const order = {
+        orderId: result.order?.orderNumber || result.order?.orderId,
+        customer: payload.customer,
+        delivery: payload.delivery,
+        paymentPreference: form.paymentPreference,
+        orderType: form.orderType,
+        items,
+        subtotal,
+        status: "Order Request Received",
+        backendMode: result.order?.mode || "unknown",
+        createdAt: new Date().toISOString()
+      };
+
+      saveOrderRequest(order);
+      clearCart();
+      setItems([]);
+      setSubmittedOrder(order);
+    } catch (error) {
+      setSubmitError(error.message || "Unable to submit order request. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submittedOrder) {
     return (
       <main className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_48%,#FFF8EE_100%)] text-[#3A2417]">
-        <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} />
+        <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} products={products} />
       <section className="px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
           <div className="mx-auto max-w-3xl rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-5 text-center shadow-boutique sm:p-10">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[rgba(201,150,45,0.32)] bg-[#FFF8EE] text-[#C9962D]">
@@ -236,7 +263,7 @@ export default function CheckoutPageExperience() {
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_50%,#FFF8EE_100%)] text-[#3A2417]">
-      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} />
+      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} products={products} />
 
       <section className="px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="mx-auto max-w-7xl">
@@ -380,11 +407,13 @@ export default function CheckoutPageExperience() {
                 </section>
 
                 {errors.cart ? <p className="rounded-lg bg-white p-3 text-sm font-bold text-[#7A183D]">{errors.cart}</p> : null}
+                {submitError ? <p className="rounded-lg bg-white p-3 text-sm font-bold text-[#7A183D]">{submitError}</p> : null}
                 <button
                   type="submit"
-                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417]"
+                  disabled={submitting}
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417] disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  Submit Order Request
+                  {submitting ? "Submitting..." : "Submit Order Request"}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </aside>
@@ -393,7 +422,7 @@ export default function CheckoutPageExperience() {
         </div>
       </section>
 
-      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} products={products} />
     </main>
   );
 }

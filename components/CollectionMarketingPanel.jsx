@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, Gift, Globe2, Truck } from "lucide-react";
-import { categories } from "@/data/categories";
+import { categories as localCategories } from "@/data/categories";
 
 const trustItems = [
   { label: "Secure Order Support", icon: BadgeCheck },
@@ -9,7 +9,7 @@ const trustItems = [
   { label: "International Inquiry", icon: Globe2 }
 ];
 
-export default function CollectionMarketingPanel({ category, compact = false }) {
+export default function CollectionMarketingPanel({ category, compact = false, categories = localCategories }) {
   const title = category.marketingTitle || "Curated by Karari Beauty";
   const text = category.marketingText || "Selected boutique products for gifting, celebrations and everyday style.";
   const recommendedCategory =

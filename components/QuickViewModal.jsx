@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { CalendarDays, Globe2, Heart, MessageCircle, Share2, X } from "lucide-react";
 import { frequentlyBoughtTogether } from "@/data/frequentlyBoughtTogether";
-import { products } from "@/data/products";
+import { products as localProducts } from "@/data/products";
 import { createWhatsAppUrl, formatCurrency } from "@/lib/whatsapp";
 
-export default function QuickViewModal({ product, onClose }) {
+export default function QuickViewModal({ product, onClose, products = localProducts }) {
   if (!product) return null;
 
   const relatedGroup = frequentlyBoughtTogether.find((group) => group.productIds.includes(product.id)) || frequentlyBoughtTogether[0];

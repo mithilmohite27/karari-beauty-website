@@ -1,4 +1,5 @@
 import CheckoutPageExperience from "@/components/CheckoutPageExperience";
+import { getProducts } from "@/lib/data/products";
 
 export const metadata = {
   title: {
@@ -11,6 +12,7 @@ export const metadata = {
   }
 };
 
-export default function CheckoutPage() {
-  return <CheckoutPageExperience />;
+export default async function CheckoutPage() {
+  const products = await getProducts();
+  return <CheckoutPageExperience products={products} />;
 }

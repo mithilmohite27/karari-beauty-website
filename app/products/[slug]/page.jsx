@@ -1,26 +1,17 @@
 import { notFound } from "next/navigation";
 import ProductDetailExperience from "@/components/ProductDetailExperience";
-import { categories } from "@/data/categories";
-import { products } from "@/data/products";
+import { getActiveCategories } from "@/lib/data/categories";
+import { getProductBySlug, getProducts, getRelatedProducts } from "@/lib/data/products";
 import { absoluteUrl, getDefaultOgImage } from "@/lib/seo";
 
-function getProduct(slug) {
-  return products.find((product) => product.slug === slug);
-}
-
-function getRelatedProducts(product) {
-  const sameCategory = products.filter((item) => item.id !== product.id && item.categorySlug === product.categorySlug);
-  const featuredFill = products.filter((item) => item.id !== product.id && item.categorySlug !== product.categorySlug && item.isFeatured);
-  return [...sameCategory, ...featuredFill].slice(0, 4);
-}
-
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const products = await getProducts();
   return products.map((product) => ({ slug: product.slug }));
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     return {
@@ -88,19 +79,19 @@ function ProductJsonLd({ product, category }) {
 
 export default async function ProductPage({ params }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const [product, categories, allProducts] = await Promise.all([getProductBySlug(slug), getActiveCategories(), getProducts()]);
 
   if (!product) {
     notFound();
   }
 
   const category = categories.find((item) => item.slug === product.categorySlug);
-  const relatedProducts = getRelatedProducts(product);
+  const relatedProducts = await getRelatedProducts(product, 4);
 
   return (
     <>
       <ProductJsonLd product={product} category={category} />
-      <ProductDetailExperience product={product} category={category} relatedProducts={relatedProducts} />
+      <ProductDetailExperience product={product} category={category} relatedProducts={relatedProducts} allProducts={allProducts} allCategories={categories} />
     </>
   );
 }

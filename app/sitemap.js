@@ -1,9 +1,10 @@
-import { categories } from "@/data/categories";
-import { products } from "@/data/products";
+import { getActiveCategories } from "@/lib/data/categories";
+import { getProducts } from "@/lib/data/products";
 import { absoluteUrl } from "@/lib/seo";
 
-export default function sitemap() {
+export default async function sitemap() {
   const now = new Date();
+  const [categories, products] = await Promise.all([getActiveCategories(), getProducts()]);
 
   return [
     {

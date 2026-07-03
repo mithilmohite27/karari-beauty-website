@@ -5,6 +5,8 @@
 :root {
   --background: #fffaf4;
   --foreground: #181614;
+  --font-inter: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-playfair: Georgia, "Times New Roman", serif;
 }
 
 * {

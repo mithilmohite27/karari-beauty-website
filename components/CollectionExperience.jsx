@@ -9,7 +9,7 @@ import CollectionMarketingPanel from "@/components/CollectionMarketingPanel";
 import { Header } from "@/components/HomeExperience";
 import ProductCard from "@/components/ProductCard";
 import QuickViewModal from "@/components/QuickViewModal";
-import { products as allProducts } from "@/data/products";
+import { products as localProducts } from "@/data/products";
 import {
   addRecentlyViewed,
   addToCart as addCartItem,
@@ -18,7 +18,7 @@ import {
   toggleWishlist as toggleWishlistItem
 } from "@/lib/ecommerceStorage";
 
-export default function CollectionExperience({ category, products, relatedCategories }) {
+export default function CollectionExperience({ category, products, relatedCategories, allProducts = localProducts, allCategories = [] }) {
   const [sortBy, setSortBy] = useState("featured");
   const [wishlistIds, setWishlistIds] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -79,7 +79,7 @@ export default function CollectionExperience({ category, products, relatedCatego
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_55%,#FFF8EE_100%)] text-[#3A2417]">
-      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} />
+      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} categories={allCategories} products={allProducts} />
       <AnimatePresence>
         {toast ? (
           <motion.div
@@ -193,12 +193,12 @@ export default function CollectionExperience({ category, products, relatedCatego
                 </div>
               )}
             </div>
-            {isLowProductCount ? <CollectionMarketingPanel category={category} /> : null}
+            {isLowProductCount ? <CollectionMarketingPanel category={category} categories={allCategories} /> : null}
           </div>
 
           {!isLowProductCount ? (
             <div className="mt-8">
-              <CollectionMarketingPanel category={category} compact />
+              <CollectionMarketingPanel category={category} compact categories={allCategories} />
             </div>
           ) : null}
 
@@ -219,7 +219,7 @@ export default function CollectionExperience({ category, products, relatedCatego
         </div>
       </section>
 
-      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} products={allProducts} />
     </main>
   );
 }

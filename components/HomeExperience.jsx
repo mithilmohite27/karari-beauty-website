@@ -33,11 +33,11 @@ import CartDrawer from "@/components/CartDrawer";
 import ProductCard from "@/components/ProductCard";
 import QuickViewModal from "@/components/QuickViewModal";
 import { businessSettings } from "@/data/businessSettings";
-import { categories } from "@/data/categories";
-import { products } from "@/data/products";
+import { categories as localCategories } from "@/data/categories";
+import { products as localProducts } from "@/data/products";
 import { giftCombos } from "@/data/giftCombos";
 import { frequentlyBoughtTogether } from "@/data/frequentlyBoughtTogether";
-import { seasonalCampaign } from "@/data/seasonalCampaign";
+import { seasonalCampaign as localSeasonalCampaign } from "@/data/seasonalCampaign";
 import {
   addRecentlyViewed,
   addToCart as addCartItem,
@@ -48,10 +48,6 @@ import {
   toggleWishlist as toggleWishlistItem
 } from "@/lib/ecommerceStorage";
 import { createWhatsAppUrl, formatCurrency } from "@/lib/whatsapp";
-
-const featuredProducts = products.filter((product) =>
-  ["Rakhi", "Gift Hampers", "Gift Items"].includes(product.category)
-);
 
 const countries = [
   { code: "IN", name: "India", defaultCurrency: "INR" },
@@ -75,8 +71,9 @@ function readStoredValue(key, fallback) {
   return window.localStorage.getItem(key) || fallback;
 }
 
-function Countdown() {
-  const targetDate = useMemo(() => new Date(seasonalCampaign.countdownDate), []);
+function Countdown({ campaign = localSeasonalCampaign }) {
+  const countdownDate = campaign?.countdownDate || campaign?.endDate || localSeasonalCampaign.countdownDate;
+  const targetDate = useMemo(() => new Date(countdownDate), [countdownDate]);
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -142,7 +139,7 @@ function HeaderIconButton({ icon: Icon, label, count, onClick, active }) {
   );
 }
 
-function SearchBox({ onViewProduct }) {
+function SearchBox({ onViewProduct, products = localProducts }) {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const results = useMemo(() => {
@@ -255,11 +252,11 @@ const collectionMenuGroups = [
   }
 ];
 
-function getCollectionById(id) {
-  return categories.find((category) => category.id === id);
+function getCollectionById(categories, id) {
+  return categories.find((category) => category.id === id || category.slug === id);
 }
 
-function CollectionsMegaMenu({ open, onClose }) {
+function CollectionsMegaMenu({ open, onClose, categories = localCategories }) {
   if (!open) return null;
 
   return (
@@ -283,7 +280,7 @@ function CollectionsMegaMenu({ open, onClose }) {
             <p className="px-2 pb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">{group.title}</p>
             <div className="space-y-1">
               {group.ids.map((id) => {
-                const category = getCollectionById(id);
+                const category = getCollectionById(categories, id);
                 if (!category) return null;
 
                 return (
@@ -309,7 +306,7 @@ function CollectionsMegaMenu({ open, onClose }) {
   );
 }
 
-export function Header({ campaignActive, onViewProduct, recentlyViewed }) {
+export function Header({ campaignActive, onViewProduct, recentlyViewed, categories = localCategories, products = localProducts, seasonalCampaign = localSeasonalCampaign }) {
   const headerRef = useRef(null);
   const [selectedCountry, setSelectedCountry] = useState("India");
   const [selectedCurrency, setSelectedCurrency] = useState("INR");
@@ -421,7 +418,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed }) {
           </Link>
 
           <div className="order-3 min-w-0 flex-[1_0_100%] lg:order-none lg:max-w-[44rem] lg:flex-1 xl:max-w-[50rem]">
-            <SearchBox onViewProduct={onViewProduct} />
+            <SearchBox onViewProduct={onViewProduct} products={products} />
           </div>
 
           <div className="hidden shrink-0 items-center gap-2.5 lg:flex xl:gap-3">
@@ -438,7 +435,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed }) {
                 Collections
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
-              <CollectionsMegaMenu open={activeHeaderDropdown === "collections"} onClose={() => setActiveHeaderDropdown(null)} />
+              <CollectionsMegaMenu open={activeHeaderDropdown === "collections"} onClose={() => setActiveHeaderDropdown(null)} categories={categories} />
             </div>
 
             <div className="relative">
@@ -637,7 +634,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed }) {
       <CartDrawer open={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
       {campaignActive ? (
         <div className="border-t border-antiqueGold/20 bg-wine px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white">
-          {seasonalCampaign.offer}
+          {seasonalCampaign?.offer || seasonalCampaign?.offerLabel || localSeasonalCampaign.offer}
         </div>
       ) : null}
     </>
@@ -682,7 +679,7 @@ const heroSlides = [
   }
 ];
 
-function HeroCarousel() {
+function HeroCarousel({ seasonalCampaign = localSeasonalCampaign }) {
   const [activeSlide, setActiveSlide] = useState(0);
   const slide = heroSlides[activeSlide];
 
@@ -752,7 +749,7 @@ function HeroCarousel() {
 
                 {slide.showCountdown ? (
                   <div className="mt-3 max-w-[16rem] min-[390px]:max-w-[18rem] sm:mt-[1.125rem] sm:max-w-[22rem]">
-                    <Countdown />
+                    <Countdown campaign={seasonalCampaign} />
                   </div>
                 ) : null}
 
@@ -786,7 +783,7 @@ function HeroCarousel() {
   );
 }
 
-function CategorySection({ selectedCategory }) {
+function CategorySection({ selectedCategory, categories = localCategories }) {
   return (
     <section id="collections" className="relative overflow-hidden bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_100%)] px-3 py-12 sm:px-6 sm:py-16 lg:px-8">
       <span id="categories" className="absolute -top-28" aria-hidden="true" />
@@ -843,10 +840,14 @@ function CategorySection({ selectedCategory }) {
   );
 }
 
-function ProductSection({ onView, seasonal, selectedCategory, onClearCategory }) {
+function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, products = localProducts }) {
   const [sortBy, setSortBy] = useState("featured");
   const [wishlistIds, setWishlistIds] = useState([]);
   const [toast, setToast] = useState("");
+  const featuredProducts = useMemo(
+    () => products.filter((product) => ["Rakhi", "Gift Hampers", "Gift Items"].includes(product.category)),
+    [products]
+  );
 
   useEffect(() => {
     setWishlistIds(getWishlistItems());
@@ -865,7 +866,7 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory })
       return products.filter((product) => product.isFeatured || featuredIds.has(product.id));
     }
     return products;
-  }, [seasonal, selectedCategory]);
+  }, [featuredProducts, products, seasonal, selectedCategory]);
 
   const list = useMemo(() => {
     const items = [...baseList];
@@ -976,7 +977,7 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory })
     </section>
   );
 }
-function GiftCombos({ onView }) {
+function GiftCombos({ onView, products = localProducts }) {
   return (
     <section id="gifts" className="bg-white px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -1025,7 +1026,7 @@ function GiftCombos({ onView }) {
   );
 }
 
-function FrequentlyBoughtTogetherSection({ onView }) {
+function FrequentlyBoughtTogetherSection({ onView, products = localProducts }) {
   const group = frequentlyBoughtTogether[0];
   const items = group.productIds.map((id) => products.find((product) => product.id === id)).filter(Boolean);
 
@@ -1069,8 +1070,6 @@ const footerTrustItems = [
   { label: "Premium Packaging", icon: PackageCheck },
   { label: "International Bulk Order Support", icon: Globe2 }
 ];
-
-const footerShopLinks = categories.map((category) => ({ label: category.name, href: category.href }));
 
 const footerCareLinks = [
   { label: "About Karari", href: "#about" },
@@ -1145,7 +1144,9 @@ function SupportItem({ icon: Icon, title, children }) {
   );
 }
 
-function Footer() {
+function Footer({ categories = localCategories }) {
+  const footerShopLinks = categories.map((category) => ({ label: category.name, href: category.href }));
+
   return (
     <footer id="footer" className="bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_100%)] px-3 pb-20 pt-6 sm:px-6 sm:pb-7 lg:px-8 lg:pb-6">
       <div className="mx-auto max-w-7xl">
@@ -1237,7 +1238,12 @@ function Footer() {
   );
 }
 
-export default function HomeExperience({ campaignActive }) {
+export default function HomeExperience({
+  campaignActive,
+  categories = localCategories,
+  products = localProducts,
+  seasonalCampaign = localSeasonalCampaign
+}) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -1253,7 +1259,7 @@ export default function HomeExperience({ campaignActive }) {
       window.removeEventListener("recentlyViewed:updated", syncRecentlyViewed);
       window.removeEventListener("storage", syncRecentlyViewed);
     };
-  }, []);
+  }, [products]);
 
   const openProduct = (product) => {
     setSelectedProduct(product);
@@ -1262,19 +1268,19 @@ export default function HomeExperience({ campaignActive }) {
 
   return (
     <main className="min-h-screen bg-silk">
-      <Header campaignActive={campaignActive} onViewProduct={openProduct} recentlyViewed={recentlyViewed} />
-      <HeroCarousel />
-      <CategorySection selectedCategory={selectedCategory} />
-      <ProductSection onView={openProduct} seasonal={campaignActive} selectedCategory={selectedCategory} onClearCategory={() => setSelectedCategory(null)} />
+      <Header campaignActive={campaignActive} onViewProduct={openProduct} recentlyViewed={recentlyViewed} categories={categories} products={products} seasonalCampaign={seasonalCampaign} />
+      <HeroCarousel seasonalCampaign={seasonalCampaign} />
+      <CategorySection selectedCategory={selectedCategory} categories={categories} />
+      <ProductSection onView={openProduct} seasonal={campaignActive} selectedCategory={selectedCategory} onClearCategory={() => setSelectedCategory(null)} products={products} />
       {campaignActive ? (
         <>
-          <GiftCombos onView={openProduct} />
-          <FrequentlyBoughtTogetherSection onView={openProduct} />
+          <GiftCombos onView={openProduct} products={products} />
+          <FrequentlyBoughtTogetherSection onView={openProduct} products={products} />
         </>
       ) : null}
       <FooterTrustStrip />
-      <Footer />
-      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      <Footer categories={categories} />
+      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} products={products} />
     </main>
   );
 }

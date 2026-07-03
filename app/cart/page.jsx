@@ -1,4 +1,5 @@
 import CartPageExperience from "@/components/CartPageExperience";
+import { getProducts } from "@/lib/data/products";
 
 export const metadata = {
   title: {
@@ -11,6 +12,7 @@ export const metadata = {
   }
 };
 
-export default function CartPage() {
-  return <CartPageExperience />;
+export default async function CartPage() {
+  const products = await getProducts();
+  return <CartPageExperience products={products} />;
 }

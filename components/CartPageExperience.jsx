@@ -8,7 +8,7 @@ import CartSummary from "@/components/CartSummary";
 import EmptyCartState from "@/components/EmptyCartState";
 import { Header } from "@/components/HomeExperience";
 import QuickViewModal from "@/components/QuickViewModal";
-import { products } from "@/data/products";
+import { products as localProducts } from "@/data/products";
 import {
   addRecentlyViewed,
   getCartCount,
@@ -19,7 +19,7 @@ import {
   updateCartItemQuantity
 } from "@/lib/ecommerceStorage";
 
-export default function CartPageExperience() {
+export default function CartPageExperience({ products = localProducts }) {
   const [items, setItems] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -37,7 +37,7 @@ export default function CartPageExperience() {
       window.removeEventListener("cart:updated", syncCart);
       window.removeEventListener("storage", syncCart);
     };
-  }, []);
+  }, [products]);
 
   useEffect(() => {
     const syncRecentlyViewed = () => setRecentlyViewed(getRecentlyViewed(products));
@@ -67,7 +67,7 @@ export default function CartPageExperience() {
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_48%,#FFF8EE_100%)] text-[#3A2417]">
-      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} />
+      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} products={products} />
 
       <section className="px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="mx-auto max-w-7xl">
@@ -116,7 +116,7 @@ export default function CartPageExperience() {
         </div>
       </section>
 
-      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} products={products} />
     </main>
   );
 }

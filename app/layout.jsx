@@ -1,19 +1,6 @@
-import { Inter, Playfair_Display } from "next/font/google";
 import FloatingActions from "@/components/FloatingActions";
 import { defaultSeo, getDefaultOgImage, getSiteUrl } from "@/lib/seo";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap"
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap"
-});
 
 export const metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -73,7 +60,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${playfair.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         {children}
         <FloatingActions />
       </body>

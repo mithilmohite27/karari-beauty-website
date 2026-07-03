@@ -8,7 +8,7 @@ import { ArrowRight, BadgeCheck, ChevronRight, Heart, Minus, PackageCheck, Plus,
 import { Header } from "@/components/HomeExperience";
 import ProductCard from "@/components/ProductCard";
 import QuickViewModal from "@/components/QuickViewModal";
-import { products as allProducts } from "@/data/products";
+import { products as localProducts } from "@/data/products";
 import {
   addRecentlyViewed,
   addToCart as addCartItem,
@@ -25,7 +25,7 @@ const trustBadges = [
   { label: "Boutique Quality", icon: BadgeCheck }
 ];
 
-export default function ProductDetailExperience({ product, category, relatedProducts }) {
+export default function ProductDetailExperience({ product, category, relatedProducts, allProducts = localProducts, allCategories }) {
   const [quantity, setQuantity] = useState(1);
   const [wishlistIds, setWishlistIds] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -79,7 +79,7 @@ export default function ProductDetailExperience({ product, category, relatedProd
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_55%,#FFF8EE_100%)] text-[#3A2417]">
-      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} />
+      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} products={allProducts} categories={allCategories} />
       <AnimatePresence>
         {toast ? (
           <motion.div
@@ -237,7 +237,7 @@ export default function ProductDetailExperience({ product, category, relatedProd
         </div>
       </section>
 
-      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} products={allProducts} />
     </main>
   );
 }
