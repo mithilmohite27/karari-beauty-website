@@ -49,6 +49,12 @@ import {
 } from "@/lib/ecommerceStorage";
 import { createWhatsAppUrl, formatCurrency } from "@/lib/whatsapp";
 
+const CAMPAIGN_OFFER_FALLBACK = "Festive offers live now";
+
+function getCampaignOfferLabel(campaign) {
+  return campaign?.offerLabel || campaign?.offer_label || CAMPAIGN_OFFER_FALLBACK;
+}
+
 const countries = [
   { code: "IN", name: "India", defaultCurrency: "INR" },
   { code: "US", name: "USA", defaultCurrency: "USD" },
@@ -634,7 +640,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
       <CartDrawer open={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
       {campaignActive ? (
         <div className="border-t border-antiqueGold/20 bg-wine px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white">
-          {seasonalCampaign?.offer || seasonalCampaign?.offerLabel || localSeasonalCampaign.offer}
+          {getCampaignOfferLabel(seasonalCampaign)}
         </div>
       ) : null}
     </>
@@ -655,7 +661,6 @@ const heroSlides = [
   {
     key: "raksha-bandhan",
     image: "/hero/raksha-bandhan-2026.png",
-    eyebrow: "25% OFF on your first Rakhi order",
     headline: "Raksha Bandhan Collection 2026 is Live",
     headlineLines: ["Raksha Bandhan", "Collection 2026", "is Live"],
     subheadline: "Celebrate the bond of love with Karari Beauty",
@@ -681,7 +686,11 @@ const heroSlides = [
 
 function HeroCarousel({ campaignActive, seasonalCampaign = localSeasonalCampaign }) {
   const [activeSlide, setActiveSlide] = useState(0);
-  const slides = useMemo(() => (campaignActive ? heroSlides : heroSlides.filter((item) => item.key !== "raksha-bandhan")), [campaignActive]);
+  const campaignOfferLabel = getCampaignOfferLabel(seasonalCampaign);
+  const slides = useMemo(() => {
+    const nextSlides = campaignActive ? heroSlides : heroSlides.filter((item) => item.key !== "raksha-bandhan");
+    return nextSlides.map((item) => (item.key === "raksha-bandhan" ? { ...item, eyebrow: campaignOfferLabel } : item));
+  }, [campaignActive, campaignOfferLabel]);
   const slide = slides[activeSlide] || slides[0];
 
   useEffect(() => {

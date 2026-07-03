@@ -209,7 +209,7 @@ values
 
 insert into public.seasonal_campaigns (name, slug, theme, is_active, start_date, end_date, hero_title, hero_subtitle, offer_label, featured_category_slugs, config)
 values
-  ('Raksha Bandhan 2026', 'raksha-bandhan-2026', 'raksha-bandhan', true, '2026-07-01', '2026-08-28', 'Raksha Bandhan Collection 2026 is Live', 'Celebrate the bond of love with Karari Beauty', '25% OFF ON YOUR FIRST RAKHI ORDER', array['rakhi', 'gift-items', 'wedding-baskets']::text[], '{"palette":"cream-blush-wine-gold","heroImage":"/hero/raksha-bandhan-2026.png"}')
+  ('Raksha Bandhan 2026', 'raksha-bandhan-2026', 'raksha-bandhan', true, '2026-07-01', '2026-08-28', 'Raksha Bandhan Collection 2026 is Live', 'Celebrate the bond of love with Karari Beauty', 'Festive offers live now', array['rakhi', 'gift-items', 'wedding-baskets']::text[], '{"palette":"cream-blush-wine-gold","heroImage":"/hero/raksha-bandhan-2026.png"}')
 on conflict (slug) do update set
   name = excluded.name,
   theme = excluded.theme,
