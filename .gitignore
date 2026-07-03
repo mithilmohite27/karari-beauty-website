@@ -9,3 +9,4 @@ out
 .agents
 .codex
 preview-*.txt
+.env.local
