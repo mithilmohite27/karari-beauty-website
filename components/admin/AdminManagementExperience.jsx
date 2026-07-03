@@ -71,6 +71,17 @@ const emptyProductForm = {
   sort_order: 0
 };
 
+const emptyCategoryForm = {
+  name: "",
+  slug: "",
+  description: "",
+  product_count_label: "",
+  image_url: "",
+  featured: false,
+  is_active: true,
+  sort_order: 0
+};
+
 function productToForm(product) {
   return {
     name: product.name || "",
@@ -96,6 +107,19 @@ function productToForm(product) {
   };
 }
 
+function categoryToForm(category) {
+  return {
+    name: category.name || "",
+    slug: category.slug || "",
+    description: category.description || "",
+    product_count_label: category.productCountLabel || "",
+    image_url: category.image || "",
+    featured: Boolean(category.featured),
+    is_active: category.isActive !== false,
+    sort_order: category.sortOrder || 0
+  };
+}
+
 function formToPayload(form) {
   return {
     ...form,
@@ -107,6 +131,19 @@ function formToPayload(form) {
     category_id: form.category_id || null,
     category_slug: form.category_slug || null,
     category_name: form.category_name || null
+  };
+}
+
+function categoryFormToPayload(form) {
+  return {
+    name: form.name,
+    slug: form.slug,
+    description: form.description,
+    product_count_label: form.product_count_label,
+    image_url: form.image_url,
+    featured: form.featured,
+    is_active: form.is_active,
+    sort_order: form.sort_order
   };
 }
 
@@ -271,22 +308,29 @@ function ProductRows({ items, onView, onEdit, onDeactivate, canManageProducts })
   ));
 }
 
-function CategoryRows({ items, onView }) {
+function CategoryRows({ items, onView, onEdit, onDeactivate, canManageCategories }) {
   return items.map((item) => (
     <tr key={item.id || item.slug} className="border-b border-[rgba(122,24,61,0.08)]">
       <td className="px-3 py-3">
         <span className="relative block h-12 w-12 overflow-hidden rounded-lg bg-[#FFF8EE]">
-          {item.image ? <Image src={item.image} alt={item.name} fill sizes="3rem" className="object-cover" /> : null}
+          {item.image ? <img src={item.image} alt={item.name} className="h-full w-full object-cover" /> : null}
         </span>
       </td>
       <td className="px-3 py-3 font-bold text-[#3A2417]">{item.name}</td>
       <td className="px-3 py-3">{item.slug}</td>
       <td className="max-w-xs px-3 py-3 text-[#3A2417]/62">{item.description}</td>
+      <td className="px-3 py-3">{item.productCountLabel || "-"}</td>
       <td className="px-3 py-3">{boolBadge(item.featured, "Featured", "No")}</td>
       <td className="px-3 py-3">{boolBadge(item.isActive !== false, "Active", "Inactive")}</td>
       <td className="px-3 py-3">{item.sortOrder ?? 0}</td>
       <td className="px-3 py-3 font-bold text-[#7A183D]">{item.productCount ?? 0}</td>
-      <td className="px-3 py-3"><button type="button" onClick={() => onView(item)} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D]">View</button></td>
+      <td className="px-3 py-3">
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => onView(item)} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D]">View</button>
+          <button type="button" onClick={() => onEdit(item)} disabled={!canManageCategories} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50">Edit</button>
+          <button type="button" onClick={() => onDeactivate(item)} disabled={!canManageCategories || item.isActive === false} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50">Off</button>
+        </div>
+      </td>
     </tr>
   ));
 }
@@ -324,17 +368,17 @@ function CampaignRows({ items, onView }) {
   ));
 }
 
-function Table({ resource, items, onView, onEditProduct, onDeactivateProduct, canManageProducts }) {
+function Table({ resource, items, onView, onEditProduct, onDeactivateProduct, canManageProducts, onEditCategory, onDeactivateCategory, canManageCategories }) {
   const headers = {
     products: ["Image", "Product", "Category", "Price", "Original", "Discount", "Featured", "Active", "Stock", "Created", "Action"],
-    categories: ["Image", "Name", "Slug", "Description", "Featured", "Active", "Sort", "Products", "Action"],
+    categories: ["Image", "Name", "Slug", "Description", "Count Label", "Featured", "Active", "Sort", "Products", "Action"],
     orders: ["Order", "Customer", "Contact", "Type", "Payment", "Total", "Status", "Created", "Items", "Action"],
     campaigns: ["Campaign", "Slug", "Theme", "Active", "Start", "End", "Offer", "Featured Categories", "Action"]
   };
 
   const rows = {
     products: <ProductRows items={items} onView={onView} onEdit={onEditProduct} onDeactivate={onDeactivateProduct} canManageProducts={canManageProducts} />,
-    categories: <CategoryRows items={items} onView={onView} />,
+    categories: <CategoryRows items={items} onView={onView} onEdit={onEditCategory} onDeactivate={onDeactivateCategory} canManageCategories={canManageCategories} />,
     orders: <OrderRows items={items} onView={onView} />,
     campaigns: <CampaignRows items={items} onView={onView} />
   };
@@ -799,6 +843,114 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
   );
 }
 
+function CategoryFormDrawer({ mode, category, saving, error, canManageCategories, onClose, onSubmit }) {
+  const [form, setForm] = useState(() => (category ? categoryToForm(category) : emptyCategoryForm));
+  const [slugTouched, setSlugTouched] = useState(Boolean(category?.slug));
+
+  useEffect(() => {
+    setForm(category ? categoryToForm(category) : emptyCategoryForm);
+    setSlugTouched(Boolean(category?.slug));
+  }, [category]);
+
+  const setField = (field, value) => {
+    setForm((current) => {
+      const next = { ...current, [field]: value };
+      if (field === "name" && !slugTouched) next.slug = generateSlug(value);
+      return next;
+    });
+  };
+
+  const submit = (event) => {
+    event.preventDefault();
+    onSubmit(categoryFormToPayload(form));
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-[#3A2417]/35">
+      <aside className="h-full w-full max-w-xl overflow-y-auto bg-[#FFF8EE] p-5 shadow-boutique">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Category CMS</p>
+            <h2 className="mt-2 font-display text-3xl font-semibold text-[#7A183D]">{mode === "edit" ? "Edit Category" : "Add Category"}</h2>
+            <p className="mt-2 text-sm font-semibold text-[#3A2417]/62">Update collection details, image and storefront visibility.</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white p-2 text-[#7A183D]" aria-label="Close category form">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {error ? <div className="mt-4 rounded-xl border border-[#7A183D]/15 bg-[#FCE7EC] p-3 text-sm font-bold text-[#7A183D]">{error}</div> : null}
+        {!canManageCategories ? <div className="mt-4 rounded-xl border border-[rgba(122,24,61,0.14)] bg-white p-3 text-sm font-bold text-[#7A183D]">Connect Supabase to manage categories.</div> : null}
+
+        <form onSubmit={submit} className="mt-6 grid gap-5">
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Category Details</h3>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Category name *
+                <input value={form.name} onChange={(event) => setField("name", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" required />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Slug *
+                <input value={form.slug} onChange={(event) => { setSlugTouched(true); setField("slug", event.target.value); }} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" required />
+              </label>
+            </div>
+            <label className="mt-4 grid gap-1 text-sm font-bold text-[#3A2417]">
+              Description
+              <textarea value={form.description} onChange={(event) => setField("description", event.target.value)} rows={3} className="rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 outline-none focus:border-[#C9962D]" />
+            </label>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Product count label
+                <input value={form.product_count_label} onChange={(event) => setField("product_count_label", event.target.value)} placeholder="12 Products" className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                Sort order
+                <input type="number" value={form.sort_order} onChange={(event) => setField("sort_order", event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Category Image</h3>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start">
+              <div className="h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE]">
+                {form.image_url ? <img src={form.image_url} alt="Category preview" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center px-3 text-center text-xs font-bold text-[#3A2417]/42">No image</div>}
+              </div>
+              <label className="grid min-w-0 flex-1 gap-1 text-sm font-bold text-[#3A2417]">
+                Image URL / existing path
+                <input value={form.image_url} onChange={(event) => setField("image_url", event.target.value)} placeholder="/categories/example.png or https://..." className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+              </label>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Display Options</h3>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 text-sm font-bold text-[#3A2417]">
+                <input type="checkbox" checked={form.featured} onChange={(event) => setField("featured", event.target.checked)} />
+                Show as featured
+              </label>
+              <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 text-sm font-bold text-[#3A2417]">
+                <input type="checkbox" checked={form.is_active} onChange={(event) => setField("is_active", event.target.checked)} />
+                Category active
+              </label>
+            </div>
+          </section>
+
+          <div className="flex flex-col gap-2 border-t border-[rgba(122,24,61,0.12)] pt-4 sm:flex-row sm:justify-end">
+            <button type="button" onClick={onClose} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-5 text-sm font-bold text-[#7A183D]">Cancel</button>
+            <button type="submit" disabled={saving || !canManageCategories} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:opacity-70">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {mode === "edit" ? "Save Changes" : "Create Category"}
+            </button>
+          </div>
+        </form>
+      </aside>
+    </div>
+  );
+}
+
 function ManagementContent({ resource }) {
   const config = resourceConfig[resource];
   const [items, setItems] = useState([]);
@@ -810,6 +962,7 @@ function ManagementContent({ resource }) {
   const [selectedGallery, setSelectedGallery] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [formState, setFormState] = useState({ open: false, mode: "create", product: null, error: "", saving: false });
+  const [categoryFormState, setCategoryFormState] = useState({ open: false, mode: "create", category: null, error: "", saving: false });
   const [notice, setNotice] = useState("");
   const [state, setState] = useState({ loading: true, error: "" });
 
@@ -876,11 +1029,18 @@ function ManagementContent({ resource }) {
   const statuses = useMemo(() => [...new Set(items.map((item) => item.status).filter(Boolean))], [items]);
   const visibleItems = useMemo(() => sortItems(filterItems(items, resource, query, filters), resource, sortBy), [filters, items, query, resource, sortBy]);
   const canManageProducts = resource === "products" && meta.mode === "supabase";
+  const canManageCategories = resource === "categories" && meta.mode === "supabase";
 
   const openProductForm = (mode, product = null) => {
     setNotice("");
     setSelectedItem(null);
     setFormState({ open: true, mode, product, error: "", saving: false });
+  };
+
+  const openCategoryForm = (mode, category = null) => {
+    setNotice("");
+    setSelectedItem(null);
+    setCategoryFormState({ open: true, mode, category, error: "", saving: false });
   };
 
   const viewItem = async (item) => {
@@ -960,6 +1120,65 @@ function ManagementContent({ resource }) {
     }
   };
 
+  const submitCategory = async (payload) => {
+    if (!canManageCategories) {
+      setCategoryFormState((current) => ({ ...current, error: "Connect Supabase to manage categories." }));
+      return;
+    }
+
+    setCategoryFormState((current) => ({ ...current, saving: true, error: "" }));
+
+    try {
+      const token = await getAdminToken();
+      const editing = categoryFormState.mode === "edit";
+      const endpoint = editing ? `/api/admin/categories/${categoryFormState.category.id}` : "/api/admin/categories";
+      const response = await fetch(endpoint, {
+        method: editing ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to save category.");
+
+      setNotice(editing ? "Category updated successfully." : "Category created successfully.");
+      setCategoryFormState({ open: false, mode: "create", category: null, error: "", saving: false });
+      loadItems();
+    } catch (error) {
+      setCategoryFormState((current) => ({ ...current, saving: false, error: error.message || "Unable to save category." }));
+    }
+  };
+
+  const deactivateCategory = async (category) => {
+    if (!canManageCategories) {
+      setNotice("Connect Supabase to manage categories.");
+      return;
+    }
+
+    const confirmed = window.confirm(`Deactivate ${category.name}? The category will be hidden publicly.`);
+    if (!confirmed) return;
+
+    try {
+      const token = await getAdminToken();
+      const response = await fetch(`/api/admin/categories/${category.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to deactivate category.");
+
+      setSelectedItem(null);
+      setNotice(result.message || "Category deactivated.");
+      loadItems();
+    } catch (error) {
+      setNotice(error.message || "Unable to deactivate category.");
+    }
+  };
+
   return (
     <div className="mx-auto max-w-7xl">
       <section className="rounded-3xl border border-[rgba(122,24,61,0.14)] bg-white/74 p-5 shadow-boutique sm:p-7">
@@ -969,6 +1188,7 @@ function ManagementContent({ resource }) {
             <h1 className="mt-3 font-display text-3xl font-semibold text-[#7A183D] sm:text-5xl">{config.title}</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[#3A2417]/68">{config.description}</p>
             {resource === "products" && !canManageProducts ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage products. Fallback catalog stays read-only.</p> : null}
+            {resource === "categories" && !canManageCategories ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage categories. Fallback categories stay read-only.</p> : null}
           </div>
           <div className="flex flex-wrap gap-2">
             <AdminBadge tone={meta.mode === "supabase" ? "green" : meta.mode === "fallback" ? "gold" : "muted"}>{meta.mode || "loading"}</AdminBadge>
@@ -977,6 +1197,12 @@ function ManagementContent({ resource }) {
               <button type="button" onClick={() => openProductForm("create")} disabled={!canManageProducts} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#7A183D] px-4 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:cursor-not-allowed disabled:opacity-55">
                 <Plus className="h-4 w-4" />
                 Add Product
+              </button>
+            ) : null}
+            {resource === "categories" ? (
+              <button type="button" onClick={() => openCategoryForm("create")} disabled={!canManageCategories} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#7A183D] px-4 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:cursor-not-allowed disabled:opacity-55">
+                <Plus className="h-4 w-4" />
+                Add Category
               </button>
             ) : null}
           </div>
@@ -1043,7 +1269,17 @@ function ManagementContent({ resource }) {
             <p className="mt-3 text-sm font-semibold text-[#3A2417]/64">{state.error}</p>
           </div>
         ) : visibleItems.length ? (
-          <Table resource={resource} items={visibleItems} onView={viewItem} onEditProduct={(product) => openProductForm("edit", product)} onDeactivateProduct={deactivateProduct} canManageProducts={canManageProducts} />
+          <Table
+            resource={resource}
+            items={visibleItems}
+            onView={viewItem}
+            onEditProduct={(product) => openProductForm("edit", product)}
+            onDeactivateProduct={deactivateProduct}
+            canManageProducts={canManageProducts}
+            onEditCategory={(category) => openCategoryForm("edit", category)}
+            onDeactivateCategory={deactivateCategory}
+            canManageCategories={canManageCategories}
+          />
         ) : (
           <div className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-8 text-center shadow-soft">
             <p className="font-display text-2xl font-semibold text-[#7A183D]">{config.emptyTitle}</p>
@@ -1065,6 +1301,17 @@ function ManagementContent({ resource }) {
           error={formState.error}
           onClose={() => setFormState({ open: false, mode: "create", product: null, error: "", saving: false })}
           onSubmit={submitProduct}
+        />
+      ) : null}
+      {categoryFormState.open ? (
+        <CategoryFormDrawer
+          mode={categoryFormState.mode}
+          category={categoryFormState.category}
+          saving={categoryFormState.saving}
+          error={categoryFormState.error}
+          canManageCategories={canManageCategories}
+          onClose={() => setCategoryFormState({ open: false, mode: "create", category: null, error: "", saving: false })}
+          onSubmit={submitCategory}
         />
       ) : null}
     </div>

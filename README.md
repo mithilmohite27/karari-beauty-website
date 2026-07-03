@@ -448,3 +448,43 @@ Missing Supabase behavior:
 Next admin phase:
 
 - Category/campaign management or order workflow.
+
+## Admin Category CRUD Phase 6A
+
+The admin categories section now supports category management:
+
+- Add category from `/admin/categories`.
+- Edit category details.
+- Deactivate categories instead of hard deleting them.
+- Use an image URL or existing local asset path for category images.
+
+Category admin API routes:
+
+- `POST /api/admin/categories`
+- `GET /api/admin/categories/[id]`
+- `PATCH /api/admin/categories/[id]`
+- `DELETE /api/admin/categories/[id]`
+
+Security and behavior:
+
+- Mutation routes verify a signed-in active admin server-side.
+- Only `owner` and `admin` roles can mutate categories.
+- `SUPABASE_SERVICE_ROLE_KEY` remains server-only.
+- Missing Supabase setup returns `Supabase setup required` for category mutations.
+- Delete is a safe soft deactivate: categories are marked inactive and hidden from public active category lists.
+- Existing products are not deleted or reassigned when a category is deactivated.
+
+Category fields:
+
+- Name
+- Slug
+- Description
+- Product count label
+- Image URL
+- Featured
+- Active
+- Sort order
+
+Next admin phase:
+
+- Seasonal campaign manager.
