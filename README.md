@@ -417,6 +417,35 @@ Next admin phase:
 
 - Supabase Storage image upload and product image management.
 
+## Product Delete and Bulk Management
+
+The admin products screen supports safe product cleanup from `/admin/products`.
+
+Available actions:
+
+- Select one or more visible products.
+- Hide selected products from the website.
+- Delete selected products permanently.
+- Edit, hide or permanently delete a single product from its row actions.
+
+Safety behavior:
+
+- Hide from website sets products inactive and keeps them saved in admin.
+- Permanent delete removes dummy or test products from the database.
+- Permanent delete is owner-only.
+- Admin users can create, edit and hide products, but cannot permanently delete them.
+- Products linked to `order_items` cannot be permanently deleted. Hide them from the website instead.
+- Product image database rows are removed by cascade when supported by the schema.
+- Storage files are not directly deleted in this phase.
+
+Product admin API routes:
+
+- `DELETE /api/admin/products/[id]` hides a product by default.
+- `DELETE /api/admin/products/[id]?mode=hard` permanently deletes one product when allowed.
+- `POST /api/admin/products/bulk` handles bulk hide and owner-only bulk permanent delete.
+
+No manual SQL is needed to remove dummy/test products after this phase.
+
 ## Admin Product Images Phase 5B
 
 Product image upload and gallery management now work through secure admin APIs.

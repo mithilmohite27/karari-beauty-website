@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { adminErrorResponse, verifyAdminMutationRequest, verifyAdminRequest } from "@/lib/admin/api";
-import { deactivateAdminProduct, getAdminProductById, ProductAdminError, updateAdminProduct } from "@/lib/data/products";
+import { deactivateAdminProduct, getAdminProductById, hardDeleteAdminProduct, ProductAdminError, updateAdminProduct } from "@/lib/data/products";
 
 function productErrorResponse(error, fallbackMessage) {
   if (error instanceof ProductAdminError) {
     return NextResponse.json(
       {
         ok: false,
-        error: error.message
+        error: error.message,
+        details: error.details || {}
       },
       { status: error.status }
     );
@@ -56,14 +57,24 @@ export async function PATCH(request, context) {
 }
 
 export async function DELETE(request, context) {
-  const { response } = await verifyAdminMutationRequest(request);
+  const { currentAdmin, response } = await verifyAdminMutationRequest(request);
   if (response) return response;
 
   try {
     const { id } = await context.params;
-    const result = await deactivateAdminProduct(id);
+    const { searchParams } = new URL(request.url);
+    let mode = searchParams.get("mode") || "soft";
+
+    try {
+      const body = await request.json();
+      mode = body?.mode || mode;
+    } catch {
+      // DELETE requests often have no body.
+    }
+
+    const result = mode === "hard" ? await hardDeleteAdminProduct(id, currentAdmin.admin) : await deactivateAdminProduct(id);
     return NextResponse.json(result);
   } catch (error) {
-    return productErrorResponse(error, "Unable to deactivate product.");
+    return productErrorResponse(error, "Unable to manage product.");
   }
 }

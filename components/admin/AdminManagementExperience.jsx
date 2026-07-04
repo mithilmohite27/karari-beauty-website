@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowUpDown, Eye, Loader2, Pencil, Plus, Power, Search, X } from "lucide-react";
+import { ArrowUpDown, Eye, Loader2, Pencil, Plus, Power, Search, Trash2, X } from "lucide-react";
 import AdminAuthGate from "@/components/admin/AdminAuthGate";
 import AdminBadge from "@/components/admin/AdminBadge";
 import AdminLayoutShell from "@/components/admin/AdminLayoutShell";
@@ -371,7 +371,7 @@ async function getAdminToken() {
   return data.session?.access_token || "";
 }
 
-function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeactivate, canManageProducts }) {
+function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeactivate, onDelete, canManageProducts, canHardDeleteProducts }) {
   if (!item) return null;
 
   const entries = Object.entries(item).filter(([, value]) => value !== undefined && value !== null && value !== "");
@@ -418,7 +418,11 @@ function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeacti
             </button>
             <button type="button" onClick={() => onDeactivate(item)} disabled={!canManageProducts || item.isActive === false} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[rgba(122,24,61,0.16)] bg-white px-4 text-sm font-bold text-[#7A183D] transition hover:border-[#C9962D] disabled:cursor-not-allowed disabled:opacity-55">
               <Power className="h-4 w-4" />
-              Deactivate
+              Hide from website
+            </button>
+            <button type="button" onClick={() => onDelete(item)} disabled={!canHardDeleteProducts} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-rose-500/25 bg-rose-50 px-4 text-sm font-bold text-rose-700 transition hover:border-rose-500/45 disabled:cursor-not-allowed disabled:opacity-55">
+              <Trash2 className="h-4 w-4" />
+              Delete permanently
             </button>
           </div>
         ) : (
@@ -429,9 +433,19 @@ function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeacti
   );
 }
 
-function ProductRows({ items, onView, onEdit, onDeactivate, canManageProducts }) {
+function ProductRows({ items, selectedProductIds, onToggleProductSelection, onView, onEdit, onDeactivate, onDelete, canManageProducts, canHardDeleteProducts }) {
   return items.map((item) => (
     <tr key={item.id || item.slug} className="border-b border-[rgba(122,24,61,0.08)]">
+      <td className="px-3 py-3">
+        <input
+          type="checkbox"
+          checked={selectedProductIds.includes(item.id)}
+          onChange={() => onToggleProductSelection(item.id)}
+          disabled={!canManageProducts}
+          className="h-4 w-4 rounded border-[rgba(122,24,61,0.24)] text-[#7A183D]"
+          aria-label={`Select ${item.name}`}
+        />
+      </td>
       <td className="px-3 py-3">
         <span className="relative block h-12 w-12 overflow-hidden rounded-lg bg-[#FFF8EE]">
           {item.image ? <img src={item.image} alt={item.name} className="h-full w-full object-cover" /> : null}
@@ -450,7 +464,8 @@ function ProductRows({ items, onView, onEdit, onDeactivate, canManageProducts })
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => onView(item)} className="inline-flex items-center gap-1 rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D]"><Eye className="h-3.5 w-3.5" />View</button>
           <button type="button" onClick={() => onEdit(item)} disabled={!canManageProducts} className="inline-flex items-center gap-1 rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50"><Pencil className="h-3.5 w-3.5" />Edit</button>
-          <button type="button" onClick={() => onDeactivate(item)} disabled={!canManageProducts || item.isActive === false} className="inline-flex items-center gap-1 rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50"><Power className="h-3.5 w-3.5" />Off</button>
+          <button type="button" onClick={() => onDeactivate(item)} disabled={!canManageProducts || item.isActive === false} className="inline-flex items-center gap-1 rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50"><Power className="h-3.5 w-3.5" />Hide</button>
+          <button type="button" onClick={() => onDelete(item)} disabled={!canHardDeleteProducts} className="inline-flex items-center gap-1 rounded-md border border-rose-500/25 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"><Trash2 className="h-3.5 w-3.5" />Delete</button>
         </div>
       </td>
     </tr>
@@ -562,9 +577,9 @@ function CampaignRows({ items, onView, onEdit, onActivate, onDeactivate, canMana
   ));
 }
 
-function Table({ resource, items, onView, onEditProduct, onDeactivateProduct, canManageProducts, onEditCategory, onDeactivateCategory, canManageCategories, onEditCampaign, onActivateCampaign, onDeactivateCampaign, canManageCampaigns }) {
+function Table({ resource, items, selectedProductIds = [], allVisibleProductsSelected = false, onToggleAllVisibleProducts, onToggleProductSelection, onView, onEditProduct, onDeactivateProduct, onDeleteProduct, canManageProducts, canHardDeleteProducts, onEditCategory, onDeactivateCategory, canManageCategories, onEditCampaign, onActivateCampaign, onDeactivateCampaign, canManageCampaigns }) {
   const headers = {
-    products: ["Image", "Product", "Category", "Price", "Original", "Discount", "Featured", "Active", "Stock", "Created", "Action"],
+    products: ["Select", "Image", "Product", "Category", "Price", "Original", "Discount", "Featured", "Active", "Stock", "Created", "Action"],
     categories: ["Image", "Name", "Slug", "Description", "Count Label", "Featured", "Active", "Sort", "Products", "Action"],
     orders: ["Order", "Customer", "Contact", "Type", "Total", "Status", "Created", "Items", "Action"],
     customers: ["Customer", "Phone", "Email", "Location", "Orders", "Total Spent", "Last Order", "Action"],
@@ -572,7 +587,7 @@ function Table({ resource, items, onView, onEditProduct, onDeactivateProduct, ca
   };
 
   const rows = {
-    products: <ProductRows items={items} onView={onView} onEdit={onEditProduct} onDeactivate={onDeactivateProduct} canManageProducts={canManageProducts} />,
+    products: <ProductRows items={items} selectedProductIds={selectedProductIds} onToggleProductSelection={onToggleProductSelection} onView={onView} onEdit={onEditProduct} onDeactivate={onDeactivateProduct} onDelete={onDeleteProduct} canManageProducts={canManageProducts} canHardDeleteProducts={canHardDeleteProducts} />,
     categories: <CategoryRows items={items} onView={onView} onEdit={onEditCategory} onDeactivate={onDeactivateCategory} canManageCategories={canManageCategories} />,
     orders: <ManagedOrderRows items={items} onView={onView} />,
     customers: <CustomerRows items={items} onView={onView} />,
@@ -585,7 +600,18 @@ function Table({ resource, items, onView, onEditProduct, onDeactivateProduct, ca
         <thead className="bg-[#FFF8EE] text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">
           <tr>
             {headers[resource].map((header) => (
-              <th key={header} className="whitespace-nowrap px-3 py-3">{header}</th>
+              <th key={header} className="whitespace-nowrap px-3 py-3">
+                {resource === "products" && header === "Select" ? (
+                  <input
+                    type="checkbox"
+                    checked={allVisibleProductsSelected}
+                    onChange={onToggleAllVisibleProducts}
+                    disabled={!canManageProducts || !items.length}
+                    className="h-4 w-4 rounded border-[rgba(122,24,61,0.24)] text-[#7A183D]"
+                    aria-label="Select all visible products"
+                  />
+                ) : header}
+              </th>
             ))}
           </tr>
         </thead>
@@ -1556,7 +1582,7 @@ function CampaignFormDrawer({ mode, campaign, categories, saving, error, canMana
   );
 }
 
-function ManagementContent({ resource }) {
+function ManagementContent({ resource, admin }) {
   const config = resourceConfig[resource];
   const [items, setItems] = useState([]);
   const [meta, setMeta] = useState({ total: 0, mode: "" });
@@ -1565,6 +1591,7 @@ function ManagementContent({ resource }) {
   const [sortBy, setSortBy] = useState(config.defaultSort);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedGallery, setSelectedGallery] = useState([]);
+  const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [formState, setFormState] = useState({ open: false, mode: "create", product: null, error: "", saving: false });
   const [categoryFormState, setCategoryFormState] = useState({ open: false, mode: "create", category: null, error: "", saving: false });
@@ -1634,11 +1661,26 @@ function ManagementContent({ resource }) {
 
   const categories = useMemo(() => [...new Set(items.map((item) => item.categorySlug).filter(Boolean))], [items]);
   const visibleItems = useMemo(() => sortItems(filterItems(items, resource, query, filters), resource, sortBy), [filters, items, query, resource, sortBy]);
+  const visibleProductIds = useMemo(() => resource === "products" ? visibleItems.map((item) => item.id).filter(Boolean) : [], [resource, visibleItems]);
   const canManageProducts = resource === "products" && meta.mode === "supabase";
+  const canHardDeleteProducts = canManageProducts && admin?.role === "owner";
   const canManageCategories = resource === "categories" && meta.mode === "supabase";
   const canManageCampaigns = resource === "campaigns" && meta.mode === "supabase";
   const canManageOrders = resource === "orders" && meta.mode === "supabase";
   const canViewCustomers = resource === "customers" && meta.mode === "supabase";
+  const allVisibleProductsSelected = Boolean(visibleProductIds.length && visibleProductIds.every((id) => selectedProductIds.includes(id)));
+
+  useEffect(() => {
+    if (resource !== "products") {
+      setSelectedProductIds([]);
+      return;
+    }
+
+    setSelectedProductIds((current) => {
+      const next = current.filter((id) => visibleProductIds.includes(id));
+      return next.length === current.length ? current : next;
+    });
+  }, [resource, visibleProductIds]);
 
   const openProductForm = (mode, product = null) => {
     setNotice("");
@@ -1780,7 +1822,7 @@ function ManagementContent({ resource }) {
       return;
     }
 
-    const confirmed = window.confirm(`Deactivate ${product.name}? This will hide it from the public storefront.`);
+    const confirmed = window.confirm(`Hide ${product.name} from website?\n\nThis product will no longer appear on the website, but it will remain saved in admin.`);
     if (!confirmed) return;
 
     try {
@@ -1795,10 +1837,102 @@ function ManagementContent({ resource }) {
       if (!response.ok || !result.ok) throw new Error(result.error || "Unable to deactivate product.");
 
       setSelectedItem(null);
+      setSelectedProductIds((current) => current.filter((id) => id !== product.id));
       setNotice("Product deactivated.");
       loadItems();
     } catch (error) {
       setNotice(error.message || "Unable to deactivate product.");
+    }
+  };
+
+  const deleteProduct = async (product) => {
+    if (!canHardDeleteProducts) {
+      setNotice("Only owner can permanently delete products.");
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete ${product.name} permanently?\n\nThis action cannot be undone. Use this only for dummy or test products.`);
+    if (!confirmed) return;
+
+    try {
+      const token = await getAdminToken();
+      const response = await fetch(`/api/admin/products/${product.id}?mode=hard`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to permanently delete product.");
+
+      setSelectedItem(null);
+      setSelectedProductIds((current) => current.filter((id) => id !== product.id));
+      setNotice(result.message || "Product permanently deleted.");
+      loadItems();
+    } catch (error) {
+      setNotice(error.message || "Unable to permanently delete product.");
+    }
+  };
+
+  const toggleProductSelection = (productId) => {
+    if (!productId || !canManageProducts) return;
+    setSelectedProductIds((current) => current.includes(productId) ? current.filter((id) => id !== productId) : [...current, productId]);
+  };
+
+  const toggleAllVisibleProducts = () => {
+    if (!canManageProducts || !visibleProductIds.length) return;
+    setSelectedProductIds((current) => {
+      const allSelected = visibleProductIds.every((id) => current.includes(id));
+      if (allSelected) return current.filter((id) => !visibleProductIds.includes(id));
+      return [...new Set([...current, ...visibleProductIds])];
+    });
+  };
+
+  const clearProductSelection = () => {
+    setSelectedProductIds([]);
+  };
+
+  const runBulkProductAction = async (action) => {
+    if (!canManageProducts) {
+      setNotice("Connect Supabase to manage products.");
+      return;
+    }
+
+    if (!selectedProductIds.length) return;
+
+    if (action === "delete" && !canHardDeleteProducts) {
+      setNotice("Only owner can permanently delete products.");
+      return;
+    }
+
+    const confirmed = action === "delete"
+      ? window.confirm(`Delete products permanently?\n\nThis action cannot be undone. Use this only for dummy or test products.\n\nSelected products: ${selectedProductIds.length}`)
+      : window.confirm(`Hide selected products from website?\n\nThese products will no longer appear on the website, but they will remain saved in admin.\n\nSelected products: ${selectedProductIds.length}`);
+
+    if (!confirmed) return;
+
+    try {
+      const token = await getAdminToken();
+      const response = await fetch("/api/admin/products/bulk", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action,
+          productIds: selectedProductIds
+        })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to manage selected products.");
+
+      setNotice(result.message || "Selected products updated.");
+      setSelectedProductIds([]);
+      setSelectedItem(null);
+      loadItems();
+    } catch (error) {
+      setNotice(error.message || "Unable to manage selected products.");
     }
   };
 
@@ -2055,10 +2189,16 @@ function ManagementContent({ resource }) {
           <Table
             resource={resource}
             items={visibleItems}
+            selectedProductIds={selectedProductIds}
+            allVisibleProductsSelected={allVisibleProductsSelected}
+            onToggleAllVisibleProducts={toggleAllVisibleProducts}
+            onToggleProductSelection={toggleProductSelection}
             onView={viewItem}
             onEditProduct={(product) => openProductForm("edit", product)}
             onDeactivateProduct={deactivateProduct}
+            onDeleteProduct={deleteProduct}
             canManageProducts={canManageProducts}
+            canHardDeleteProducts={canHardDeleteProducts}
             onEditCategory={(category) => openCategoryForm("edit", category)}
             onDeactivateCategory={deactivateCategory}
             canManageCategories={canManageCategories}
@@ -2076,6 +2216,28 @@ function ManagementContent({ resource }) {
         )}
       </section>
 
+      {resource === "products" && selectedProductIds.length ? (
+        <div className="sticky bottom-4 z-30 mt-5 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/95 p-3 shadow-boutique backdrop-blur">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-bold text-[#3A2417]">{selectedProductIds.length} selected</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => runBulkProductAction("deactivate")} disabled={!canManageProducts} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-4 text-sm font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-55">
+                <Power className="h-4 w-4" />
+                Hide from website
+              </button>
+              <button type="button" onClick={() => runBulkProductAction("delete")} disabled={!canHardDeleteProducts} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-rose-500/25 bg-rose-50 px-4 text-sm font-bold text-rose-700 disabled:cursor-not-allowed disabled:opacity-55">
+                <Trash2 className="h-4 w-4" />
+                Delete permanently
+              </button>
+              <button type="button" onClick={clearProductSelection} className="inline-flex min-h-10 items-center rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-4 text-sm font-bold text-[#3A2417]/70">
+                Clear
+              </button>
+            </div>
+          </div>
+          {!canHardDeleteProducts ? <p className="mt-2 text-xs font-bold text-[#3A2417]/56">Permanent delete is owner-only.</p> : null}
+        </div>
+      ) : null}
+
       {resource === "orders" ? (
         <OrderDetailDrawer
           order={selectedItem}
@@ -2091,7 +2253,7 @@ function ManagementContent({ resource }) {
           onClose={() => setSelectedItem(null)}
         />
       ) : (
-        <DetailsDrawer item={selectedItem} resource={resource} gallery={selectedGallery} onClose={() => setSelectedItem(null)} onEdit={(product) => openProductForm("edit", product)} onDeactivate={deactivateProduct} canManageProducts={canManageProducts} />
+        <DetailsDrawer item={selectedItem} resource={resource} gallery={selectedGallery} onClose={() => setSelectedItem(null)} onEdit={(product) => openProductForm("edit", product)} onDeactivate={deactivateProduct} onDelete={deleteProduct} canManageProducts={canManageProducts} canHardDeleteProducts={canHardDeleteProducts} />
       )}
       {formState.open ? (
         <ProductFormDrawer
@@ -2138,7 +2300,7 @@ export default function AdminManagementExperience({ resource }) {
     <AdminAuthGate>
       {(admin) => (
         <AdminLayoutShell admin={admin}>
-          <ManagementContent resource={resource} />
+          <ManagementContent resource={resource} admin={admin} />
         </AdminLayoutShell>
       )}
     </AdminAuthGate>
