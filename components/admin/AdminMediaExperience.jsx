@@ -7,6 +7,47 @@ import AdminBadge from "@/components/admin/AdminBadge";
 import AdminLayoutShell from "@/components/admin/AdminLayoutShell";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
+const MEDIA_VIEW_STORAGE_KEY = "karari_media_view_size";
+const mediaViewOptions = ["small", "medium", "large"];
+const mediaViewLabels = {
+  small: "Small",
+  medium: "Medium",
+  large: "Large"
+};
+
+const mediaViewStyles = {
+  small: {
+    grid: "grid gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6",
+    image: "aspect-[4/3]",
+    body: "space-y-2 p-3",
+    title: "text-xs",
+    meta: "text-[0.68rem]",
+    badge: "hidden",
+    button: "min-h-9 rounded-md",
+    icon: "h-3.5 w-3.5"
+  },
+  medium: {
+    grid: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+    image: "aspect-[4/3]",
+    body: "space-y-3 p-4",
+    title: "text-sm",
+    meta: "text-xs",
+    badge: "",
+    button: "min-h-10 rounded-lg",
+    icon: "h-4 w-4"
+  },
+  large: {
+    grid: "grid gap-5 md:grid-cols-2 xl:grid-cols-3",
+    image: "aspect-[16/11]",
+    body: "space-y-3 p-4 sm:p-5",
+    title: "text-sm sm:text-base",
+    meta: "text-xs",
+    badge: "",
+    button: "min-h-11 rounded-lg",
+    icon: "h-4 w-4"
+  }
+};
+
 async function getAdminToken() {
   const supabase = createBrowserSupabaseClient();
   if (!supabase) return "";
@@ -28,27 +69,29 @@ function formatDate(value) {
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function MediaCard({ item, onCopy, onDelete }) {
+function MediaCard({ item, onCopy, onDelete, viewSize = "medium" }) {
+  const styles = mediaViewStyles[viewSize] || mediaViewStyles.medium;
+
   return (
     <article className="overflow-hidden rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/82 shadow-soft">
-      <div className="aspect-[4/3] bg-[#FFF8EE]">
+      <div className={`${styles.image} bg-[#FFF8EE]`}>
         <img src={item.publicUrl} alt={item.name} className="h-full w-full object-cover" loading="lazy" />
       </div>
-      <div className="space-y-3 p-4">
-        <div>
-          <p className="truncate text-sm font-bold text-[#3A2417]" title={item.name}>{item.name}</p>
-          <p className="mt-1 text-xs font-semibold text-[#3A2417]/54">{formatFileSize(item.size)} - {formatDate(item.createdAt)}</p>
+      <div className={styles.body}>
+        <div className="min-w-0">
+          <p className={`truncate font-bold text-[#3A2417] ${styles.title}`} title={item.name}>{item.name}</p>
+          <p className={`mt-1 truncate font-semibold text-[#3A2417]/54 ${styles.meta}`}>{formatFileSize(item.size)} - {formatDate(item.createdAt)}</p>
         </div>
-        <AdminBadge tone="gold">Uploaded media</AdminBadge>
+        <span className={styles.badge}><AdminBadge tone="gold">Uploaded media</AdminBadge></span>
         <div className="grid grid-cols-3 gap-2">
-          <button type="button" onClick={() => onCopy(item.publicUrl)} className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] text-[#7A183D] transition hover:border-[#C9962D]" aria-label="Copy image link">
-            <Copy className="h-4 w-4" />
+          <button type="button" onClick={() => onCopy(item.publicUrl)} className={`inline-flex items-center justify-center border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] text-[#7A183D] transition hover:border-[#C9962D] ${styles.button}`} aria-label="Copy image link">
+            <Copy className={styles.icon} />
           </button>
-          <a href={item.publicUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] text-[#7A183D] transition hover:border-[#C9962D]" aria-label="Open image">
-            <ExternalLink className="h-4 w-4" />
+          <a href={item.publicUrl} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center justify-center border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] text-[#7A183D] transition hover:border-[#C9962D] ${styles.button}`} aria-label="Open image">
+            <ExternalLink className={styles.icon} />
           </a>
-          <button type="button" onClick={() => onDelete(item)} className="inline-flex min-h-10 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-50 text-rose-700 transition hover:border-rose-500/40" aria-label="Delete image">
-            <Trash2 className="h-4 w-4" />
+          <button type="button" onClick={() => onDelete(item)} className={`inline-flex items-center justify-center border border-rose-500/20 bg-rose-50 text-rose-700 transition hover:border-rose-500/40 ${styles.button}`} aria-label="Delete image">
+            <Trash2 className={styles.icon} />
           </button>
         </div>
       </div>
@@ -61,7 +104,18 @@ function MediaContent() {
   const [items, setItems] = useState([]);
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [viewSize, setViewSize] = useState("medium");
   const [state, setState] = useState({ loading: true, uploading: false, error: "", notice: "", mode: "" });
+
+  useEffect(() => {
+    const storedViewSize = window.localStorage.getItem(MEDIA_VIEW_STORAGE_KEY);
+    if (mediaViewOptions.includes(storedViewSize)) setViewSize(storedViewSize);
+  }, []);
+
+  const updateViewSize = (nextViewSize) => {
+    setViewSize(nextViewSize);
+    window.localStorage.setItem(MEDIA_VIEW_STORAGE_KEY, nextViewSize);
+  };
 
   const loadMedia = useCallback(async () => {
     setState((current) => ({ ...current, loading: true, error: "" }));
@@ -193,13 +247,32 @@ function MediaContent() {
               <Search className="h-4 w-4 text-[#C9962D]" />
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search image name" className="h-full min-w-0 bg-transparent text-sm font-semibold outline-none placeholder:text-[#3A2417]/38" />
             </label>
-            <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3">
-              <ArrowUpDown className="h-4 w-4 text-[#C9962D]" />
-              <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="bg-transparent text-sm font-bold text-[#3A2417] outline-none">
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-              </select>
-            </label>
+            <div className="flex flex-wrap gap-2">
+              <label className="inline-flex min-h-11 flex-1 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 sm:flex-none">
+                <ArrowUpDown className="h-4 w-4 text-[#C9962D]" />
+                <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="min-w-0 bg-transparent text-sm font-bold text-[#3A2417] outline-none">
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                </select>
+              </label>
+              <div className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] p-1">
+                <span className="px-2 text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">View</span>
+                {mediaViewOptions.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => updateViewSize(option)}
+                    className={`min-h-9 rounded-md px-3 text-xs font-bold transition ${
+                      viewSize === option
+                        ? "bg-[#7A183D] text-[#FFF8EE] shadow-soft"
+                        : "text-[#3A2417]/66 hover:bg-white hover:text-[#7A183D]"
+                    }`}
+                  >
+                    {mediaViewLabels[option]}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -211,8 +284,8 @@ function MediaContent() {
         {state.loading ? (
           <div className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-8 text-center text-sm font-bold text-[#7A183D] shadow-soft">Loading media library...</div>
         ) : visibleItems.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {visibleItems.map((item) => <MediaCard key={item.storagePath} item={item} onCopy={copyUrl} onDelete={deleteMedia} />)}
+          <div className={mediaViewStyles[viewSize]?.grid || mediaViewStyles.medium.grid}>
+            {visibleItems.map((item) => <MediaCard key={item.storagePath} item={item} viewSize={viewSize} onCopy={copyUrl} onDelete={deleteMedia} />)}
           </div>
         ) : (
           <div className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-8 text-center shadow-soft">
