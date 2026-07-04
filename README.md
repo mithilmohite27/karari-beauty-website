@@ -734,6 +734,64 @@ Testing:
 - Delete the image after confirmation.
 - Confirm existing product image upload still works from `/admin/products`.
 
+## Admin Settings Phase 8B
+
+The admin settings page is available at:
+
+- `/admin/settings`
+
+Settings admin API routes:
+
+- `GET /api/admin/settings`
+- `PATCH /api/admin/settings`
+
+Managed settings:
+
+- Business profile: business name, tagline, short description, logo URL and favicon URL.
+- Contact details: WhatsApp number, phone number, email, address, city, state, country, Google Maps URL and timings.
+- Social links: Instagram, Facebook and optional YouTube.
+- Website defaults: default country, default currency, announcement line and international inquiry message.
+- Ordering settings: checkout/order request toggle, WhatsApp support toggle and UPI/GPay display text placeholder.
+- SEO basics: site title, meta description and Open Graph image URL.
+
+Supabase table:
+
+```sql
+create table if not exists public.site_settings (
+  id uuid primary key default gen_random_uuid(),
+  key text unique not null,
+  value jsonb not null default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+```
+
+Run the updated `supabase/schema.sql` in Supabase SQL editor before live settings testing.
+
+Security and behavior:
+
+- Settings routes require a signed-in active admin.
+- Owners and admins can save settings.
+- Storefront reads safe business settings through the server service layer.
+- `SUPABASE_SERVICE_ROLE_KEY` remains server-side only.
+- If Supabase is missing, unreachable or the settings row does not exist, the website uses local fallback business settings.
+- No payment gateway, WhatsApp automation, AI or CMS extension is included in this phase.
+
+Storefront connections:
+
+- Homepage header business name, tagline, logo and announcement line.
+- Footer brand, contact details, social links, Google Maps link and timings.
+- Floating WhatsApp support link and business name.
+- Homepage Store JSON-LD business/contact basics.
+
+Testing:
+
+- Open `/admin/settings`.
+- Confirm unauthenticated `/api/admin/settings` returns auth-required.
+- Sign in as admin or owner and save settings.
+- Refresh the homepage and confirm connected header/footer/WhatsApp fields update.
+- Confirm public pages still load if the settings row is missing.
+
 ## Admin + Storefront Integration Audit
 
 Key audit fixes:

@@ -148,6 +148,14 @@ create table if not exists public.admin_profiles (
   updated_at timestamptz default now()
 );
 
+create table if not exists public.site_settings (
+  id uuid primary key default gen_random_uuid(),
+  key text unique not null,
+  value jsonb not null default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
 alter table public.admin_profiles drop constraint if exists admin_profiles_role_check;
 alter table public.admin_profiles add constraint admin_profiles_role_check check (role in ('owner', 'admin'));
 
@@ -172,6 +180,9 @@ create trigger set_seasonal_campaigns_updated_at before update on public.seasona
 drop trigger if exists set_admin_profiles_updated_at on public.admin_profiles;
 create trigger set_admin_profiles_updated_at before update on public.admin_profiles for each row execute function public.set_updated_at();
 
+drop trigger if exists set_site_settings_updated_at on public.site_settings;
+create trigger set_site_settings_updated_at before update on public.site_settings for each row execute function public.set_updated_at();
+
 create index if not exists idx_categories_slug on public.categories(slug);
 create index if not exists idx_categories_active_featured on public.categories(is_active, featured);
 create index if not exists idx_categories_sort_order on public.categories(sort_order);
@@ -192,6 +203,7 @@ create index if not exists idx_order_status_history_created_at on public.order_s
 
 create index if not exists idx_seasonal_campaigns_slug on public.seasonal_campaigns(slug);
 create index if not exists idx_seasonal_campaigns_active_dates on public.seasonal_campaigns(is_active, start_date, end_date);
+create index if not exists idx_site_settings_key on public.site_settings(key);
 
 alter table public.categories enable row level security;
 alter table public.products enable row level security;
@@ -202,6 +214,7 @@ alter table public.order_items enable row level security;
 alter table public.order_status_history enable row level security;
 alter table public.seasonal_campaigns enable row level security;
 alter table public.admin_profiles enable row level security;
+alter table public.site_settings enable row level security;
 
 -- Public storefront reads are allowed only for active catalog/campaign records.
 -- Customer, order, order_items, order_status_history and admin_profiles data intentionally have no public read policy.

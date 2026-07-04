@@ -49,7 +49,7 @@ function BackToTopButton() {
   );
 }
 
-function WhatsAppWidget() {
+function WhatsAppWidget({ siteSettings }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -72,14 +72,14 @@ function WhatsAppWidget() {
             </div>
             <p className="mt-5 text-2xl font-semibold text-charcoal">Hi there!</p>
             <p className="mt-1 text-xl font-medium text-charcoal">How can I help you?</p>
-            <a href={createWhatsAppUrl({ product: null })} className="mt-5 inline-flex w-full items-center justify-between rounded-md bg-charcoal px-4 py-3 font-bold text-white transition hover:bg-wine">
+            <a href={createWhatsAppUrl({ product: null, siteSettings })} className="mt-5 inline-flex w-full items-center justify-between rounded-md bg-charcoal px-4 py-3 font-bold text-white transition hover:bg-wine">
               <span className="inline-flex items-center gap-2">
                 <WhatsAppIcon className="h-5 w-5" />
                 Continue on WhatsApp
               </span>
               <ArrowRight className="h-5 w-5" />
             </a>
-            <p className="mt-3 text-center text-xs font-semibold text-ink/40">Karari Beauty assistance</p>
+            <p className="mt-3 text-center text-xs font-semibold text-ink/40">{siteSettings?.business?.name || "Karari Beauty"} assistance</p>
           </motion.div>
         ) : null}
       </AnimatePresence>
@@ -90,11 +90,11 @@ function WhatsAppWidget() {
   );
 }
 
-export default function FloatingActions() {
+export default function FloatingActions({ siteSettings }) {
   return (
     <div className="fixed bottom-5 right-4 z-40 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       <BackToTopButton />
-      <WhatsAppWidget />
+      <WhatsAppWidget siteSettings={siteSettings} />
     </div>
   );
 }

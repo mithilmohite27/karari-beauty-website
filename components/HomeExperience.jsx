@@ -312,7 +312,7 @@ function CollectionsMegaMenu({ open, onClose, categories = localCategories }) {
   );
 }
 
-export function Header({ campaignActive, onViewProduct, recentlyViewed, categories = localCategories, products = localProducts, seasonalCampaign = localSeasonalCampaign }) {
+export function Header({ campaignActive, onViewProduct, recentlyViewed, categories = localCategories, products = localProducts, seasonalCampaign = localSeasonalCampaign, siteSettings }) {
   const headerRef = useRef(null);
   const [selectedCountry, setSelectedCountry] = useState("India");
   const [selectedCurrency, setSelectedCurrency] = useState("INR");
@@ -393,10 +393,15 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
     window.localStorage.setItem("karari-currency", currency);
   };
 
+  const businessName = getSettingsValue(siteSettings, "business", "name", businessSettings.name);
+  const businessTagline = getSettingsValue(siteSettings, "business", "tagline", businessSettings.tagline);
+  const logoUrl = getSafeLogoUrl(siteSettings);
+  const announcementLine = getSettingsValue(siteSettings, "website", "announcementLine", businessSettings.announcementLine);
+  const internationalTemplate = getSettingsValue(siteSettings, "website", "internationalInquiryMessage", businessSettings.internationalMessage);
   const announcement =
     selectedCountry === "India"
-      ? "Fast festive delivery across India, crafted with care."
-      : `From India to ${selectedCountry}, festive gifts delivered with care.`;
+      ? announcementLine
+      : internationalTemplate.replace("{country}", selectedCountry);
   const selectedCurrencyMeta = currencies.find((currency) => currency.code === selectedCurrency) || currencies[0];
 
   return (
@@ -416,10 +421,10 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
       <div className="mx-auto max-w-[1440px] px-3 py-3 sm:px-6 sm:py-4 lg:px-8">
         <div className="flex flex-wrap items-center gap-3 sm:gap-4 xl:gap-6">
           <Link href="/" className="flex w-auto min-w-0 shrink-0 items-center gap-2 sm:gap-3 lg:w-56 xl:w-64" aria-label="Go to Karari Beauty home">
-            <Image src="/logo.png" alt="Karari Beauty logo" width={48} height={48} priority className="h-11 w-11 rounded-full border border-antiqueGold/25 object-cover sm:h-12 sm:w-12" />
+            <BrandLogo src={logoUrl} alt={`${businessName} logo`} width={48} height={48} priority className="h-11 w-11 rounded-full border border-antiqueGold/25 object-cover sm:h-12 sm:w-12" />
             <div className="block min-w-0 max-w-[8.25rem] sm:max-w-none">
-              <p className="truncate font-display text-base font-semibold leading-none text-[#3A2417] sm:text-xl">Karari Beauty</p>
-              <p className="mt-1 truncate text-[0.62rem] font-medium uppercase tracking-[0.14em] text-karariGold sm:text-xs sm:tracking-[0.18em]">Boutique Gifts</p>
+              <p className="truncate font-display text-base font-semibold leading-none text-[#3A2417] sm:text-xl">{businessName}</p>
+              <p className="mt-1 truncate text-[0.62rem] font-medium uppercase tracking-[0.14em] text-karariGold sm:text-xs sm:tracking-[0.18em]">{businessTagline}</p>
             </div>
           </Link>
 
@@ -1095,13 +1100,29 @@ const footerCareLinks = [
   { label: "Terms & Conditions", href: "#terms" }
 ];
 
-const footerWhatsappUrl = "https://wa.me/917435984499?text=Hi%20Karari%20Beauty%2C%20I%20would%20like%20to%20know%20more%20about%20your%20products.";
+function getSettingsValue(siteSettings, section, field, fallback = "") {
+  return siteSettings?.[section]?.[field] || fallback;
+}
 
-const footerSocialLinks = [
-  { label: "Instagram", href: "https://www.instagram.com/karari1999/", icon: Instagram },
-  { label: "Facebook", href: "https://www.facebook.com/karari1999", icon: Facebook },
-  { label: "WhatsApp", href: footerWhatsappUrl, icon: MessageCircle }
-];
+function getSafeLogoUrl(siteSettings) {
+  const logoUrl = getSettingsValue(siteSettings, "business", "logoUrl", businessSettings.logoUrl);
+  return logoUrl || businessSettings.logoUrl;
+}
+
+function getWhatsAppContactUrl(siteSettings) {
+  const number = getSettingsValue(siteSettings, "contact", "whatsappNumber", businessSettings.whatsappNumber).replace(/[^\d]/g, "");
+  const businessName = getSettingsValue(siteSettings, "business", "name", businessSettings.name);
+  return `https://wa.me/${number}?text=${encodeURIComponent(`Hi ${businessName}, I would like to know more about your products.`)}`;
+}
+
+function BrandLogo({ src, alt, className, width, height, priority = false }) {
+  const isLocalAsset = String(src || "").startsWith("/");
+  if (!isLocalAsset) {
+    return <img src={src} alt={alt} width={width} height={height} className={className} loading={priority ? "eager" : "lazy"} />;
+  }
+
+  return <Image src={src} alt={alt} width={width} height={height} priority={priority} className={className} />;
+}
 
 function FooterTrustStrip() {
   return (
@@ -1158,8 +1179,23 @@ function SupportItem({ icon: Icon, title, children }) {
   );
 }
 
-function Footer({ categories = localCategories }) {
+function Footer({ categories = localCategories, siteSettings }) {
   const footerShopLinks = categories.map((category) => ({ label: category.name, href: category.href }));
+  const businessName = getSettingsValue(siteSettings, "business", "name", businessSettings.name);
+  const businessTagline = getSettingsValue(siteSettings, "business", "tagline", businessSettings.tagline);
+  const shortDescription = getSettingsValue(siteSettings, "business", "shortDescription", businessSettings.shortDescription);
+  const logoUrl = getSafeLogoUrl(siteSettings);
+  const address = getSettingsValue(siteSettings, "contact", "address", businessSettings.address);
+  const email = getSettingsValue(siteSettings, "contact", "email", businessSettings.email);
+  const phoneNumber = getSettingsValue(siteSettings, "contact", "phoneNumber", businessSettings.phoneNumber);
+  const mapsUrl = getSettingsValue(siteSettings, "contact", "mapsUrl", businessSettings.mapsUrl);
+  const timings = getSettingsValue(siteSettings, "contact", "timings", businessSettings.timings);
+  const footerWhatsappUrl = getWhatsAppContactUrl(siteSettings);
+  const footerSocialLinks = [
+    { label: "Instagram", href: getSettingsValue(siteSettings, "social", "instagramUrl", businessSettings.instagramUrl), icon: Instagram },
+    { label: "Facebook", href: getSettingsValue(siteSettings, "social", "facebookUrl", businessSettings.facebookUrl), icon: Facebook },
+    { label: "WhatsApp", href: footerWhatsappUrl, icon: MessageCircle }
+  ].filter((link) => link.href);
 
   return (
     <footer id="footer" className="bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_100%)] px-3 pb-20 pt-6 sm:px-6 sm:pb-7 lg:px-8 lg:pb-6">
@@ -1167,28 +1203,28 @@ function Footer({ categories = localCategories }) {
         <div className="grid items-start gap-7 md:grid-cols-2 lg:grid-cols-[1.2fr_0.95fr_0.72fr_1.45fr] lg:gap-7">
           <div id="contact">
             <div className="flex items-center gap-3">
-              <Image src="/logo.png" alt="Karari Beauty logo" width={44} height={44} className="h-11 w-11 rounded-full border border-[rgba(201,150,45,0.35)] object-cover shadow-soft" />
+              <BrandLogo src={logoUrl} alt={`${businessName} logo`} width={44} height={44} className="h-11 w-11 rounded-full border border-[rgba(201,150,45,0.35)] object-cover shadow-soft" />
               <div>
-                <p className="font-display text-xl font-semibold text-[#3A2417]">Karari Beauty</p>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Boutique gifting</p>
+                <p className="font-display text-xl font-semibold text-[#3A2417]">{businessName}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">{businessTagline}</p>
               </div>
             </div>
             <p className="mt-3 max-w-xs text-sm font-medium leading-5 text-[#3A2417]/70">
-              Boutique gifts, jewellery, cosmetics and festive collections from Vansda.
+              {shortDescription}
             </p>
 
             <div className="mt-3 space-y-1.5 text-sm leading-5 text-[#3A2417]/72">
               <p className="flex gap-3">
                 <MapPin className="mt-1 h-4 w-4 shrink-0 text-[#C9962D]" />
-                <span>{businessSettings.address}</span>
+                <span>{address}</span>
               </p>
               <p className="flex gap-3">
                 <Mail className="mt-1 h-4 w-4 shrink-0 text-[#C9962D]" />
-                <a href={`mailto:${businessSettings.email}`} className="cursor-pointer underline-offset-4 transition hover:text-[#7A183D] hover:underline">{businessSettings.email}</a>
+                <a href={`mailto:${email}`} className="cursor-pointer underline-offset-4 transition hover:text-[#7A183D] hover:underline">{email}</a>
               </p>
               <p className="flex gap-3">
                 <MessageCircle className="mt-1 h-4 w-4 shrink-0 text-[#C9962D]" />
-                <a href={footerWhatsappUrl} target="_blank" rel="noopener noreferrer" className="cursor-pointer underline-offset-4 transition hover:text-[#7A183D] hover:underline">WhatsApp: +91 74359 84499</a>
+                <a href={footerWhatsappUrl} target="_blank" rel="noopener noreferrer" className="cursor-pointer underline-offset-4 transition hover:text-[#7A183D] hover:underline">WhatsApp: {phoneNumber}</a>
               </p>
             </div>
 
@@ -1211,7 +1247,7 @@ function Footer({ categories = localCategories }) {
             </div>
 
             <a
-              href={businessSettings.mapsUrl}
+              href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-md border border-[rgba(122,24,61,0.18)] bg-white/70 px-3.5 py-2 text-sm font-bold text-[#7A183D] shadow-soft transition hover:border-[#C9962D] hover:text-[#3A2417] hover:underline"
@@ -1237,14 +1273,14 @@ function Footer({ categories = localCategories }) {
                 Eligible products can be returned or exchanged within 7 days, subject to store confirmation.
               </SupportItem>
               <SupportItem icon={Clock} title="Business Timings">
-                {businessSettings.timings}
+                {timings}
               </SupportItem>
             </div>
           </div>
         </div>
 
         <div className="mt-5 flex flex-col gap-1 border-t border-[rgba(122,24,61,0.14)] pt-3 text-center text-[0.7rem] font-medium text-[#3A2417]/58 sm:flex-row sm:items-center sm:justify-between sm:text-left sm:text-xs">
-          <p>{"\u00A9"} 2026 Karari Beauty. All rights reserved.</p>
+          <p>{"\u00A9"} 2026 {businessName}. All rights reserved.</p>
           <p>Website by Rajratan Digital {"\u00B7"} Developed by Mithil Mohite</p>
         </div>
       </div>
@@ -1256,7 +1292,8 @@ export default function HomeExperience({
   campaignActive,
   categories = localCategories,
   products = localProducts,
-  seasonalCampaign = localSeasonalCampaign
+  seasonalCampaign = localSeasonalCampaign,
+  siteSettings
 }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -1282,7 +1319,7 @@ export default function HomeExperience({
 
   return (
     <main className="min-h-screen bg-silk">
-      <Header campaignActive={campaignActive} onViewProduct={openProduct} recentlyViewed={recentlyViewed} categories={categories} products={products} seasonalCampaign={seasonalCampaign} />
+      <Header campaignActive={campaignActive} onViewProduct={openProduct} recentlyViewed={recentlyViewed} categories={categories} products={products} seasonalCampaign={seasonalCampaign} siteSettings={siteSettings} />
       <HeroCarousel campaignActive={campaignActive} seasonalCampaign={seasonalCampaign} />
       <CategorySection selectedCategory={selectedCategory} categories={categories} />
       <ProductSection onView={openProduct} seasonal={campaignActive} selectedCategory={selectedCategory} onClearCategory={() => setSelectedCategory(null)} products={products} />
@@ -1293,7 +1330,7 @@ export default function HomeExperience({
         </>
       ) : null}
       <FooterTrustStrip />
-      <Footer categories={categories} />
+      <Footer categories={categories} siteSettings={siteSettings} />
       <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} products={products} />
     </main>
   );

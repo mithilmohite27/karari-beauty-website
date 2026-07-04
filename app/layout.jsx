@@ -1,4 +1,5 @@
 import FloatingActions from "@/components/FloatingActions";
+import { getSiteSettings } from "@/lib/data/siteSettings";
 import { defaultSeo, getDefaultOgImage, getSiteUrl } from "@/lib/seo";
 import "./globals.css";
 
@@ -57,12 +58,14 @@ export const metadata = {
   }
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const siteSettings = await getSiteSettings();
+
   return (
     <html lang="en">
       <body className="font-sans antialiased">
         {children}
-        <FloatingActions />
+        <FloatingActions siteSettings={siteSettings} />
       </body>
     </html>
   );

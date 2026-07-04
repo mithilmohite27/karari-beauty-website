@@ -15,7 +15,7 @@ const navItems = [
   { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Campaigns", href: "/admin/campaigns", icon: CalendarDays },
   { label: "Media", href: "/admin/media", icon: ImageIcon },
-  { label: "Settings", icon: Settings }
+  { label: "Settings", href: "/admin/settings", icon: Settings }
 ];
 
 function AdminSidebar({ open, onClose }) {
