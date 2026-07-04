@@ -14,7 +14,7 @@ const navItems = [
   { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
   { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Campaigns", href: "/admin/campaigns", icon: CalendarDays },
-  { label: "Media", icon: ImageIcon },
+  { label: "Media", href: "/admin/media", icon: ImageIcon },
   { label: "Settings", icon: Settings }
 ];
 

@@ -667,6 +667,44 @@ Supabase SQL:
 - No new SQL is needed for Phase 8.
 - Phase 8 uses the existing `customers` table and linked `orders` rows.
 
+## Admin Media Library Phase 8A
+
+The admin media library is available at:
+
+- `/admin/media`
+
+Media admin API routes:
+
+- `GET /api/admin/media`
+- `POST /api/admin/media`
+- `DELETE /api/admin/media/delete`
+
+Storage setup:
+
+- Bucket name: `product-images`
+- Setup file: `supabase/storage.sql`
+- Supported upload types: JPG, PNG and WebP.
+- Maximum upload size: 5MB.
+
+Security and behavior:
+
+- Media list, upload and delete routes require a signed-in active admin.
+- Upload and delete operations run only through protected server API routes.
+- `SUPABASE_SERVICE_ROLE_KEY` remains server-side only and is never sent to browser code.
+- Public image URLs are returned so storefront images can display normally.
+- If Supabase env vars are missing, the media page and APIs show setup-required behavior safely.
+- Delete removes the stored image file only. Admins should avoid deleting images currently used by products, categories or campaigns.
+
+Testing:
+
+- Open `/admin/media`.
+- Upload a JPG, PNG or WebP image smaller than 5MB.
+- Confirm the image appears in the media grid.
+- Copy the image link.
+- Open the image link in a new tab.
+- Delete the image after confirmation.
+- Confirm existing product image upload still works from `/admin/products`.
+
 ## Admin + Storefront Integration Audit
 
 Key audit fixes:
