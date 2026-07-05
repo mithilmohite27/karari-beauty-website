@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUpDown, Eye, Loader2, Pencil, Plus, Power, Search, Trash2, X } from "lucide-react";
 import AdminAuthGate from "@/components/admin/AdminAuthGate";
 import AdminBadge from "@/components/admin/AdminBadge";
@@ -1319,12 +1319,15 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
 }
 
 function CategoryFormDrawer({ mode, category, saving, error, canManageCategories, onClose, onSubmit }) {
+  const categoryImageInputRef = useRef(null);
   const [form, setForm] = useState(() => (category ? categoryToForm(category) : emptyCategoryForm));
   const [slugTouched, setSlugTouched] = useState(Boolean(category?.slug));
+  const [imageUploadState, setImageUploadState] = useState({ uploading: false, error: "" });
 
   useEffect(() => {
     setForm(category ? categoryToForm(category) : emptyCategoryForm);
     setSlugTouched(Boolean(category?.slug));
+    setImageUploadState({ uploading: false, error: "" });
   }, [category]);
 
   const setField = (field, value) => {
@@ -1338,6 +1341,37 @@ function CategoryFormDrawer({ mode, category, saving, error, canManageCategories
   const submit = (event) => {
     event.preventDefault();
     onSubmit(categoryFormToPayload(form));
+  };
+
+  const uploadCategoryImage = async (file) => {
+    if (!file) return;
+
+    if (!canManageCategories) {
+      setImageUploadState({ uploading: false, error: "Image upload requires storage setup." });
+      return;
+    }
+
+    setImageUploadState({ uploading: true, error: "" });
+
+    try {
+      const token = await getAdminToken();
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/admin/uploads/category-image", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Image upload requires storage setup.");
+
+      setField("image_url", result.url);
+      setImageUploadState({ uploading: false, error: "" });
+      if (categoryImageInputRef.current) categoryImageInputRef.current.value = "";
+    } catch (uploadError) {
+      setImageUploadState({ uploading: false, error: uploadError.message || "Image upload requires storage setup." });
+    }
   };
 
   return (
@@ -1388,14 +1422,25 @@ function CategoryFormDrawer({ mode, category, saving, error, canManageCategories
 
           <section className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-4">
             <h3 className="font-display text-xl font-semibold text-[#7A183D]">Category Image</h3>
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start">
-              <div className="h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE]">
+            <div className="mt-4 grid gap-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
+              <div className="h-32 w-32 overflow-hidden rounded-xl border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE]">
                 {form.image_url ? <img src={form.image_url} alt="Category preview" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center px-3 text-center text-xs font-bold text-[#3A2417]/42">No image</div>}
               </div>
-              <label className="grid min-w-0 flex-1 gap-1 text-sm font-bold text-[#3A2417]">
-                Image URL / existing path
-                <input value={form.image_url} onChange={(event) => setField("image_url", event.target.value)} placeholder="/categories/example.png or https://..." className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
-              </label>
+              <div className="grid min-w-0 gap-3">
+                <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+                  Image URL / existing path
+                  <input value={form.image_url} onChange={(event) => setField("image_url", event.target.value)} placeholder="/categories/example.png or https://..." className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <label className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#7A183D] px-4 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:opacity-70">
+                    {imageUploadState.uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    {imageUploadState.uploading ? "Uploading..." : "Upload / Replace Image"}
+                    <input ref={categoryImageInputRef} type="file" accept="image/jpeg,image/png,image/webp" disabled={imageUploadState.uploading || !canManageCategories} onChange={(event) => uploadCategoryImage(event.target.files?.[0])} className="hidden" />
+                  </label>
+                  <button type="button" onClick={() => setField("image_url", "")} className="min-h-10 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-4 text-sm font-bold text-[#7A183D]">Clear Image</button>
+                </div>
+                {imageUploadState.error ? <p className="rounded-lg border border-rose-500/20 bg-rose-50 p-2 text-xs font-bold text-rose-700">{imageUploadState.error}</p> : null}
+              </div>
             </div>
           </section>
 
