@@ -1,5 +1,6 @@
 import CheckoutPageExperience from "@/components/CheckoutPageExperience";
 import { getProducts } from "@/lib/data/products";
+import { getSiteSettings } from "@/lib/data/siteSettings";
 
 export const metadata = {
   title: {
@@ -13,6 +14,6 @@ export const metadata = {
 };
 
 export default async function CheckoutPage() {
-  const products = await getProducts();
-  return <CheckoutPageExperience products={products} />;
+  const [products, siteSettings] = await Promise.all([getProducts(), getSiteSettings()]);
+  return <CheckoutPageExperience products={products} siteSettings={siteSettings} />;
 }

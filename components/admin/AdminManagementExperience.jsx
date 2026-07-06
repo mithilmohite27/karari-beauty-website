@@ -76,6 +76,7 @@ const emptyProductForm = {
   stock_status: "in_stock",
   is_active: true,
   is_featured: false,
+  cod_available: false,
   sort_order: 0
 };
 
@@ -116,6 +117,14 @@ const orderStatusOptions = [
   { value: "cancelled", label: "Cancelled", tone: "red" }
 ];
 
+const paymentStatusOptions = [
+  { value: "pending", label: "Pending", tone: "gold" },
+  { value: "paid", label: "Paid", tone: "green" },
+  { value: "failed", label: "Failed", tone: "red" },
+  { value: "cod_pending", label: "COD Pending", tone: "amber" },
+  { value: "refunded", label: "Refunded", tone: "muted" }
+];
+
 const customerMessageTemplates = [
   {
     value: "received",
@@ -153,6 +162,10 @@ function getOrderStatusMeta(status) {
   return orderStatusOptions.find((item) => item.value === status) || { value: status, label: status || "New Order", tone: "muted" };
 }
 
+function getPaymentStatusMeta(status) {
+  return paymentStatusOptions.find((item) => item.value === status) || { value: status, label: status || "Pending", tone: "muted" };
+}
+
 function normalizeWhatsAppPhone(phone) {
   const digits = String(phone || "").replace(/\D/g, "");
   if (!digits) return "";
@@ -187,6 +200,7 @@ function productToForm(product) {
     stock_status: product.stockStatus || "in_stock",
     is_active: product.isActive !== false,
     is_featured: Boolean(product.isFeatured),
+    cod_available: Boolean(product.codAvailable),
     sort_order: product.sortOrder || 0
   };
 }
@@ -311,7 +325,7 @@ function boolBadge(value, trueLabel = "Yes", falseLabel = "No") {
 function textForSearch(item, resource) {
   if (resource === "products") return [item.name, item.slug, item.sku, item.category, item.categorySlug].join(" ");
   if (resource === "categories") return [item.name, item.slug, item.description].join(" ");
-  if (resource === "orders") return [item.orderNumber, item.customerName, item.customerPhone, item.customerEmail, item.status].join(" ");
+  if (resource === "orders") return [item.orderNumber, item.customerName, item.customerPhone, item.customerEmail, item.status, item.paymentStatus, item.paymentReference].join(" ");
   if (resource === "customers") return [item.fullName, item.phone, item.email, item.city, item.country].join(" ");
   return [item.name, item.slug, item.theme, item.offer, item.offerLabel].join(" ");
 }
@@ -519,6 +533,7 @@ function OrderRows({ items, onView }) {
 function ManagedOrderRows({ items, onView }) {
   return items.map((item) => {
     const status = getOrderStatusMeta(item.status);
+    const paymentStatus = getPaymentStatusMeta(item.paymentStatus);
 
     return (
       <tr key={item.id || item.orderNumber} className="border-b border-[rgba(122,24,61,0.08)]">
@@ -528,6 +543,7 @@ function ManagedOrderRows({ items, onView }) {
         <td className="px-3 py-3"><AdminBadge tone="gold">{item.orderType === "international" ? "International" : "Domestic"}</AdminBadge></td>
         <td className="px-3 py-3 font-bold text-[#7A183D]">{formatCurrency(item.totalAmount)}</td>
         <td className="px-3 py-3"><AdminBadge tone={status.tone}>{status.label}</AdminBadge></td>
+        <td className="px-3 py-3"><AdminBadge tone={paymentStatus.tone}>{paymentStatus.label}</AdminBadge></td>
         <td className="px-3 py-3">{formatDate(item.createdAt)}</td>
         <td className="px-3 py-3">{item.itemsCount || 0}</td>
         <td className="px-3 py-3"><button type="button" onClick={() => onView(item)} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D]">Manage</button></td>
@@ -581,7 +597,7 @@ function Table({ resource, items, selectedProductIds = [], allVisibleProductsSel
   const headers = {
     products: ["Select", "Image", "Product", "Category", "Price", "Original", "Discount", "Featured", "Active", "Stock", "Created", "Action"],
     categories: ["Image", "Name", "Slug", "Description", "Count Label", "Featured", "Active", "Sort", "Products", "Action"],
-    orders: ["Order", "Customer", "Contact", "Type", "Total", "Status", "Created", "Items", "Action"],
+    orders: ["Order", "Customer", "Contact", "Type", "Total", "Status", "Payment", "Created", "Items", "Action"],
     customers: ["Customer", "Phone", "Email", "Location", "Orders", "Total Spent", "Last Order", "Action"],
     campaigns: ["Campaign", "Theme", "Status", "Start", "End", "Offer", "Featured Categories", "Created", "Action"]
   };
@@ -623,16 +639,19 @@ function Table({ resource, items, selectedProductIds = [], allVisibleProductsSel
 
 function OrderDetailDrawer({ order, saving, error, canManageOrders, onClose, onSave }) {
   const [status, setStatus] = useState(order?.status || "new");
+  const [paymentStatus, setPaymentStatus] = useState(order?.paymentStatus || "pending");
   const [note, setNote] = useState("");
 
   useEffect(() => {
     setStatus(order?.status || "new");
+    setPaymentStatus(order?.paymentStatus || "pending");
     setNote("");
-  }, [order?.id, order?.status]);
+  }, [order?.id, order?.status, order?.paymentStatus]);
 
   if (!order) return null;
 
   const statusMeta = getOrderStatusMeta(order.status);
+  const paymentStatusMeta = getPaymentStatusMeta(order.paymentStatus);
   const items = order.items || [];
   const timeline = order.timeline || [];
 
@@ -645,6 +664,7 @@ function OrderDetailDrawer({ order, saving, error, canManageOrders, onClose, onS
             <h2 className="mt-2 font-display text-2xl font-semibold text-[#7A183D]">{order.orderNumber}</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               <AdminBadge tone={statusMeta.tone}>{statusMeta.label}</AdminBadge>
+              <AdminBadge tone={paymentStatusMeta.tone}>Payment {paymentStatusMeta.label}</AdminBadge>
               <AdminBadge tone="gold">{order.orderType === "international" ? "International" : "Domestic"}</AdminBadge>
             </div>
           </div>
@@ -687,6 +707,24 @@ function OrderDetailDrawer({ order, saving, error, canManageOrders, onClose, onS
         </section>
 
         <section className="mt-4 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="font-display text-xl font-semibold text-[#7A183D]">Payment Details</h3>
+            <AdminBadge tone={paymentStatusMeta.tone}>{paymentStatusMeta.label}</AdminBadge>
+          </div>
+          <div className="mt-3 grid gap-3 text-sm font-semibold text-[#3A2417]/72 sm:grid-cols-2">
+            <p className="rounded-xl bg-[#FFF8EE] p-3"><span className="block text-xs uppercase tracking-[0.14em] text-[#C9962D]">Gateway</span>{order.paymentGateway || "Not selected"}</p>
+            <p className="rounded-xl bg-[#FFF8EE] p-3"><span className="block text-xs uppercase tracking-[0.14em] text-[#C9962D]">Method</span>{order.paymentPreference || order.paymentMethod || "Not selected"}</p>
+            <p className="rounded-xl bg-[#FFF8EE] p-3"><span className="block text-xs uppercase tracking-[0.14em] text-[#C9962D]">Razorpay order ID</span>{order.razorpayOrderId || "Not available"}</p>
+            <p className="rounded-xl bg-[#FFF8EE] p-3"><span className="block text-xs uppercase tracking-[0.14em] text-[#C9962D]">Razorpay payment ID</span>{order.razorpayPaymentId || "Not available"}</p>
+            <p className="rounded-xl bg-[#FFF8EE] p-3"><span className="block text-xs uppercase tracking-[0.14em] text-[#C9962D]">Paid at</span>{order.paymentVerifiedAt ? formatDateTime(order.paymentVerifiedAt) : "Not paid"}</p>
+            <p className="rounded-xl bg-[#FFF8EE] p-3"><span className="block text-xs uppercase tracking-[0.14em] text-[#C9962D]">COD selected</span>{order.codSelected ? "Yes" : "No"} / Eligible: {order.codEligible ? "Yes" : "No"}</p>
+            {order.paymentReference ? <p className="rounded-xl bg-[#FFF8EE] p-3"><span className="block text-xs uppercase tracking-[0.14em] text-[#C9962D]">Reference</span>{order.paymentReference}</p> : null}
+            {order.paymentNote ? <p className="rounded-xl bg-[#FFF8EE] p-3 sm:col-span-2"><span className="block text-xs uppercase tracking-[0.14em] text-[#C9962D]">Payment note</span>{order.paymentNote}</p> : null}
+            {order.paymentFailureReason ? <p className="rounded-xl bg-rose-50 p-3 text-rose-700 sm:col-span-2"><span className="block text-xs uppercase tracking-[0.14em] text-rose-500">Failure reason</span>{order.paymentFailureReason}</p> : null}
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/78 p-4">
           <h3 className="font-display text-xl font-semibold text-[#7A183D]">Ordered Items</h3>
           <div className="mt-3 space-y-3">
             {items.length ? items.map((item) => (
@@ -714,11 +752,17 @@ function OrderDetailDrawer({ order, saving, error, canManageOrders, onClose, onS
               </select>
             </label>
             <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
+              Payment status
+              <select value={paymentStatus} onChange={(event) => setPaymentStatus(event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 outline-none focus:border-[#C9962D]">
+                {paymentStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
               Internal note
               <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={4} placeholder="Add a private update for this order." className="rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 py-2 outline-none focus:border-[#C9962D]" />
             </label>
             {error ? <p className="rounded-lg border border-rose-500/20 bg-rose-50 p-3 text-sm font-bold text-rose-700">{error}</p> : null}
-            <button type="button" disabled={saving || !canManageOrders} onClick={() => onSave(order, { status, note })} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="button" disabled={saving || !canManageOrders} onClick={() => onSave(order, { status, paymentStatus, note })} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:cursor-not-allowed disabled:opacity-60">
               {saving ? "Saving..." : "Save order update"}
             </button>
           </div>
@@ -1246,6 +1290,10 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
               <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 text-sm font-bold text-[#3A2417]">
                 <input type="checkbox" checked={form.is_active} onChange={(event) => setField("is_active", event.target.checked)} />
                 Product active
+              </label>
+              <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 text-sm font-bold text-[#3A2417]">
+                <input type="checkbox" checked={form.cod_available} onChange={(event) => setField("cod_available", event.target.checked)} />
+                Cash on Delivery available
               </label>
               <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
                 Rating

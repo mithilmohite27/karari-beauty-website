@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, BadgeCheck, ChevronRight, Heart, Minus, PackageCheck, Plus, ShieldCheck, ShoppingCart, Star, Truck } from "lucide-react";
@@ -14,6 +15,7 @@ import {
   addToCart as addCartItem,
   getRecentlyViewed,
   getWishlistItems,
+  setBuyNowItem,
   toggleWishlist as toggleWishlistItem
 } from "@/lib/ecommerceStorage";
 import { formatCurrency } from "@/lib/whatsapp";
@@ -26,6 +28,7 @@ const trustBadges = [
 ];
 
 export default function ProductDetailExperience({ product, category, relatedProducts, allProducts = localProducts, allCategories }) {
+  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [wishlistIds, setWishlistIds] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -64,6 +67,11 @@ export default function ProductDetailExperience({ product, category, relatedProd
   const addToCart = (item, itemQuantity = 1) => {
     addCartItem(item, itemQuantity);
     notify("Added to cart");
+  };
+
+  const buyNow = (item, itemQuantity = 1) => {
+    setBuyNowItem(item, itemQuantity);
+    router.push("/checkout?mode=buy-now");
   };
 
   const toggleWishlist = (item) => {
@@ -163,8 +171,17 @@ export default function ProductDetailExperience({ product, category, relatedProd
 
                 <button
                   type="button"
-                  onClick={() => addToCart(product, quantity)}
+                  onClick={() => buyNow(product, quantity)}
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#7A183D] px-5 text-sm font-bold text-white transition hover:bg-[#3A2417]"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                  Buy Now
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => addToCart(product, quantity)}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-[#7A183D] bg-white/78 px-5 text-sm font-bold text-[#7A183D] transition hover:border-[#C9962D] hover:text-[#C9962D]"
                 >
                   <ShoppingCart className="h-4 w-4" />
                   Add to Cart
@@ -228,6 +245,7 @@ export default function ProductDetailExperience({ product, category, relatedProd
                   product={item}
                   onView={openProduct}
                   onAddToCart={(target) => addToCart(target, 1)}
+                  onBuyNow={(target) => buyNow(target, 1)}
                   onToggleWishlist={toggleWishlist}
                   wished={wishlistIds.includes(item.id)}
                 />

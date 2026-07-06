@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Bell, Gift, Heart, LockKeyhole, Mail, PackageCheck, Phone, ShieldCheck, Sparkles, User } from "lucide-react";
+import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 const trustChips = [
   { label: "Wishlist Saved", icon: Heart },
@@ -47,6 +48,7 @@ export default function SignInExperience() {
   const [method, setMethod] = useState("mobile");
   const [notice, setNotice] = useState("");
   const [errors, setErrors] = useState(initialErrors);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     mobile: "",
     email: "",
@@ -60,11 +62,12 @@ export default function SignInExperience() {
 
   const isRegister = mode === "register";
   const panelTitle = isRegister ? "Create your account" : "Sign in to continue";
+  const redirectTo = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("redirect") || "/" : "/";
   const panelNote = isRegister
-    ? "Account creation will be connected in the next phase."
+    ? "Create your Karari Beauty account with email and password."
     : method === "mobile"
       ? "OTP sign-in will be activated in the next phase."
-      : "Email login will be activated in the next phase.";
+      : "Use your email and password to continue securely.";
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -94,11 +97,54 @@ export default function SignInExperience() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault();
     if (!validate()) return;
 
-    setNotice(isRegister ? "Account creation will be connected in the next phase." : "Customer login will be activated in the next phase.");
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) {
+      setNotice("Customer login requires Supabase setup.");
+      return;
+    }
+
+    if (!isRegister && method === "mobile") {
+      setNotice("Mobile OTP sign-in will be activated in the next phase. Please use email sign-in for checkout.");
+      return;
+    }
+
+    setSubmitting(true);
+    setNotice("");
+
+    try {
+      const result = isRegister
+        ? await supabase.auth.signUp({
+            email: form.registerEmail.trim(),
+            password: form.registerPassword,
+            options: {
+              data: {
+                full_name: form.fullName.trim(),
+                phone: form.registerMobile.trim()
+              }
+            }
+          })
+        : await supabase.auth.signInWithPassword({
+            email: form.email.trim(),
+            password: form.password
+          });
+
+      if (result.error) throw result.error;
+
+      if (isRegister && !result.data?.session) {
+        setNotice("Account created. Please confirm your email, then sign in to continue checkout.");
+        return;
+      }
+
+      window.location.assign(redirectTo);
+    } catch (error) {
+      setNotice(error.message || "Unable to continue. Please check your details.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const modeCopy = useMemo(
@@ -255,8 +301,8 @@ export default function SignInExperience() {
                     <TextInput icon={LockKeyhole} name="confirmPassword" type="password" value={form.confirmPassword} onChange={(event) => updateField("confirmPassword", event.target.value)} placeholder="Confirm password" autoComplete="new-password" />
                   </Field>
                 </div>
-                <button type="submit" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417]">
-                  Create Account
+                <button type="submit" disabled={submitting} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417] disabled:cursor-not-allowed disabled:opacity-65">
+                  {submitting ? "Creating..." : "Create Account"}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </>
@@ -265,8 +311,8 @@ export default function SignInExperience() {
                 <Field label="Mobile Number" error={errors.mobile}>
                   <TextInput icon={Phone} name="mobile" value={form.mobile} onChange={(event) => updateField("mobile", event.target.value)} placeholder="+91 98765 43210" autoComplete="tel" />
                 </Field>
-                <button type="submit" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417]">
-                  Continue
+                <button type="submit" disabled={submitting} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417] disabled:cursor-not-allowed disabled:opacity-65">
+                  {submitting ? "Checking..." : "Continue"}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </>
@@ -281,8 +327,8 @@ export default function SignInExperience() {
                 <button type="button" className="text-sm font-bold text-[#7A183D] underline-offset-4 transition hover:text-[#C9962D] hover:underline">
                   Forgot password?
                 </button>
-                <button type="submit" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417]">
-                  Continue
+                <button type="submit" disabled={submitting} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417] disabled:cursor-not-allowed disabled:opacity-65">
+                  {submitting ? "Signing in..." : "Continue"}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </>

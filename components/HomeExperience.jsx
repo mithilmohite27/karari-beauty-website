@@ -45,6 +45,7 @@ import {
   getRecentlyViewed,
   getRecentlyViewedCount,
   getWishlistItems,
+  setBuyNowItem,
   toggleWishlist as toggleWishlistItem
 } from "@/lib/ecommerceStorage";
 import { createWhatsAppUrl, formatCurrency } from "@/lib/whatsapp";
@@ -912,6 +913,11 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, p
     notify("Added to cart");
   };
 
+  const buyNow = (product) => {
+    setBuyNowItem(product, 1);
+    window.location.assign("/checkout?mode=buy-now");
+  };
+
   const toggleWishlist = (product) => {
     const nextWishlist = toggleWishlistItem(product);
     setWishlistIds(nextWishlist.items);
@@ -977,6 +983,7 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, p
                   product={product}
                   onView={onView}
                   onAddToCart={addToCart}
+                  onBuyNow={buyNow}
                   onToggleWishlist={toggleWishlist}
                   wished={wishlistIds.includes(product.id)}
                 />

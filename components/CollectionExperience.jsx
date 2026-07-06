@@ -15,6 +15,7 @@ import {
   addToCart as addCartItem,
   getRecentlyViewed,
   getWishlistItems,
+  setBuyNowItem,
   toggleWishlist as toggleWishlistItem
 } from "@/lib/ecommerceStorage";
 
@@ -64,6 +65,11 @@ export default function CollectionExperience({ category, products, relatedCatego
   const addToCart = (product) => {
     addCartItem(product);
     notify("Added to cart");
+  };
+
+  const buyNow = (product) => {
+    setBuyNowItem(product, 1);
+    window.location.assign("/checkout?mode=buy-now");
   };
 
   const toggleWishlist = (product) => {
@@ -177,6 +183,7 @@ export default function CollectionExperience({ category, products, relatedCatego
                         product={product}
                         onView={openProduct}
                         onAddToCart={addToCart}
+                        onBuyNow={buyNow}
                         onToggleWishlist={toggleWishlist}
                         wished={wishlistIds.includes(product.id)}
                       />

@@ -32,7 +32,8 @@ export async function PATCH(request, { params }) {
     const { id } = await params;
     const payload = await request.json();
     const hasStatus = Object.prototype.hasOwnProperty.call(payload, "status") && payload.status;
-    const order = hasStatus
+    const hasPaymentStatus = Object.prototype.hasOwnProperty.call(payload, "paymentStatus") && payload.paymentStatus;
+    const order = hasStatus || hasPaymentStatus
       ? await updateAdminOrderStatus(id, payload, currentAdmin)
       : await updateAdminOrderNotes(id, payload, currentAdmin);
 

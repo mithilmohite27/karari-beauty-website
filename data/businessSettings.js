@@ -20,7 +20,8 @@ export const businessSettings = {
   timings: "Open daily: 7:00 AM - 9:00 PM",
   payment: {
     upiId: "7435984499@okbizaxis",
-    note: "UPI / GPay payment is available after order confirmation."
+    note: "UPI / GPay payment is available after order confirmation.",
+    upiQrImageUrl: ""
   },
   addressLine: "Boutique gifting and beauty accessories",
   defaultCountry: "India",

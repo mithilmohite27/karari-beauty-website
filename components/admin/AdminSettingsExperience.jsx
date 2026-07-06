@@ -12,7 +12,7 @@ const emptySettings = {
   contact: { whatsappNumber: "", phoneNumber: "", email: "", address: "", city: "", state: "", country: "", mapsUrl: "", timings: "" },
   social: { instagramUrl: "", facebookUrl: "", youtubeUrl: "" },
   website: { defaultCountry: "", defaultCurrency: "", announcementLine: "", internationalInquiryMessage: "" },
-  ordering: { checkoutEnabled: true, whatsappSupportEnabled: true, upiDisplayText: "" },
+  ordering: { checkoutEnabled: true, whatsappSupportEnabled: true, upiDisplayText: "", upiQrImageUrl: "", upiId: "" },
   seo: { siteTitle: "", metaDescription: "", ogImageUrl: "" }
 };
 

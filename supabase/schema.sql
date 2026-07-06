@@ -1,5 +1,5 @@
 -- Karari Beauty Supabase schema
--- Phase 1 foundation only: database, security policies, and future admin/auth support.
+-- Repeatable database schema for storefront, admin CMS, orders, media metadata, customers and settings.
 
 create extension if not exists pgcrypto;
 
@@ -47,6 +47,7 @@ create table if not exists public.products (
   tags text[] default '{}',
   is_featured boolean default false,
   is_active boolean default true,
+  cod_available boolean default false,
   stock_status text default 'in_stock' check (stock_status in ('in_stock', 'low_stock', 'out_of_stock', 'made_to_order', 'preorder')),
   sort_order int default 0,
   created_at timestamptz default now(),
@@ -87,7 +88,19 @@ create table if not exists public.orders (
   delivery_city text,
   delivery_address text,
   order_type text default 'domestic' check (order_type in ('domestic', 'international')),
+  payment_gateway text,
+  payment_method text,
   payment_preference text,
+  payment_status text default 'pending' check (payment_status in ('pending', 'submitted', 'verified', 'paid', 'failed', 'cod_pending', 'refunded')),
+  payment_reference text,
+  payment_note text,
+  razorpay_order_id text,
+  razorpay_payment_id text,
+  razorpay_signature_verified boolean default false,
+  payment_verified_at timestamptz,
+  payment_failure_reason text,
+  cod_selected boolean default false,
+  cod_eligible boolean default false,
   subtotal numeric(10,2) default 0 check (subtotal >= 0),
   discount_amount numeric(10,2) default 0 check (discount_amount >= 0),
   total_amount numeric(10,2) default 0 check (total_amount >= 0),
@@ -162,6 +175,25 @@ alter table public.admin_profiles add constraint admin_profiles_role_check check
 alter table public.products drop constraint if exists products_stock_status_check;
 alter table public.products add constraint products_stock_status_check check (stock_status in ('in_stock', 'low_stock', 'out_of_stock', 'made_to_order', 'preorder'));
 
+alter table public.orders drop constraint if exists orders_status_check;
+alter table public.orders add constraint orders_status_check check (status in ('new', 'confirmed', 'processing', 'packed', 'shipped', 'delivered', 'cancelled'));
+alter table public.orders add column if not exists payment_method text;
+alter table public.orders add column if not exists payment_status text default 'pending';
+alter table public.orders add column if not exists payment_reference text;
+alter table public.orders add column if not exists payment_note text;
+alter table public.orders add column if not exists payment_gateway text;
+alter table public.orders add column if not exists razorpay_order_id text;
+alter table public.orders add column if not exists razorpay_payment_id text;
+alter table public.orders add column if not exists razorpay_signature_verified boolean default false;
+alter table public.orders add column if not exists payment_verified_at timestamptz;
+alter table public.orders add column if not exists payment_failure_reason text;
+alter table public.orders add column if not exists cod_selected boolean default false;
+alter table public.orders add column if not exists cod_eligible boolean default false;
+update public.orders set payment_status = 'pending' where payment_status is null;
+alter table public.orders drop constraint if exists orders_payment_status_check;
+alter table public.orders add constraint orders_payment_status_check check (payment_status in ('pending', 'submitted', 'verified', 'paid', 'failed', 'cod_pending', 'refunded'));
+alter table public.products add column if not exists cod_available boolean default false;
+
 drop trigger if exists set_categories_updated_at on public.categories;
 create trigger set_categories_updated_at before update on public.categories for each row execute function public.set_updated_at();
 
@@ -196,8 +228,11 @@ create index if not exists idx_product_images_product_id on public.product_image
 create index if not exists idx_product_images_sort_order on public.product_images(sort_order);
 
 create index if not exists idx_orders_status on public.orders(status);
+create index if not exists idx_orders_payment_status on public.orders(payment_status);
+create index if not exists idx_orders_razorpay_order_id on public.orders(razorpay_order_id);
 create index if not exists idx_orders_created_at on public.orders(created_at desc);
 create index if not exists idx_order_items_order_id on public.order_items(order_id);
+create index if not exists idx_order_items_product_id on public.order_items(product_id);
 create index if not exists idx_order_status_history_order_id on public.order_status_history(order_id);
 create index if not exists idx_order_status_history_created_at on public.order_status_history(created_at desc);
 
@@ -217,7 +252,8 @@ alter table public.admin_profiles enable row level security;
 alter table public.site_settings enable row level security;
 
 -- Public storefront reads are allowed only for active catalog/campaign records.
--- Customer, order, order_items, order_status_history and admin_profiles data intentionally have no public read policy.
+-- Customer, order, order_items, order_status_history, admin_profiles and site_settings data intentionally have no public read policy.
+-- site_settings is read by the server service layer using the server-only service role key.
 -- Future order creation should happen through a server-side API/function using the service role key.
 
 drop policy if exists "Public can read active categories" on public.categories;

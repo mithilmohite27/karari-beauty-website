@@ -2,9 +2,10 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { CalendarDays, Globe2, Heart, MessageCircle, Share2, X } from "lucide-react";
+import { ArrowRight, CalendarDays, Globe2, Heart, MessageCircle, Share2, X } from "lucide-react";
 import { frequentlyBoughtTogether } from "@/data/frequentlyBoughtTogether";
 import { products as localProducts } from "@/data/products";
+import { setBuyNowItem } from "@/lib/ecommerceStorage";
 import { createWhatsAppUrl, formatCurrency } from "@/lib/whatsapp";
 
 export default function QuickViewModal({ product, onClose, products = localProducts }) {
@@ -14,6 +15,10 @@ export default function QuickViewModal({ product, onClose, products = localProdu
   const relatedProducts = relatedGroup.productIds
     .map((id) => products.find((item) => item.id === id))
     .filter(Boolean);
+  const buyNow = () => {
+    setBuyNowItem(product, 1);
+    window.location.assign("/checkout?mode=buy-now");
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-charcoal/55 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true">
@@ -60,9 +65,17 @@ export default function QuickViewModal({ product, onClose, products = localProdu
             </div>
 
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={buyNow}
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md bg-wine px-5 py-3 text-sm font-bold text-white shadow-soft transition hover:bg-charcoal"
+              >
+                <ArrowRight className="h-4 w-4" />
+                Buy Now
+              </button>
               <a
                 href={createWhatsAppUrl({ product })}
-                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md bg-wine px-5 py-3 text-sm font-bold text-white shadow-soft transition hover:bg-charcoal"
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md border border-wine/20 bg-white px-5 py-3 text-sm font-bold text-wine shadow-soft transition hover:border-karariGold hover:text-karariGold"
               >
                 <MessageCircle className="h-4 w-4" />
                 WhatsApp Inquiry

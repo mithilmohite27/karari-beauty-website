@@ -122,16 +122,22 @@ Tables created:
 - `customers`
 - `orders`
 - `order_items`
+- `order_status_history`
 - `seasonal_campaigns`
 - `admin_profiles`
+- `site_settings`
 
 The schema includes updated-at triggers, indexes, basic check constraints and Row Level Security.
 
 Security notes:
 
 - Public reads are allowed only for active categories, products, product images for active products, and active seasonal campaigns.
-- Customers, orders, order items and admin profiles are not publicly readable.
+- Customers, orders, order items, order status history, admin profiles and site settings are not publicly readable.
+- Site settings are read through the server service layer using the server-only service role key.
 - Future order creation should happen through a server-side API or function using the service role key.
+- Run `supabase/schema.sql` after database schema changes.
+- Run `supabase/storage.sql` after storage bucket or storage policy changes.
+- Never expose `SUPABASE_SERVICE_ROLE_KEY` in browser/client code or public repositories.
 
 ### Seed Data
 
@@ -218,15 +224,31 @@ Live CMS behavior:
 
 ### Order API
 
-Checkout now posts order requests to:
+Cash on Delivery checkout posts order requests to:
 
 ```bash
 POST /api/orders
 ```
 
-The route validates customer details, delivery details and cart items, recalculates totals server-side, then calls `createOrder()` from `lib/data/orders.js`.
+Online payments use Razorpay Standard Checkout:
 
-If Supabase service credentials are not configured, the API returns a controlled mock order response and the checkout flow still works.
+```bash
+POST /api/payments/razorpay/create-order
+POST /api/payments/razorpay/verify
+POST /api/webhooks/razorpay
+```
+
+Checkout behavior:
+
+- Product cards, quick view and product detail pages can send a single item to checkout with Buy Now.
+- Buy Now uses temporary session checkout storage and does not overwrite the customer cart.
+- Checkout requires a signed-in Supabase customer session.
+- Online payment creates a Razorpay order server-side and verifies the Razorpay signature before clearing the cart.
+- Successful Razorpay payment saves `payment_status = paid` and confirms the order.
+- Failed/cancelled Razorpay payment keeps the cart available for retry.
+- Cash on Delivery is available only when total quantity is 10 or more and every selected product has COD enabled.
+- COD orders save `payment_status = cod_pending`.
+- No gateway charge is shown separately to customers.
 
 Test payload:
 
@@ -242,7 +264,8 @@ Test payload:
     "city": "Vansda",
     "address": "Main Bazar"
   },
-  "paymentPreference": "GPay / UPI",
+  "paymentMethod": "cod",
+  "paymentPreference": "Cash on Delivery",
   "orderType": "Domestic Order",
   "items": [
     {
@@ -250,7 +273,7 @@ Test payload:
       "slug": "divine-spiritual-om-rakhi",
       "name": "Divine Spiritual Om Rakhi",
       "price": 449,
-      "quantity": 1,
+      "quantity": 10,
       "image": "/hero/raksha-bandhan-2026.png",
       "categorySlug": "rakhi"
     }
@@ -258,7 +281,7 @@ Test payload:
 }
 ```
 
-Expected fallback response without Supabase env vars:
+Expected COD response:
 
 ```json
 {
@@ -270,6 +293,19 @@ Expected fallback response without Supabase env vars:
   }
 }
 ```
+
+Razorpay setup:
+
+1. Create a Razorpay account and complete required onboarding/KYC.
+2. Use Test Mode first.
+3. Add these env variables locally and in Vercel:
+   - `NEXT_PUBLIC_RAZORPAY_KEY_ID`
+   - `RAZORPAY_KEY_ID`
+   - `RAZORPAY_KEY_SECRET`
+   - `RAZORPAY_WEBHOOK_SECRET`
+4. Set Razorpay webhook URL to `/api/webhooks/razorpay`.
+5. Test online payment, failed/cancelled payment, COD disabled below 10 quantity and COD enabled only for eligible products.
+6. Switch to Live Mode only after Razorpay approval.
 
 Next phase:
 
@@ -751,7 +787,7 @@ Managed settings:
 - Contact details: WhatsApp number, phone number, email, address, city, state, country, Google Maps URL and timings.
 - Social links: Instagram, Facebook and optional YouTube.
 - Website defaults: default country, default currency, announcement line and international inquiry message.
-- Ordering settings: checkout/order request toggle, WhatsApp support toggle and UPI/GPay display text placeholder.
+- Ordering settings: checkout/order request toggle, WhatsApp support toggle and UPI/GPay display text for Razorpay-focused checkout copy.
 - SEO basics: site title, meta description and Open Graph image URL.
 
 Supabase table:
