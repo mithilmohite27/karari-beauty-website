@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { CustomerAuthError, verifyCustomerRequest } from "@/lib/customerAuth";
 import { createOrder } from "@/lib/data/orders";
 import { getProducts } from "@/lib/data/products";
-import { createRazorpayOrder, RazorpayConfigError } from "@/lib/razorpay";
+import { createRazorpayOrder, getRazorpayStatus, RazorpayConfigError } from "@/lib/razorpay";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 function cleanString(value) {
@@ -13,8 +13,25 @@ function normalizeOrderType(value) {
   return value === "International Inquiry" ? "international" : "domestic";
 }
 
+function errorResponse(error, message, status = 400) {
+  return NextResponse.json({ ok: false, error, message }, { status });
+}
+
+function logPaymentStartup(details = {}) {
+  const razorpayStatus = getRazorpayStatus();
+  console.info("[razorpay-create-order:start]", {
+    hasPublicKey: razorpayStatus.hasPublicKey,
+    hasServerKey: razorpayStatus.hasServerKey,
+    hasServerSecret: razorpayStatus.hasServerSecret,
+    keyMode: razorpayStatus.keyMode,
+    finalAmount: details.finalAmount,
+    itemCount: details.itemCount,
+    hasCustomerEmail: details.hasCustomerEmail
+  });
+}
+
 function validateItems(items) {
-  if (!Array.isArray(items) || !items.length) return { error: "Your cart is empty." };
+  if (!Array.isArray(items) || !items.length) return { error: "CART_EMPTY", message: "Cart is empty." };
 
   const normalized = [];
   for (const item of items) {
@@ -22,7 +39,7 @@ function validateItems(items) {
     const slug = cleanString(item.slug || item.productSlug);
     const quantity = Number(item.quantity);
     if ((!productId && !slug) || !Number.isInteger(quantity) || quantity <= 0) {
-      return { error: "One or more cart items are invalid." };
+      return { error: "CART_EMPTY", message: "One or more cart items are invalid." };
     }
     normalized.push({ productId, slug, quantity });
   }
@@ -36,7 +53,7 @@ async function getServerPricedItems(items) {
 
   for (const item of items) {
     const product = products.find((entry) => entry.id === item.productId || entry.slug === item.slug);
-    if (!product) return { error: "One or more products are no longer available." };
+    if (!product) return { error: "CART_EMPTY", message: "One or more products are no longer available." };
 
     normalized.push({
       productId: product.id,
@@ -53,6 +70,12 @@ async function getServerPricedItems(items) {
 }
 
 export async function POST(request) {
+  let startupLogDetails = {
+    finalAmount: null,
+    itemCount: 0,
+    hasCustomerEmail: false
+  };
+
   try {
     await verifyCustomerRequest(request);
     const body = await request.json();
@@ -65,15 +88,22 @@ export async function POST(request) {
     const city = cleanString(delivery.city || body.deliveryCity);
     const address = cleanString(delivery.address || body.deliveryAddress);
 
+    startupLogDetails = {
+      finalAmount: Number(body.finalAmount),
+      itemCount: Array.isArray(body.items) ? body.items.length : 0,
+      hasCustomerEmail: Boolean(email)
+    };
+    logPaymentStartup(startupLogDetails);
+
     if (!fullName || !phone || !country || !city || !address) {
-      return NextResponse.json({ ok: false, error: "Please complete delivery details before payment." }, { status: 400 });
+      return errorResponse("CUSTOMER_DETAILS_REQUIRED", "Customer details are required.", 400);
     }
 
     const itemResult = validateItems(body.items);
-    if (itemResult.error) return NextResponse.json({ ok: false, error: itemResult.error }, { status: 400 });
+    if (itemResult.error) return errorResponse(itemResult.error, itemResult.message, 400);
 
     const pricedResult = await getServerPricedItems(itemResult.items);
-    if (pricedResult.error) return NextResponse.json({ ok: false, error: pricedResult.error }, { status: 400 });
+    if (pricedResult.error) return errorResponse(pricedResult.error, pricedResult.message, 400);
 
     const subtotal = pricedResult.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const deliveryCharge = Math.max(0, Number(body.deliveryCharge) || 0);
@@ -82,11 +112,11 @@ export async function POST(request) {
     const serverFinalAmount = Math.max(subtotal + deliveryCharge - discount, 0);
 
     if (!Number.isFinite(finalAmount) || finalAmount <= 0 || serverFinalAmount <= 0) {
-      return NextResponse.json({ ok: false, error: "FINAL_AMOUNT_REQUIRED" }, { status: 400 });
+      return errorResponse("INVALID_AMOUNT", "Final amount is required before payment.", 400);
     }
 
     if (Math.round(finalAmount * 100) !== Math.round(serverFinalAmount * 100)) {
-      return NextResponse.json({ ok: false, error: "Final amount is required before online payment." }, { status: 400 });
+      return errorResponse("INVALID_AMOUNT", "Final amount is required before payment.", 400);
     }
 
     const amount = Math.round(serverFinalAmount * 100);
@@ -110,15 +140,27 @@ export async function POST(request) {
       status: "new"
     });
 
-    const razorpayOrder = await createRazorpayOrder({
-      amount,
-      currency: "INR",
-      receipt: order.orderNumber,
-      notes: {
-        internal_order_id: order.orderId,
-        order_number: order.orderNumber
-      }
-    });
+    let razorpayOrder;
+    try {
+      razorpayOrder = await createRazorpayOrder({
+        amount,
+        currency: "INR",
+        receipt: order.orderNumber,
+        notes: {
+          internal_order_id: order.orderId,
+          order_number: order.orderNumber
+        }
+      });
+    } catch (razorpayError) {
+      if (razorpayError instanceof RazorpayConfigError) throw razorpayError;
+      console.error("[razorpay-create-order:api-error]", {
+        message: razorpayError?.message || "Unknown Razorpay API error",
+        finalAmount: serverFinalAmount,
+        itemCount: pricedResult.items.length,
+        hasCustomerEmail: Boolean(email)
+      });
+      return errorResponse("RAZORPAY_ORDER_CREATE_FAILED", "Unable to create Razorpay order. Please try again.", 502);
+    }
 
     await createOrderPaymentLink(order.orderId, razorpayOrder.id);
 
@@ -132,11 +174,29 @@ export async function POST(request) {
       currency: "INR"
     });
   } catch (error) {
-    if (error instanceof CustomerAuthError || error instanceof RazorpayConfigError) {
-      return NextResponse.json({ ok: false, error: error.message }, { status: error.status || 503 });
+    if (error instanceof CustomerAuthError) {
+      return errorResponse("AUTH_REQUIRED", "Please sign in before payment.", error.status || 401);
     }
-    console.error("[razorpay-create-order]", error);
-    return NextResponse.json({ ok: false, error: "Unable to start secure payment." }, { status: 500 });
+    if (error instanceof RazorpayConfigError) {
+      const razorpayStatus = getRazorpayStatus();
+      console.error("[razorpay-create-order:not-configured]", {
+        hasPublicKey: razorpayStatus.hasPublicKey,
+        hasServerKey: razorpayStatus.hasServerKey,
+        hasServerSecret: razorpayStatus.hasServerSecret,
+        keyMode: razorpayStatus.keyMode,
+        finalAmount: startupLogDetails.finalAmount,
+        itemCount: startupLogDetails.itemCount,
+        hasCustomerEmail: startupLogDetails.hasCustomerEmail
+      });
+      return errorResponse("RAZORPAY_NOT_CONFIGURED", "Payment keys are not configured.", error.status || 503);
+    }
+    console.error("[razorpay-create-order:unexpected]", {
+      message: error?.message || "Unknown error",
+      finalAmount: startupLogDetails.finalAmount,
+      itemCount: startupLogDetails.itemCount,
+      hasCustomerEmail: startupLogDetails.hasCustomerEmail
+    });
+    return errorResponse("RAZORPAY_ORDER_CREATE_FAILED", "Unable to create Razorpay order. Please try again.", 500);
   }
 }
 

@@ -98,6 +98,20 @@ function Field({ label, name, value, error, required, as = "input", children, ..
   );
 }
 
+function getPaymentStartupMessage(errorCode, fallbackMessage) {
+  const messages = {
+    RAZORPAY_NOT_CONFIGURED: "Payment keys are not configured.",
+    AUTH_REQUIRED: "Please sign in before payment.",
+    CART_EMPTY: "Cart is empty.",
+    INVALID_AMOUNT: "Final amount is required before payment.",
+    FINAL_AMOUNT_REQUIRED: "Final amount is required before payment.",
+    CUSTOMER_DETAILS_REQUIRED: "Customer details are required.",
+    RAZORPAY_ORDER_CREATE_FAILED: "Unable to create Razorpay order. Please try again."
+  };
+
+  return messages[errorCode] || fallbackMessage || "Unable to create Razorpay order. Please try again.";
+}
+
 function loadRazorpayCheckout() {
   return new Promise((resolve) => {
     if (typeof window === "undefined") {
@@ -346,9 +360,12 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
           body: JSON.stringify(payload)
         });
 
-        const paymentDraft = await createResponse.json();
+        const paymentDraft = await createResponse.json().catch(() => ({
+          error: "RAZORPAY_ORDER_CREATE_FAILED",
+          message: "Unable to create Razorpay order. Please try again."
+        }));
         if (!createResponse.ok || !paymentDraft.ok) {
-          throw new Error(paymentDraft.error === "FINAL_AMOUNT_REQUIRED" ? "Final amount is required before online payment." : paymentDraft.error || "Unable to start secure payment.");
+          throw new Error(getPaymentStartupMessage(paymentDraft.error, paymentDraft.message));
         }
 
         const loaded = await loadRazorpayCheckout();
