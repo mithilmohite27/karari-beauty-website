@@ -91,7 +91,7 @@ create table if not exists public.orders (
   payment_gateway text,
   payment_method text,
   payment_preference text,
-  payment_status text default 'pending' check (payment_status in ('pending', 'submitted', 'verified', 'paid', 'failed', 'cod_pending', 'refunded')),
+  payment_status text default 'pending' check (payment_status in ('pending', 'pending_confirmation', 'submitted', 'verified', 'paid', 'failed', 'cod_pending', 'refunded')),
   payment_reference text,
   payment_note text,
   razorpay_order_id text,
@@ -191,7 +191,7 @@ alter table public.orders add column if not exists cod_selected boolean default 
 alter table public.orders add column if not exists cod_eligible boolean default false;
 update public.orders set payment_status = 'pending' where payment_status is null;
 alter table public.orders drop constraint if exists orders_payment_status_check;
-alter table public.orders add constraint orders_payment_status_check check (payment_status in ('pending', 'submitted', 'verified', 'paid', 'failed', 'cod_pending', 'refunded'));
+alter table public.orders add constraint orders_payment_status_check check (payment_status in ('pending', 'pending_confirmation', 'submitted', 'verified', 'paid', 'failed', 'cod_pending', 'refunded'));
 alter table public.products add column if not exists cod_available boolean default false;
 
 drop trigger if exists set_categories_updated_at on public.categories;

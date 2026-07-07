@@ -119,6 +119,7 @@ const orderStatusOptions = [
 
 const paymentStatusOptions = [
   { value: "pending", label: "Pending", tone: "gold" },
+  { value: "pending_confirmation", label: "Pending Confirmation", tone: "gold" },
   { value: "paid", label: "Paid", tone: "green" },
   { value: "failed", label: "Failed", tone: "red" },
   { value: "cod_pending", label: "COD Pending", tone: "amber" },

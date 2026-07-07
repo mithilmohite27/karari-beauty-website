@@ -76,7 +76,20 @@ export async function POST(request) {
     if (pricedResult.error) return NextResponse.json({ ok: false, error: pricedResult.error }, { status: 400 });
 
     const subtotal = pricedResult.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const amount = Math.round(subtotal * 100);
+    const deliveryCharge = Math.max(0, Number(body.deliveryCharge) || 0);
+    const discount = Math.max(0, Number(body.discount) || 0);
+    const finalAmount = Number(body.finalAmount);
+    const serverFinalAmount = Math.max(subtotal + deliveryCharge - discount, 0);
+
+    if (!Number.isFinite(finalAmount) || finalAmount <= 0 || serverFinalAmount <= 0) {
+      return NextResponse.json({ ok: false, error: "FINAL_AMOUNT_REQUIRED" }, { status: 400 });
+    }
+
+    if (Math.round(finalAmount * 100) !== Math.round(serverFinalAmount * 100)) {
+      return NextResponse.json({ ok: false, error: "Final amount is required before online payment." }, { status: 400 });
+    }
+
+    const amount = Math.round(serverFinalAmount * 100);
 
     const order = await createOrder({
       customerName: fullName,
@@ -93,7 +106,7 @@ export async function POST(request) {
       notes: cleanString(delivery.note || body.notes),
       items: pricedResult.items,
       subtotal,
-      totalAmount: subtotal,
+      totalAmount: serverFinalAmount,
       status: "new"
     });
 

@@ -14,14 +14,17 @@ function normalizeOrderType(value) {
 function normalizePaymentMethod(value, preference) {
   const method = cleanString(value).toLowerCase();
   if (method === "cod") return "cod";
+  if (method === "pending_confirmation") return "pending_confirmation";
   if (method === "online") return "online";
   if (cleanString(preference).toLowerCase().includes("cash on delivery")) return "cod";
+  if (cleanString(preference).toLowerCase().includes("confirmation")) return "pending_confirmation";
   return "online";
 }
 
 function getPaymentLabel(method, preference) {
   const selected = cleanString(preference);
   if (selected) return selected;
+  if (method === "pending_confirmation") return "Pay after confirmation";
   return method === "cod" ? "Cash on Delivery" : "Pay securely online";
 }
 
@@ -113,17 +116,20 @@ export async function POST(request) {
     }
 
     const paymentMethod = normalizePaymentMethod(body.paymentMethod, body.paymentPreference);
-    if (paymentMethod !== "cod") {
+    if (!["cod", "pending_confirmation"].includes(paymentMethod)) {
       return NextResponse.json({ ok: false, error: "Online payments must use Razorpay checkout." }, { status: 400 });
     }
 
     const totalQuantity = pricedResult.items.reduce((sum, item) => sum + item.quantity, 0);
     const codEligible = totalQuantity >= 10 && pricedResult.items.every((item) => item.codAvailable);
-    if (!codEligible) {
+    if (paymentMethod === "cod" && !codEligible) {
       return NextResponse.json({ ok: false, error: "Cash on Delivery is available only for eligible products and orders with 10 or more items." }, { status: 400 });
     }
 
     const subtotal = pricedResult.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const deliveryCharge = Math.max(0, Number(body.deliveryCharge) || 0);
+    const discount = Math.max(0, Number(body.discount) || 0);
+    const finalAmount = Math.max(subtotal + deliveryCharge - discount, 0);
     const order = await createOrder({
       customerName: fullName,
       customerPhone: phone,
@@ -134,14 +140,14 @@ export async function POST(request) {
       orderType: normalizeOrderType(body.orderType),
       paymentMethod,
       paymentPreference: getPaymentLabel(paymentMethod, body.paymentPreference),
-      paymentStatus: "cod_pending",
-      paymentGateway: "cod",
-      codSelected: true,
-      codEligible: true,
+      paymentStatus: paymentMethod === "cod" ? "cod_pending" : "pending_confirmation",
+      paymentGateway: paymentMethod === "cod" ? "cod" : "manual_confirmation",
+      codSelected: paymentMethod === "cod",
+      codEligible,
       notes: cleanString(delivery.note || body.notes),
       items: pricedResult.items,
       subtotal,
-      totalAmount: subtotal
+      totalAmount: finalAmount
     });
 
     return NextResponse.json({

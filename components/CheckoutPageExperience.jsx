@@ -29,6 +29,11 @@ const paymentOptions = [
     description: "Use UPI, Google Pay, PhonePe, BHIM or other payment options supported by Razorpay."
   },
   {
+    value: "pending_confirmation",
+    label: "Pay after confirmation",
+    description: "Karari Beauty will confirm availability, delivery charges and payment details before payment."
+  },
+  {
     value: "cod",
     label: "Cash on Delivery",
     description: "Available only for eligible products and orders with 10 or more items."
@@ -126,6 +131,10 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
   const [customerSession, setCustomerSession] = useState(null);
   const [authChecking, setAuthChecking] = useState(true);
   const subtotal = useMemo(() => getCartSubtotal(items), [items]);
+  const deliveryCharge = 0;
+  const discount = 0;
+  const finalAmount = Math.max(subtotal + deliveryCharge - discount, 0);
+  const hasFinalAmount = Number.isFinite(finalAmount) && finalAmount > 0;
   const isInternational = form.country !== "India";
   const totalQuantity = useMemo(() => items.reduce((total, item) => total + (Number(item.quantity) || 0), 0), [items]);
   const isCodEligible = useMemo(
@@ -259,6 +268,7 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
     });
 
     if (!items.length) nextErrors.cart = "Your cart is empty.";
+    if (form.paymentMethod === "online" && !hasFinalAmount) nextErrors.paymentMethod = "Online payment is available only after final amount is calculated.";
     if (form.paymentMethod === "cod" && !isCodEligible) nextErrors.paymentMethod = codUnavailableReason;
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -294,6 +304,10 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
         paymentMethod: form.paymentMethod,
         paymentPreference: form.paymentPreference,
         orderType: form.orderType,
+        subtotal,
+        deliveryCharge,
+        discount,
+        finalAmount,
         items
       };
 
@@ -301,7 +315,7 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
       let orderNumber;
       let backendMode = "unknown";
 
-      if (form.paymentMethod === "cod") {
+      if (form.paymentMethod === "cod" || form.paymentMethod === "pending_confirmation") {
         const response = await fetch("/api/orders", {
           method: "POST",
           headers: {
@@ -316,6 +330,7 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
         orderNumber = result.order?.orderNumber || result.order?.orderId;
         backendMode = result.order?.mode || "unknown";
       } else {
+        if (!hasFinalAmount) throw new Error("Final amount is required before online payment.");
         const createResponse = await fetch("/api/payments/razorpay/create-order", {
           method: "POST",
           headers: {
@@ -326,7 +341,9 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
         });
 
         const paymentDraft = await createResponse.json();
-        if (!createResponse.ok || !paymentDraft.ok) throw new Error(paymentDraft.error || "Unable to start secure payment.");
+        if (!createResponse.ok || !paymentDraft.ok) {
+          throw new Error(paymentDraft.error === "FINAL_AMOUNT_REQUIRED" ? "Final amount is required before online payment." : paymentDraft.error || "Unable to start secure payment.");
+        }
 
         const loaded = await loadRazorpayCheckout();
         if (!loaded) throw new Error("Unable to load Razorpay Checkout. Please try again.");
@@ -379,8 +396,8 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
         backendMode = result.order?.mode || "supabase";
       }
 
-      const paymentStatus = form.paymentMethod === "cod" ? "COD Pending" : "Paid";
-      const paymentPreference = form.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment via Razorpay";
+      const paymentStatus = form.paymentMethod === "cod" ? "COD Pending" : form.paymentMethod === "pending_confirmation" ? "Pending Confirmation" : "Paid";
+      const paymentPreference = form.paymentMethod === "cod" ? "Cash on Delivery" : form.paymentMethod === "pending_confirmation" ? "Pay after confirmation" : "Online Payment via Razorpay";
 
       const order = {
         orderId: orderNumber,
@@ -392,7 +409,8 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
         orderType: form.orderType,
         items,
         subtotal,
-        status: form.paymentMethod === "cod" ? "Order Request Received" : "Order Confirmed",
+        finalAmount,
+        status: form.paymentMethod === "online" ? "Order Confirmed" : "Order Request Received",
         backendMode,
         createdAt: new Date().toISOString()
       };
@@ -439,13 +457,16 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-[#C9962D]">Order Confirmed</p>
             <h1 className="mt-3 font-display text-3xl font-semibold text-[#7A183D] sm:text-4xl">Thank you for shopping with Karari Beauty</h1>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#3A2417]/70">
-              Your order has been received. Online payments are verified securely through Razorpay.
+              {submittedOrder.paymentMethod === "pending_confirmation"
+                ? "Karari Beauty will confirm availability, delivery charges and payment details."
+                : "Your order has been received. Online payments are verified securely through Razorpay."}
             </p>
 
             <div className="mt-7 grid gap-3 rounded-xl border border-[rgba(122,24,61,0.12)] bg-[#FFF8EE] p-4 text-left text-sm font-semibold text-[#3A2417]/72 sm:grid-cols-2">
               <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Order ID</span>{submittedOrder.orderId}</p>
               <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Customer</span>{submittedOrder.customer.fullName}</p>
               <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Subtotal</span>{formatCurrency(submittedOrder.subtotal)}</p>
+              <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Final Amount</span>{formatCurrency(submittedOrder.finalAmount || submittedOrder.subtotal)}</p>
               <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Payment</span>{submittedOrder.paymentPreference}</p>
               <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Payment Status</span>{submittedOrder.paymentStatus}</p>
             </div>
@@ -615,11 +636,21 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
                       <span className="text-[#3A2417]">{formatCurrency(subtotal)}</span>
                     </div>
                     <div className="flex items-center justify-between">
+                      <span>Delivery</span>
+                      <span className="text-[#3A2417]">{deliveryCharge > 0 ? formatCurrency(deliveryCharge) : "Free delivery"}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Discount</span>
+                      <span className="text-[#3A2417]">{discount > 0 ? `-${formatCurrency(discount)}` : formatCurrency(0)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
                       <span>Final amount</span>
-                      <span className="text-[#7A183D]">To be confirmed</span>
+                      <span className="font-bold text-[#7A183D]">{hasFinalAmount ? formatCurrency(finalAmount) : "To be confirmed"}</span>
                     </div>
                     <p className="rounded-lg bg-[#FCE7EC]/72 p-3 leading-6">
-                      Delivery charges and final payment details will be confirmed by Karari Beauty.
+                      {form.paymentMethod === "online"
+                        ? "Delivery is included for now. Pay the final amount securely through Razorpay."
+                        : "Karari Beauty will confirm availability, delivery charges and payment details."}
                     </p>
                   </div>
                 </section>
@@ -635,12 +666,13 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
 
                 {errors.cart ? <p className="rounded-lg bg-white p-3 text-sm font-bold text-[#7A183D]">{errors.cart}</p> : null}
                 {submitError ? <p className="rounded-lg bg-white p-3 text-sm font-bold text-[#7A183D]">{submitError}</p> : null}
+                {form.paymentMethod === "online" && !hasFinalAmount ? <p className="rounded-lg bg-white p-3 text-sm font-bold text-[#7A183D]">Online payment is available only after final amount is calculated.</p> : null}
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || (form.paymentMethod === "online" && !hasFinalAmount)}
                   className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417] disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {submitting ? "Processing..." : form.paymentMethod === "cod" ? "Place COD Order" : "Pay Now"}
+                  {submitting ? "Processing..." : form.paymentMethod === "online" ? "Pay Now" : form.paymentMethod === "cod" ? "Place COD Order" : "Submit Order Request"}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </aside>
