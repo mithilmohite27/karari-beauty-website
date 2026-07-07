@@ -106,6 +106,8 @@ function getPaymentStartupMessage(errorCode, fallbackMessage) {
     INVALID_AMOUNT: "Final amount is required before payment.",
     FINAL_AMOUNT_REQUIRED: "Final amount is required before payment.",
     CUSTOMER_DETAILS_REQUIRED: "Customer details are required.",
+    SUPABASE_ORDER_CREATE_FAILED: "Payment setup issue. Please try again or choose Pay after confirmation.",
+    SUPABASE_PAYMENT_LINK_FAILED: "Payment setup issue. Please try again or choose Pay after confirmation.",
     RAZORPAY_ORDER_CREATE_FAILED: "Unable to create Razorpay order. Please try again."
   };
 
@@ -365,6 +367,11 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
           message: "Unable to create Razorpay order. Please try again."
         }));
         if (!createResponse.ok || !paymentDraft.ok) {
+          console.error("[checkout-payment-startup]", {
+            error: paymentDraft.error,
+            message: paymentDraft.message,
+            details: paymentDraft.details
+          });
           throw new Error(getPaymentStartupMessage(paymentDraft.error, paymentDraft.message));
         }
 

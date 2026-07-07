@@ -13,8 +13,8 @@ function normalizeOrderType(value) {
   return value === "International Inquiry" ? "international" : "domestic";
 }
 
-function errorResponse(error, message, status = 400) {
-  return NextResponse.json({ ok: false, error, message }, { status });
+function errorResponse(error, message, status = 400, details = "") {
+  return NextResponse.json({ ok: false, error, message, details }, { status });
 }
 
 function logPaymentStartup(details = {}) {
@@ -25,9 +25,20 @@ function logPaymentStartup(details = {}) {
     hasServerSecret: razorpayStatus.hasServerSecret,
     keyMode: razorpayStatus.keyMode,
     finalAmount: details.finalAmount,
+    amountInPaise: details.amountInPaise,
     itemCount: details.itemCount,
-    hasCustomerEmail: details.hasCustomerEmail
+    hasCustomerEmail: details.hasCustomerEmail,
+    hasCustomer: details.hasCustomer,
+    paymentMethod: details.paymentMethod
   });
+}
+
+function logPaymentStep(step, details = {}) {
+  console.info(`[razorpay-create-order:${step}]`, details);
+}
+
+function safeReceipt(value) {
+  return cleanString(value).slice(0, 40) || `KB-${Date.now()}`;
 }
 
 function validateItems(items) {
@@ -72,8 +83,11 @@ async function getServerPricedItems(items) {
 export async function POST(request) {
   let startupLogDetails = {
     finalAmount: null,
+    amountInPaise: null,
     itemCount: 0,
-    hasCustomerEmail: false
+    hasCustomerEmail: false,
+    hasCustomer: false,
+    paymentMethod: "online"
   };
 
   try {
@@ -87,13 +101,6 @@ export async function POST(request) {
     const country = cleanString(delivery.country || body.deliveryCountry);
     const city = cleanString(delivery.city || body.deliveryCity);
     const address = cleanString(delivery.address || body.deliveryAddress);
-
-    startupLogDetails = {
-      finalAmount: Number(body.finalAmount),
-      itemCount: Array.isArray(body.items) ? body.items.length : 0,
-      hasCustomerEmail: Boolean(email)
-    };
-    logPaymentStartup(startupLogDetails);
 
     if (!fullName || !phone || !country || !city || !address) {
       return errorResponse("CUSTOMER_DETAILS_REQUIRED", "Customer details are required.", 400);
@@ -110,6 +117,17 @@ export async function POST(request) {
     const discount = Math.max(0, Number(body.discount) || 0);
     const finalAmount = Number(body.finalAmount);
     const serverFinalAmount = Math.max(subtotal + deliveryCharge - discount, 0);
+    const amount = Math.round(serverFinalAmount * 100);
+
+    startupLogDetails = {
+      finalAmount,
+      amountInPaise: amount,
+      itemCount: pricedResult.items.length,
+      hasCustomerEmail: Boolean(email),
+      hasCustomer: Boolean(fullName && phone),
+      paymentMethod: "online"
+    };
+    logPaymentStartup(startupLogDetails);
 
     if (!Number.isFinite(finalAmount) || finalAmount <= 0 || serverFinalAmount <= 0) {
       return errorResponse("INVALID_AMOUNT", "Final amount is required before payment.", 400);
@@ -119,50 +137,120 @@ export async function POST(request) {
       return errorResponse("INVALID_AMOUNT", "Final amount is required before payment.", 400);
     }
 
-    const amount = Math.round(serverFinalAmount * 100);
+    if (!Number.isInteger(amount) || amount <= 0) {
+      return errorResponse("INVALID_AMOUNT", "Final amount is required before payment.", 400);
+    }
 
-    const order = await createOrder({
-      customerName: fullName,
-      customerPhone: phone,
-      customerEmail: email,
-      deliveryCountry: country,
-      deliveryCity: city,
-      deliveryAddress: address,
-      orderType: normalizeOrderType(body.orderType),
-      paymentGateway: "razorpay",
-      paymentMethod: "online",
-      paymentPreference: "Online Payment via Razorpay",
-      paymentStatus: "pending",
-      notes: cleanString(delivery.note || body.notes),
-      items: pricedResult.items,
-      subtotal,
-      totalAmount: serverFinalAmount,
-      status: "new"
-    });
+    let order;
+    try {
+      logPaymentStep("supabase-order-insert-start", {
+        finalAmount: serverFinalAmount,
+        amountInPaise: amount,
+        itemCount: pricedResult.items.length,
+        hasCustomerEmail: Boolean(email),
+        paymentMethod: "online"
+      });
+      order = await createOrder({
+        customerName: fullName,
+        customerPhone: phone,
+        customerEmail: email,
+        deliveryCountry: country,
+        deliveryCity: city,
+        deliveryAddress: address,
+        orderType: normalizeOrderType(body.orderType),
+        paymentGateway: "razorpay",
+        paymentMethod: "online",
+        paymentPreference: "Online Payment via Razorpay",
+        paymentStatus: "pending",
+        notes: cleanString(delivery.note || body.notes),
+        items: pricedResult.items,
+        subtotal,
+        deliveryCharge,
+        discountAmount: discount,
+        totalAmount: serverFinalAmount,
+        status: "new"
+      });
+      logPaymentStep("supabase-order-insert-succeeded", {
+        orderNumber: order.orderNumber,
+        mode: order.mode || "unknown"
+      });
+    } catch (orderError) {
+      console.error("[razorpay-create-order:supabase-order-insert-failed]", {
+        message: orderError?.message || "Unknown Supabase order insert error",
+        finalAmount: serverFinalAmount,
+        amountInPaise: amount,
+        itemCount: pricedResult.items.length,
+        hasCustomerEmail: Boolean(email),
+        paymentMethod: "online"
+      });
+      return errorResponse(
+        "SUPABASE_ORDER_CREATE_FAILED",
+        "Payment setup issue. Please try again or choose Pay after confirmation.",
+        500,
+        orderError?.message || "Unable to create draft order."
+      );
+    }
 
     let razorpayOrder;
     try {
+      logPaymentStep("razorpay-order-create-started", {
+        finalAmount: serverFinalAmount,
+        amountInPaise: amount,
+        itemCount: pricedResult.items.length,
+        hasCustomerEmail: Boolean(email),
+        paymentMethod: "online"
+      });
       razorpayOrder = await createRazorpayOrder({
         amount,
         currency: "INR",
-        receipt: order.orderNumber,
+        receipt: safeReceipt(order.orderNumber),
         notes: {
-          internal_order_id: order.orderId,
-          order_number: order.orderNumber
+          internal_order_id: cleanString(order.orderId),
+          order_number: cleanString(order.orderNumber)
         }
+      });
+      logPaymentStep("razorpay-order-create-succeeded", {
+        razorpayOrderCreated: Boolean(razorpayOrder?.id),
+        amountInPaise: amount,
+        keyMode: getRazorpayStatus().keyMode
       });
     } catch (razorpayError) {
       if (razorpayError instanceof RazorpayConfigError) throw razorpayError;
       console.error("[razorpay-create-order:api-error]", {
         message: razorpayError?.message || "Unknown Razorpay API error",
         finalAmount: serverFinalAmount,
+        amountInPaise: amount,
         itemCount: pricedResult.items.length,
         hasCustomerEmail: Boolean(email)
       });
-      return errorResponse("RAZORPAY_ORDER_CREATE_FAILED", "Unable to create Razorpay order. Please try again.", 502);
+      return errorResponse(
+        "RAZORPAY_ORDER_CREATE_FAILED",
+        "Unable to create Razorpay order. Please try again.",
+        502,
+        razorpayError?.message || "Razorpay API failed."
+      );
     }
 
-    await createOrderPaymentLink(order.orderId, razorpayOrder.id);
+    try {
+      await createOrderPaymentLink(order.orderId, razorpayOrder.id);
+      logPaymentStep("supabase-razorpay-link-succeeded", {
+        orderNumber: order.orderNumber,
+        razorpayOrderLinked: Boolean(razorpayOrder?.id)
+      });
+    } catch (linkError) {
+      console.error("[razorpay-create-order:supabase-razorpay-link-failed]", {
+        message: linkError?.message || "Unknown Supabase Razorpay link error",
+        orderNumber: order.orderNumber,
+        finalAmount: serverFinalAmount,
+        amountInPaise: amount
+      });
+      return errorResponse(
+        "SUPABASE_PAYMENT_LINK_FAILED",
+        "Payment setup issue. Please try again or choose Pay after confirmation.",
+        500,
+        linkError?.message || "Unable to link Razorpay order."
+      );
+    }
 
     return NextResponse.json({
       ok: true,
@@ -185,23 +273,35 @@ export async function POST(request) {
         hasServerSecret: razorpayStatus.hasServerSecret,
         keyMode: razorpayStatus.keyMode,
         finalAmount: startupLogDetails.finalAmount,
+        amountInPaise: startupLogDetails.amountInPaise,
         itemCount: startupLogDetails.itemCount,
-        hasCustomerEmail: startupLogDetails.hasCustomerEmail
+        hasCustomerEmail: startupLogDetails.hasCustomerEmail,
+        hasCustomer: startupLogDetails.hasCustomer,
+        paymentMethod: startupLogDetails.paymentMethod
       });
       return errorResponse("RAZORPAY_NOT_CONFIGURED", "Payment keys are not configured.", error.status || 503);
     }
     console.error("[razorpay-create-order:unexpected]", {
       message: error?.message || "Unknown error",
       finalAmount: startupLogDetails.finalAmount,
+      amountInPaise: startupLogDetails.amountInPaise,
       itemCount: startupLogDetails.itemCount,
-      hasCustomerEmail: startupLogDetails.hasCustomerEmail
+      hasCustomerEmail: startupLogDetails.hasCustomerEmail,
+      hasCustomer: startupLogDetails.hasCustomer,
+      paymentMethod: startupLogDetails.paymentMethod
     });
-    return errorResponse("RAZORPAY_ORDER_CREATE_FAILED", "Unable to create Razorpay order. Please try again.", 500);
+    return errorResponse(
+      "RAZORPAY_ORDER_CREATE_FAILED",
+      "Unable to create Razorpay order. Please try again.",
+      500,
+      error?.message || "Unexpected payment startup error."
+    );
   }
 }
 
 async function createOrderPaymentLink(orderId, razorpayOrderId) {
   const supabase = createAdminSupabaseClient();
   if (!supabase || !orderId || !razorpayOrderId) return;
-  await supabase.from("orders").update({ razorpay_order_id: razorpayOrderId }).eq("id", orderId);
+  const { error } = await supabase.from("orders").update({ razorpay_order_id: razorpayOrderId }).eq("id", orderId);
+  if (error) throw new Error(`Unable to link Razorpay order: ${error.message}`);
 }

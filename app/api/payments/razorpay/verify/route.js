@@ -29,6 +29,7 @@ export async function POST(request) {
       await updateOrderPaymentByRazorpayOrderId(razorpayOrderId, {
         paymentStatus: "failed",
         razorpayPaymentId,
+        razorpaySignature,
         razorpaySignatureVerified: false,
         paymentFailureReason: "Razorpay signature verification failed."
       });
@@ -38,6 +39,7 @@ export async function POST(request) {
     const order = await updateOrderPaymentByRazorpayOrderId(razorpayOrderId, {
       paymentStatus: "paid",
       razorpayPaymentId,
+      razorpaySignature,
       razorpaySignatureVerified: true,
       paymentVerifiedAt: new Date().toISOString()
     });

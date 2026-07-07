@@ -93,15 +93,18 @@ create table if not exists public.orders (
   payment_preference text,
   payment_status text default 'pending' check (payment_status in ('pending', 'pending_confirmation', 'submitted', 'verified', 'paid', 'failed', 'cod_pending', 'refunded')),
   payment_reference text,
+  payment_transaction_id text,
   payment_note text,
   razorpay_order_id text,
   razorpay_payment_id text,
+  razorpay_signature text,
   razorpay_signature_verified boolean default false,
   payment_verified_at timestamptz,
   payment_failure_reason text,
   cod_selected boolean default false,
   cod_eligible boolean default false,
   subtotal numeric(10,2) default 0 check (subtotal >= 0),
+  delivery_charge numeric(10,2) default 0 check (delivery_charge >= 0),
   discount_amount numeric(10,2) default 0 check (discount_amount >= 0),
   total_amount numeric(10,2) default 0 check (total_amount >= 0),
   status text default 'new' check (status in ('new', 'confirmed', 'processing', 'packed', 'shipped', 'delivered', 'cancelled')),
@@ -180,15 +183,18 @@ alter table public.orders add constraint orders_status_check check (status in ('
 alter table public.orders add column if not exists payment_method text;
 alter table public.orders add column if not exists payment_status text default 'pending';
 alter table public.orders add column if not exists payment_reference text;
+alter table public.orders add column if not exists payment_transaction_id text;
 alter table public.orders add column if not exists payment_note text;
 alter table public.orders add column if not exists payment_gateway text;
 alter table public.orders add column if not exists razorpay_order_id text;
 alter table public.orders add column if not exists razorpay_payment_id text;
+alter table public.orders add column if not exists razorpay_signature text;
 alter table public.orders add column if not exists razorpay_signature_verified boolean default false;
 alter table public.orders add column if not exists payment_verified_at timestamptz;
 alter table public.orders add column if not exists payment_failure_reason text;
 alter table public.orders add column if not exists cod_selected boolean default false;
 alter table public.orders add column if not exists cod_eligible boolean default false;
+alter table public.orders add column if not exists delivery_charge numeric(10,2) default 0;
 update public.orders set payment_status = 'pending' where payment_status is null;
 alter table public.orders drop constraint if exists orders_payment_status_check;
 alter table public.orders add constraint orders_payment_status_check check (payment_status in ('pending', 'pending_confirmation', 'submitted', 'verified', 'paid', 'failed', 'cod_pending', 'refunded'));

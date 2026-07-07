@@ -251,6 +251,53 @@ Checkout behavior:
 - COD orders save `payment_status = cod_pending`.
 - No gateway charge is shown separately to customers.
 
+### Razorpay QA checklist
+
+Required Vercel environment variables:
+
+```env
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_or_live_public_key
+RAZORPAY_KEY_ID=rzp_test_or_live_server_key
+RAZORPAY_KEY_SECRET=server_secret
+RAZORPAY_WEBHOOK_SECRET=webhook_secret_if_webhooks_are_enabled
+```
+
+Required Supabase `orders` payment columns:
+
+- `payment_gateway`
+- `payment_method`
+- `payment_status`
+- `payment_reference`
+- `payment_transaction_id`
+- `payment_note`
+- `razorpay_order_id`
+- `razorpay_payment_id`
+- `razorpay_signature`
+- `razorpay_signature_verified`
+- `payment_verified_at`
+- `payment_failure_reason`
+- `cod_selected`
+- `cod_eligible`
+- `subtotal`
+- `delivery_charge`
+- `discount_amount`
+- `total_amount`
+
+Run `supabase/schema.sql` after payment schema changes. If Supabase reports schema-cache errors after adding columns, reload the PostgREST schema cache from the Supabase dashboard or wait briefly and retry.
+
+Payment startup checks:
+
+1. Open `/api/payments/razorpay/status`.
+2. Confirm `configured: true` and matching `keyMode` for public/server keys.
+3. Start checkout with a signed-in customer and a non-empty cart.
+4. In Vercel logs, search `[razorpay-create-order:` for the exact step:
+   - `supabase-order-insert-start`
+   - `supabase-order-insert-succeeded`
+   - `razorpay-order-create-started`
+   - `razorpay-order-create-succeeded`
+   - `supabase-razorpay-link-succeeded`
+5. In test mode, use Razorpay test cards/UPI values from the Razorpay dashboard.
+
 Test payload:
 
 ```json
