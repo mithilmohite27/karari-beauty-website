@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowRight, CalendarDays, Globe2, Heart, MessageCircle, Share2, X } from "lucide-react";
 import { frequentlyBoughtTogether } from "@/data/frequentlyBoughtTogether";
 import { products as localProducts } from "@/data/products";
+import { goToCheckout } from "@/lib/customer/session";
 import { setBuyNowItem } from "@/lib/ecommerceStorage";
 import { createWhatsAppUrl, formatCurrency } from "@/lib/whatsapp";
 
@@ -17,7 +18,7 @@ export default function QuickViewModal({ product, onClose, products = localProdu
     .filter(Boolean);
   const buyNow = () => {
     setBuyNowItem(product, 1);
-    window.location.assign("/checkout?mode=buy-now");
+    goToCheckout({ mode: "buy-now" });
   };
 
   return (

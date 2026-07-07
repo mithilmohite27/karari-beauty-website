@@ -175,12 +175,18 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
       }
 
       const user = data.session.user;
+      const profile = user.user_metadata || {};
       setCustomerSession(data.session);
       setForm((current) => ({
         ...current,
-        fullName: current.fullName || user.user_metadata?.full_name || "",
-        mobile: current.mobile || user.user_metadata?.phone || "",
-        email: current.email || user.email || ""
+        fullName: current.fullName || profile.full_name || "",
+        mobile: current.mobile || profile.phone || profile.mobile || "",
+        email: current.email || user.email || "",
+        country: profile.country || current.country || "India",
+        address: current.address || profile.address || "",
+        city: current.city || profile.city || "",
+        state: current.state || profile.state || "",
+        pincode: current.pincode || profile.pincode || profile.postal_code || ""
       }));
       setAuthChecking(false);
     };

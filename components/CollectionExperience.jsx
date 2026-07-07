@@ -10,6 +10,7 @@ import { Header } from "@/components/HomeExperience";
 import ProductCard from "@/components/ProductCard";
 import QuickViewModal from "@/components/QuickViewModal";
 import { products as localProducts } from "@/data/products";
+import { goToCheckout } from "@/lib/customer/session";
 import {
   addRecentlyViewed,
   addToCart as addCartItem,
@@ -69,7 +70,7 @@ export default function CollectionExperience({ category, products, relatedCatego
 
   const buyNow = (product) => {
     setBuyNowItem(product, 1);
-    window.location.assign("/checkout?mode=buy-now");
+    goToCheckout({ mode: "buy-now" });
   };
 
   const toggleWishlist = (product) => {

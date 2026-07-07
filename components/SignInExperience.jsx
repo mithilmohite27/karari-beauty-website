@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,6 +20,19 @@ const visualCards = [
 ];
 
 const initialErrors = {};
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+}
+
+function friendlyAuthError(error) {
+  const message = String(error?.message || "").toLowerCase();
+  if (message.includes("invalid login credentials")) return "Invalid email or password.";
+  if (message.includes("already registered") || message.includes("already exists")) return "An account with this email already exists.";
+  if (message.includes("email not confirmed")) return "Please verify your email before signing in.";
+  if (message.includes("password")) return "Password must be at least 6 characters.";
+  return "Unable to sign in. Please try again.";
+}
 
 function Field({ label, error, children }) {
   return (
@@ -45,7 +58,7 @@ function TextInput({ icon: Icon, ...props }) {
 
 export default function SignInExperience() {
   const [mode, setMode] = useState("sign-in");
-  const [method, setMethod] = useState("mobile");
+  const [method, setMethod] = useState("email");
   const [notice, setNotice] = useState("");
   const [errors, setErrors] = useState(initialErrors);
   const [submitting, setSubmitting] = useState(false);
@@ -61,13 +74,22 @@ export default function SignInExperience() {
   });
 
   const isRegister = mode === "register";
-  const panelTitle = isRegister ? "Create your account" : "Sign in to continue";
+  const panelTitle = isRegister ? "Create your Karari Beauty account" : "Welcome back to Karari Beauty";
   const redirectTo = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("redirect") || "/" : "/";
   const panelNote = isRegister
     ? "Create your Karari Beauty account with email and password."
     : method === "mobile"
       ? "OTP sign-in will be activated in the next phase."
       : "Use your email and password to continue securely.";
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "register") {
+      setMode("register");
+      setErrors(initialErrors);
+      setNotice("");
+    }
+  }, []);
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -81,15 +103,18 @@ export default function SignInExperience() {
       if (!form.fullName.trim()) nextErrors.fullName = "Full name is required.";
       if (!form.registerMobile.trim()) nextErrors.registerMobile = "Mobile number is required.";
       if (!form.registerEmail.trim()) nextErrors.registerEmail = "Email is required.";
+      else if (!isValidEmail(form.registerEmail)) nextErrors.registerEmail = "Please enter a valid email.";
       if (!form.registerPassword) nextErrors.registerPassword = "Password is required.";
+      else if (form.registerPassword.length < 6) nextErrors.registerPassword = "Password must be at least 6 characters.";
       if (!form.confirmPassword) nextErrors.confirmPassword = "Confirm password is required.";
       if (form.registerPassword && form.confirmPassword && form.registerPassword !== form.confirmPassword) {
-        nextErrors.confirmPassword = "Passwords should match.";
+        nextErrors.confirmPassword = "Passwords do not match.";
       }
     } else if (method === "mobile") {
       if (!form.mobile.trim()) nextErrors.mobile = "Mobile number is required.";
     } else {
       if (!form.email.trim()) nextErrors.email = "Email is required.";
+      else if (!isValidEmail(form.email)) nextErrors.email = "Please enter a valid email.";
       if (!form.password) nextErrors.password = "Password is required.";
     }
 
@@ -139,9 +164,10 @@ export default function SignInExperience() {
         return;
       }
 
+      window.dispatchEvent(new Event("customerAuth:updated"));
       window.location.assign(redirectTo);
     } catch (error) {
-      setNotice(error.message || "Unable to continue. Please check your details.");
+      setNotice(friendlyAuthError(error));
     } finally {
       setSubmitting(false);
     }

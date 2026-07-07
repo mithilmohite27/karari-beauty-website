@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, BadgeCheck, ChevronRight, Heart, Minus, PackageCheck, Plus, ShieldCheck, ShoppingCart, Star, Truck } from "lucide-react";
@@ -10,6 +9,7 @@ import { Header } from "@/components/HomeExperience";
 import ProductCard from "@/components/ProductCard";
 import QuickViewModal from "@/components/QuickViewModal";
 import { products as localProducts } from "@/data/products";
+import { goToCheckout } from "@/lib/customer/session";
 import {
   addRecentlyViewed,
   addToCart as addCartItem,
@@ -28,7 +28,6 @@ const trustBadges = [
 ];
 
 export default function ProductDetailExperience({ product, category, relatedProducts, allProducts = localProducts, allCategories }) {
-  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [wishlistIds, setWishlistIds] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -71,7 +70,7 @@ export default function ProductDetailExperience({ product, category, relatedProd
 
   const buyNow = (item, itemQuantity = 1) => {
     setBuyNowItem(item, itemQuantity);
-    router.push("/checkout?mode=buy-now");
+    goToCheckout({ mode: "buy-now" });
   };
 
   const toggleWishlist = (item) => {

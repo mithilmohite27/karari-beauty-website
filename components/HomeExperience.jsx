@@ -49,6 +49,7 @@ import {
   toggleWishlist as toggleWishlistItem
 } from "@/lib/ecommerceStorage";
 import { createWhatsAppUrl, formatCurrency } from "@/lib/whatsapp";
+import { getCustomerDisplayName, getCustomerSession, goToCheckout, signOutCustomer } from "@/lib/customer/session";
 
 const CAMPAIGN_OFFER_FALLBACK = "Festive offers live now";
 
@@ -320,6 +321,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
   const [wishlistItems, setWishlistItems] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [viewedCount, setViewedCount] = useState(0);
+  const [customerUser, setCustomerUser] = useState(null);
   const [activeHeaderDropdown, setActiveHeaderDropdown] = useState(null);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
@@ -348,6 +350,25 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
       window.removeEventListener("wishlist:updated", syncHeaderCounts);
       window.removeEventListener("recentlyViewed:updated", syncHeaderCounts);
       window.removeEventListener("storage", syncHeaderCounts);
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const syncCustomer = async () => {
+      const { user } = await getCustomerSession();
+      if (mounted) setCustomerUser(user);
+    };
+
+    syncCustomer();
+    window.addEventListener("customerAuth:updated", syncCustomer);
+    window.addEventListener("storage", syncCustomer);
+
+    return () => {
+      mounted = false;
+      window.removeEventListener("customerAuth:updated", syncCustomer);
+      window.removeEventListener("storage", syncCustomer);
     };
   }, []);
 
@@ -381,6 +402,12 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
     setCartDrawerOpen(true);
   };
 
+  const logoutCustomer = async () => {
+    await signOutCustomer();
+    setCustomerUser(null);
+    setActiveHeaderDropdown(null);
+  };
+
   const updateCountry = (country) => {
     const nextCountry = countries.find((item) => item.name === country) || countries[0];
     setSelectedCountry(nextCountry.name);
@@ -404,6 +431,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
       ? announcementLine
       : internationalTemplate.replace("{country}", selectedCountry);
   const selectedCurrencyMeta = currencies.find((currency) => currency.code === selectedCurrency) || currencies[0];
+  const customerName = getCustomerDisplayName(customerUser);
 
   return (
     <>
@@ -517,19 +545,32 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
               <HeaderIconButton icon={User} label="Account" onClick={() => toggleHeaderDropdown("account")} active={activeHeaderDropdown === "account"} />
               <HeaderDropdown open={activeHeaderDropdown === "account"}>
                 <div className="space-y-2">
-                  <Link href="/sign-in" className="block rounded-md bg-[#FFF8EE] p-3 text-sm font-semibold text-[#3A2417] transition hover:bg-[#FCE7EC] hover:text-[#7A183D]">
-                    Sign In
-                  </Link>
-                  <Link href="/account" className="block rounded-md bg-[#FFF8EE] p-3 text-sm font-semibold text-[#3A2417] transition hover:bg-[#FCE7EC] hover:text-[#7A183D]">
-                    My Account
-                  </Link>
-                  <Link href="/account" className="block rounded-md bg-[#FFF8EE] p-3 text-sm font-semibold text-[#3A2417] transition hover:bg-[#FCE7EC] hover:text-[#7A183D]">
-                    Track Order
-                  </Link>
-                  <button type="button" onClick={() => setActiveHeaderDropdown("wishlist")} className="block w-full rounded-md bg-[#FFF8EE] p-3 text-left text-sm font-semibold text-[#3A2417] transition hover:bg-[#FCE7EC] hover:text-[#7A183D]">
-                    Wishlist
-                  </button>
-                  <p className="rounded-md border border-[rgba(201,150,45,0.24)] bg-white p-3 text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">Customer login coming soon</p>
+                  {customerUser ? (
+                    <>
+                      <div className="rounded-md border border-[rgba(201,150,45,0.24)] bg-white p-3">
+                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">Signed in as</p>
+                        <p className="mt-1 truncate text-sm font-bold text-[#7A183D]">{customerName}</p>
+                      </div>
+                      <Link href="/account" onClick={() => setActiveHeaderDropdown(null)} className="block rounded-md bg-[#FFF8EE] p-3 text-sm font-semibold text-[#3A2417] transition hover:bg-[#FCE7EC] hover:text-[#7A183D]">
+                        My Account
+                      </Link>
+                      <Link href="/account#orders" onClick={() => setActiveHeaderDropdown(null)} className="block rounded-md bg-[#FFF8EE] p-3 text-sm font-semibold text-[#3A2417] transition hover:bg-[#FCE7EC] hover:text-[#7A183D]">
+                        Orders
+                      </Link>
+                      <button type="button" onClick={logoutCustomer} className="block w-full rounded-md bg-[#7A183D] p-3 text-left text-sm font-bold text-white transition hover:bg-[#3A2417]">
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/sign-in" onClick={() => setActiveHeaderDropdown(null)} className="block rounded-md bg-[#FFF8EE] p-3 text-sm font-semibold text-[#3A2417] transition hover:bg-[#FCE7EC] hover:text-[#7A183D]">
+                        Sign In
+                      </Link>
+                      <Link href="/sign-in?mode=register" onClick={() => setActiveHeaderDropdown(null)} className="block rounded-md bg-[#FFF8EE] p-3 text-sm font-semibold text-[#3A2417] transition hover:bg-[#FCE7EC] hover:text-[#7A183D]">
+                        Create Account
+                      </Link>
+                    </>
+                  )}
                 </div>
               </HeaderDropdown>
             </div>
@@ -594,14 +635,29 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
               </label>
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
-              <Link href="/sign-in" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
-                <User className="h-4 w-4" />
-                Sign In
-              </Link>
-              <Link href="/account" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
-                <PackageCheck className="h-4 w-4" />
-                My Account
-              </Link>
+              {customerUser ? (
+                <>
+                  <Link href="/account" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
+                    <PackageCheck className="h-4 w-4" />
+                    My Account
+                  </Link>
+                  <button type="button" onClick={logoutCustomer} className="inline-flex items-center gap-2 rounded-md bg-[#7A183D] px-3 py-2 text-sm font-semibold text-white">
+                    <User className="h-4 w-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/sign-in" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
+                    <User className="h-4 w-4" />
+                    Sign In
+                  </Link>
+                  <Link href="/sign-in?mode=register" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
+                    <PackageCheck className="h-4 w-4" />
+                    Create Account
+                  </Link>
+                </>
+              )}
               <button type="button" onClick={() => toggleHeaderDropdown("viewed")} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
                 <Eye className="h-4 w-4" />
                 Recently Viewed
@@ -915,7 +971,7 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, p
 
   const buyNow = (product) => {
     setBuyNowItem(product, 1);
-    window.location.assign("/checkout?mode=buy-now");
+    goToCheckout({ mode: "buy-now" });
   };
 
   const toggleWishlist = (product) => {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, PackageCheck, ShieldCheck, Truck } from "lucide-react";
+import { goToCheckout } from "@/lib/customer/session";
 import { formatCurrency } from "@/lib/whatsapp";
 
 export default function CartSummary({ subtotal, itemCount, mode = "page", onContinueShopping, onCheckout }) {
@@ -36,14 +37,17 @@ export default function CartSummary({ subtotal, itemCount, mode = "page", onCont
 
       <div className="grid gap-2">
         {itemCount ? (
-          <Link
-            href="/checkout"
-            onClick={onCheckout}
+          <button
+            type="button"
+            onClick={() => {
+              onCheckout?.();
+              goToCheckout();
+            }}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#7A183D] px-4 text-sm font-bold text-white transition hover:bg-[#3A2417]"
           >
             Proceed to Checkout
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </button>
         ) : (
           <button
             type="button"
