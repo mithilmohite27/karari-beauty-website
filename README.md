@@ -243,6 +243,7 @@ Checkout behavior:
 - Product cards, quick view and product detail pages can send a single item to checkout with Buy Now.
 - Buy Now uses temporary session checkout storage and does not overwrite the customer cart.
 - Checkout requires a signed-in Supabase customer session.
+- For faster ecommerce checkout, disable Supabase email confirmation: Supabase Dashboard -> Authentication -> Providers -> Email -> Confirm email OFF. If confirmation remains ON, customers must verify email before signing in and continuing checkout.
 - Online payment creates a Razorpay order server-side and verifies the Razorpay signature before clearing the cart.
 - Successful Razorpay payment saves `payment_status = paid` and confirms the order.
 - Failed/cancelled Razorpay payment keeps the cart available for retry.

@@ -555,7 +555,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
                         My Account
                       </Link>
                       <Link href="/account#orders" onClick={() => setActiveHeaderDropdown(null)} className="block rounded-md bg-[#FFF8EE] p-3 text-sm font-semibold text-[#3A2417] transition hover:bg-[#FCE7EC] hover:text-[#7A183D]">
-                        Orders
+                        My Orders
                       </Link>
                       <button type="button" onClick={logoutCustomer} className="block w-full rounded-md bg-[#7A183D] p-3 text-left text-sm font-bold text-white transition hover:bg-[#3A2417]">
                         Logout
@@ -640,6 +640,10 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
                   <Link href="/account" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
                     <PackageCheck className="h-4 w-4" />
                     My Account
+                  </Link>
+                  <Link href="/account#orders" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
+                    <ShoppingCart className="h-4 w-4" />
+                    My Orders
                   </Link>
                   <button type="button" onClick={logoutCustomer} className="inline-flex items-center gap-2 rounded-md bg-[#7A183D] px-3 py-2 text-sm font-semibold text-white">
                     <User className="h-4 w-4" />
