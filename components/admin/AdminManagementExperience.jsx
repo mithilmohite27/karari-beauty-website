@@ -386,8 +386,109 @@ async function getAdminToken() {
   return data.session?.access_token || "";
 }
 
-function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeactivate, onDelete, canManageProducts, canHardDeleteProducts }) {
+function CategoryDetailDrawer({ category, onClose, onEdit, onToggleStatus, canManageCategories }) {
+  if (!category) return null;
+
+  const collectionPath = category.href || `/collections/${category.slug}`;
+  const isActive = category.isActive !== false;
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-[#3A2417]/35">
+      <aside className="h-full w-full max-w-lg overflow-y-auto bg-[#FFF8EE] p-5 shadow-boutique">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Category Details</p>
+            <h2 className="mt-2 font-display text-3xl font-semibold text-[#7A183D]">{category.name}</h2>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white p-2 text-[#7A183D]" aria-label="Close category details">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <section className="mt-5 rounded-2xl border border-[rgba(122,24,61,0.12)] bg-white/72 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">Category Summary</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl bg-[#FFF8EE] p-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">Slug</p>
+              <p className="mt-1 break-words text-sm font-bold text-[#3A2417]">{category.slug}</p>
+            </div>
+            <div className="rounded-xl bg-[#FFF8EE] p-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">Status</p>
+              <div className="mt-1">{boolBadge(isActive, "Active", "Inactive")}</div>
+            </div>
+            <div className="rounded-xl bg-[#FFF8EE] p-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">Featured on homepage</p>
+              <div className="mt-1">{boolBadge(Boolean(category.featured), "Yes", "No")}</div>
+            </div>
+            <div className="rounded-xl bg-[#FFF8EE] p-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">Active products</p>
+              <p className="mt-1 text-sm font-bold text-[#3A2417]">{category.productCount || 0}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-[rgba(122,24,61,0.12)] bg-white/72 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">Storefront Details</p>
+          <div className="mt-3 space-y-3">
+            <div className="rounded-xl bg-[#FFF8EE] p-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">Description</p>
+              <p className="mt-1 text-sm font-semibold leading-6 text-[#3A2417]/72">{category.description || "No description added."}</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl bg-[#FFF8EE] p-3">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">Product count label</p>
+                <p className="mt-1 text-sm font-bold text-[#3A2417]">{category.productCountLabel || `${category.productCount || 0} products`}</p>
+              </div>
+              <div className="rounded-xl bg-[#FFF8EE] p-3">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">Display order</p>
+                <p className="mt-1 text-sm font-bold text-[#3A2417]">{category.sortOrder ?? 0}</p>
+              </div>
+            </div>
+            <div className="rounded-xl bg-[#FFF8EE] p-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">Collection page</p>
+              <a href={collectionPath} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex break-all text-sm font-bold text-[#7A183D] underline-offset-4 hover:underline">
+                {collectionPath}
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-[rgba(122,24,61,0.12)] bg-white/72 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">Category Image</p>
+          {category.image ? (
+            <>
+              <img src={category.image} alt={category.name} className="mt-3 h-44 w-full rounded-xl object-cover" />
+              <p className="mt-2 line-clamp-2 break-all text-xs font-semibold text-[#3A2417]/58">{category.image}</p>
+            </>
+          ) : (
+            <p className="mt-3 rounded-xl bg-[#FFF8EE] p-3 text-sm font-semibold text-[#3A2417]/58">No category image added.</p>
+          )}
+        </section>
+
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+          <button type="button" onClick={() => onEdit(category)} disabled={!canManageCategories} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#7A183D] px-4 text-sm font-bold text-white transition hover:bg-[#5f102f] disabled:cursor-not-allowed disabled:opacity-55">
+            <Pencil className="h-4 w-4" />
+            Edit Category
+          </button>
+          <button type="button" onClick={() => onToggleStatus(category, !isActive)} disabled={!canManageCategories} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[rgba(122,24,61,0.16)] bg-white px-4 text-sm font-bold text-[#7A183D] transition hover:border-[#C9962D] disabled:cursor-not-allowed disabled:opacity-55">
+            <Power className="h-4 w-4" />
+            {isActive ? "Hide from website" : "Activate"}
+          </button>
+          <button type="button" onClick={onClose} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[rgba(122,24,61,0.16)] bg-white px-4 text-sm font-bold text-[#3A2417]/72 transition hover:border-[#C9962D] hover:text-[#7A183D]">
+            Close
+          </button>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeactivate, onDelete, canManageProducts, canHardDeleteProducts, onEditCategory, onToggleCategoryStatus, canManageCategories }) {
   if (!item) return null;
+
+  if (resource === "categories") {
+    return <CategoryDetailDrawer category={item} onClose={onClose} onEdit={onEditCategory} onToggleStatus={onToggleCategoryStatus} canManageCategories={canManageCategories} />;
+  }
 
   const entries = Object.entries(item).filter(([, value]) => value !== undefined && value !== null && value !== "");
 
@@ -440,9 +541,7 @@ function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeacti
               Delete permanently
             </button>
           </div>
-        ) : (
-          <p className="mt-5 rounded-xl bg-[#FCE7EC] p-3 text-sm font-bold text-[#7A183D]">Editing comes in the next admin phase.</p>
-        )}
+        ) : null}
       </aside>
     </div>
   );
@@ -988,8 +1087,31 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
     });
   };
 
-  const selectCategory = (categoryId) => {
-    const category = categories.find((item) => item.id === categoryId);
+  const categorySelectOptions = useMemo(() => {
+    const activeCategories = categories.filter((category) => category.isActive !== false);
+    const currentCategory = categories.find((category) => category.id === form.category_id || category.slug === form.category_slug);
+    if (currentCategory && !activeCategories.some((category) => category.id === currentCategory.id || category.slug === currentCategory.slug)) {
+      return [currentCategory, ...activeCategories];
+    }
+    if (!currentCategory && form.category_slug) {
+      return [
+        {
+          id: `slug:${form.category_slug}`,
+          name: form.category_name || form.category_slug,
+          slug: form.category_slug,
+          isActive: false
+        },
+        ...activeCategories
+      ];
+    }
+    return activeCategories;
+  }, [categories, form.category_id, form.category_name, form.category_slug]);
+
+  const selectedCategoryOption = categorySelectOptions.find((category) => category.id === form.category_id || category.slug === form.category_slug);
+  const categorySelectValue = selectedCategoryOption?.id || "";
+
+  const selectCategory = (categoryValue) => {
+    const category = categorySelectOptions.find((item) => item.id === categoryValue || item.slug === categoryValue.replace(/^slug:/, ""));
     setForm((current) => {
       const next = {
         ...current,
@@ -1176,9 +1298,13 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
               </label>
               <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
                 Category *
-                <select value={form.category_id} onChange={(event) => selectCategory(event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]">
+                <select value={categorySelectValue} onChange={(event) => selectCategory(event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]">
                   <option value="">Select category</option>
-                  {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+                  {categorySelectOptions.map((category) => (
+                    <option key={category.id || category.slug} value={category.id}>
+                      {category.name}{category.isActive === false ? " (inactive)" : ""}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
@@ -1211,7 +1337,7 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
             <h3 className="mb-4 font-display text-xl font-semibold text-[#7A183D]">Product Image</h3>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
               <div className="h-36 w-36 shrink-0 overflow-hidden rounded-xl border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE]">
-                {form.image_url ? <img src={form.image_url} alt="Product preview" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center px-3 text-center text-xs font-bold text-[#3A2417]/42">No image</div>}
+                {form.image_url ? <img src={form.image_url} alt="Product image" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center px-3 text-center text-xs font-bold text-[#3A2417]/42">No image</div>}
               </div>
               <div className="min-w-0 flex-1 space-y-3">
                 <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
@@ -1473,7 +1599,7 @@ function CategoryFormDrawer({ mode, category, saving, error, canManageCategories
             <h3 className="font-display text-xl font-semibold text-[#7A183D]">Category Image</h3>
             <div className="mt-4 grid gap-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
               <div className="h-32 w-32 overflow-hidden rounded-xl border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE]">
-                {form.image_url ? <img src={form.image_url} alt="Category preview" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center px-3 text-center text-xs font-bold text-[#3A2417]/42">No image</div>}
+                {form.image_url ? <img src={form.image_url} alt="Category image" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center px-3 text-center text-xs font-bold text-[#3A2417]/42">No image</div>}
               </div>
               <div className="grid min-w-0 gap-3">
                 <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
@@ -2089,6 +2215,41 @@ function ManagementContent({ resource, admin }) {
     }
   };
 
+  const toggleCategoryStatus = async (category, nextActive) => {
+    if (!canManageCategories) {
+      setNotice("Connect Supabase to manage categories.");
+      return;
+    }
+
+    if (!nextActive) {
+      await deactivateCategory(category);
+      return;
+    }
+
+    try {
+      const token = await getAdminToken();
+      const response = await fetch(`/api/admin/categories/${category.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...categoryFormToPayload(categoryToForm(category)),
+          is_active: true
+        })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to activate category.");
+
+      setSelectedItem(result.data);
+      setNotice("Category activated.");
+      loadItems();
+    } catch (error) {
+      setNotice(error.message || "Unable to activate category.");
+    }
+  };
+
   const submitCampaign = async (payload) => {
     if (!canManageCampaigns) {
       setCampaignFormState((current) => ({ ...current, error: "Connect Supabase to manage campaigns." }));
@@ -2182,8 +2343,8 @@ function ManagementContent({ resource, admin }) {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Admin Management</p>
             <h1 className="mt-3 font-display text-3xl font-semibold text-[#7A183D] sm:text-5xl">{config.title}</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[#3A2417]/68">{config.description}</p>
-            {resource === "products" && !canManageProducts ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage products. Fallback catalog stays read-only.</p> : null}
-            {resource === "categories" && !canManageCategories ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage categories. Fallback categories stay read-only.</p> : null}
+            {resource === "products" && !canManageProducts ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage products. Local fallback catalog can be viewed safely.</p> : null}
+            {resource === "categories" && !canManageCategories ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage categories. Local fallback categories can be viewed safely.</p> : null}
             {resource === "campaigns" && !canManageCampaigns ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage campaigns. Fallback campaigns stay read-only.</p> : null}
             {resource === "orders" && !canManageOrders ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage live orders. Fallback mode does not show customer orders.</p> : null}
             {resource === "customers" && !canViewCustomers ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to view customers. Fallback mode does not show customer profiles.</p> : null}
@@ -2347,7 +2508,20 @@ function ManagementContent({ resource, admin }) {
           onClose={() => setSelectedItem(null)}
         />
       ) : (
-        <DetailsDrawer item={selectedItem} resource={resource} gallery={selectedGallery} onClose={() => setSelectedItem(null)} onEdit={(product) => openProductForm("edit", product)} onDeactivate={deactivateProduct} onDelete={deleteProduct} canManageProducts={canManageProducts} canHardDeleteProducts={canHardDeleteProducts} />
+        <DetailsDrawer
+          item={selectedItem}
+          resource={resource}
+          gallery={selectedGallery}
+          onClose={() => setSelectedItem(null)}
+          onEdit={(product) => openProductForm("edit", product)}
+          onDeactivate={deactivateProduct}
+          onDelete={deleteProduct}
+          canManageProducts={canManageProducts}
+          canHardDeleteProducts={canHardDeleteProducts}
+          onEditCategory={(category) => openCategoryForm("edit", category)}
+          onToggleCategoryStatus={toggleCategoryStatus}
+          canManageCategories={canManageCategories}
+        />
       )}
       {formState.open ? (
         <ProductFormDrawer

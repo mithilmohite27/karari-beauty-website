@@ -9,7 +9,7 @@ export async function GET(request) {
 
   try {
     const [categoriesResult, productsResult] = await Promise.all([getAdminCategories(), getAdminProducts()]);
-    const products = productsResult.data;
+    const products = productsResult.data.filter((product) => product.isActive !== false);
     const categories = categoriesResult.data.map((category) => ({
       ...category,
       productCount: products.filter((product) => product.categorySlug === category.slug).length
