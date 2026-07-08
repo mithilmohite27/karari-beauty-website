@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminErrorResponse, verifyAdminMutationRequest, verifyAdminRequest } from "@/lib/admin/api";
-import { CategoryAdminError, deactivateAdminCategory, getAdminCategoryById, updateAdminCategory } from "@/lib/data/categories";
+import { CategoryAdminError, deactivateAdminCategory, getAdminCategoryById, hardDeleteAdminCategory, updateAdminCategory } from "@/lib/data/categories";
 
 function categoryErrorResponse(error, fallbackMessage) {
   if (error instanceof CategoryAdminError) {
@@ -50,14 +50,17 @@ export async function PATCH(request, context) {
 }
 
 export async function DELETE(request, context) {
-  const { response } = await verifyAdminMutationRequest(request);
+  const { response, currentAdmin } = await verifyAdminMutationRequest(request);
   if (response) return response;
 
   try {
     const { id } = await context.params;
-    const result = await deactivateAdminCategory(id);
+    const mode = new URL(request.url).searchParams.get("mode");
+    const result = mode === "hard"
+      ? await hardDeleteAdminCategory(id, currentAdmin)
+      : await deactivateAdminCategory(id);
     return NextResponse.json(result);
   } catch (error) {
-    return categoryErrorResponse(error, "Unable to deactivate category.");
+    return categoryErrorResponse(error, "Unable to manage category.");
   }
 }

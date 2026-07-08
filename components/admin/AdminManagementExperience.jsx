@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpDown, Eye, Loader2, Pencil, Plus, Power, Search, Trash2, X } from "lucide-react";
+import { ArrowUpDown, Check, ChevronDown, Eye, Loader2, Pencil, Plus, Power, Search, Trash2, X } from "lucide-react";
 import AdminAuthGate from "@/components/admin/AdminAuthGate";
 import AdminBadge from "@/components/admin/AdminBadge";
 import AdminLayoutShell from "@/components/admin/AdminLayoutShell";
@@ -165,6 +165,53 @@ function getOrderStatusMeta(status) {
 
 function getPaymentStatusMeta(status) {
   return paymentStatusOptions.find((item) => item.value === status) || { value: status, label: status || "Pending", tone: "muted" };
+}
+
+function formatCategoryLabel(value) {
+  return String(value || "")
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function AdminSelect({ value, options, placeholder = "Select", onChange, disabled = false }) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((option) => option.value === value);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((current) => !current)}
+        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 text-left text-sm font-bold text-[#3A2417] shadow-soft outline-none transition hover:border-[#C9962D] disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <span className={selected ? "truncate" : "truncate text-[#3A2417]/45"}>{selected?.label || placeholder}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-[#C9962D] transition ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open ? (
+        <div className="absolute left-0 right-0 z-[90] mt-2 max-h-64 overflow-y-auto rounded-xl border border-[rgba(122,24,61,0.14)] bg-white p-1 shadow-boutique">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+              className={`flex min-h-10 w-full items-center justify-between gap-3 rounded-lg px-3 text-left text-sm font-bold transition ${
+                option.value === value ? "bg-[#7A183D] text-white" : "text-[#3A2417] hover:bg-[#FFF8EE] hover:text-[#7A183D]"
+              }`}
+            >
+              <span className="truncate">{option.label}</span>
+              {option.value === value ? <Check className="h-4 w-4 shrink-0" /> : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function normalizeWhatsAppPhone(phone) {
@@ -386,7 +433,7 @@ async function getAdminToken() {
   return data.session?.access_token || "";
 }
 
-function CategoryDetailDrawer({ category, onClose, onEdit, onToggleStatus, canManageCategories }) {
+function CategoryDetailDrawer({ category, onClose, onEdit, onToggleStatus, onDelete, canManageCategories, canHardDeleteCategories }) {
   if (!category) return null;
 
   const collectionPath = category.href || `/collections/${category.slug}`;
@@ -474,6 +521,10 @@ function CategoryDetailDrawer({ category, onClose, onEdit, onToggleStatus, canMa
             <Power className="h-4 w-4" />
             {isActive ? "Hide from website" : "Activate"}
           </button>
+          <button type="button" onClick={() => onDelete(category)} disabled={!canHardDeleteCategories} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-rose-500/25 bg-rose-50 px-4 text-sm font-bold text-rose-700 transition hover:border-rose-500/45 disabled:cursor-not-allowed disabled:opacity-55">
+            <Trash2 className="h-4 w-4" />
+            Delete permanently
+          </button>
           <button type="button" onClick={onClose} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[rgba(122,24,61,0.16)] bg-white px-4 text-sm font-bold text-[#3A2417]/72 transition hover:border-[#C9962D] hover:text-[#7A183D]">
             Close
           </button>
@@ -483,11 +534,11 @@ function CategoryDetailDrawer({ category, onClose, onEdit, onToggleStatus, canMa
   );
 }
 
-function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeactivate, onDelete, canManageProducts, canHardDeleteProducts, onEditCategory, onToggleCategoryStatus, canManageCategories }) {
+function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeactivate, onDelete, canManageProducts, canHardDeleteProducts, onEditCategory, onToggleCategoryStatus, onDeleteCategory, canManageCategories, canHardDeleteCategories }) {
   if (!item) return null;
 
   if (resource === "categories") {
-    return <CategoryDetailDrawer category={item} onClose={onClose} onEdit={onEditCategory} onToggleStatus={onToggleCategoryStatus} canManageCategories={canManageCategories} />;
+    return <CategoryDetailDrawer category={item} onClose={onClose} onEdit={onEditCategory} onToggleStatus={onToggleCategoryStatus} onDelete={onDeleteCategory} canManageCategories={canManageCategories} canHardDeleteCategories={canHardDeleteCategories} />;
   }
 
   const entries = Object.entries(item).filter(([, value]) => value !== undefined && value !== null && value !== "");
@@ -586,7 +637,7 @@ function ProductRows({ items, selectedProductIds, onToggleProductSelection, onVi
   ));
 }
 
-function CategoryRows({ items, onView, onEdit, onDeactivate, canManageCategories }) {
+function CategoryRows({ items, onView, onEdit, onDeactivate, onDelete, canManageCategories, canHardDeleteCategories }) {
   return items.map((item) => (
     <tr key={item.id || item.slug} className="border-b border-[rgba(122,24,61,0.08)]">
       <td className="px-3 py-3">
@@ -606,7 +657,8 @@ function CategoryRows({ items, onView, onEdit, onDeactivate, canManageCategories
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => onView(item)} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D]">View</button>
           <button type="button" onClick={() => onEdit(item)} disabled={!canManageCategories} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50">Edit</button>
-          <button type="button" onClick={() => onDeactivate(item)} disabled={!canManageCategories || item.isActive === false} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50">Off</button>
+          <button type="button" onClick={() => onDeactivate(item)} disabled={!canManageCategories || item.isActive === false} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-white px-3 py-2 text-xs font-bold text-[#7A183D] disabled:cursor-not-allowed disabled:opacity-50">Hide</button>
+          <button type="button" onClick={() => onDelete(item)} disabled={!canHardDeleteCategories} className="rounded-md border border-rose-500/25 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 disabled:cursor-not-allowed disabled:opacity-50">Delete</button>
         </div>
       </td>
     </tr>
@@ -693,7 +745,7 @@ function CampaignRows({ items, onView, onEdit, onActivate, onDeactivate, canMana
   ));
 }
 
-function Table({ resource, items, selectedProductIds = [], allVisibleProductsSelected = false, onToggleAllVisibleProducts, onToggleProductSelection, onView, onEditProduct, onDeactivateProduct, onDeleteProduct, canManageProducts, canHardDeleteProducts, onEditCategory, onDeactivateCategory, canManageCategories, onEditCampaign, onActivateCampaign, onDeactivateCampaign, canManageCampaigns }) {
+function Table({ resource, items, selectedProductIds = [], allVisibleProductsSelected = false, onToggleAllVisibleProducts, onToggleProductSelection, onView, onEditProduct, onDeactivateProduct, onDeleteProduct, canManageProducts, canHardDeleteProducts, onEditCategory, onDeactivateCategory, onDeleteCategory, canManageCategories, canHardDeleteCategories, onEditCampaign, onActivateCampaign, onDeactivateCampaign, canManageCampaigns }) {
   const headers = {
     products: ["Select", "Image", "Product", "Category", "Price", "Original", "Discount", "Featured", "Active", "Stock", "Created", "Action"],
     categories: ["Image", "Name", "Slug", "Description", "Count Label", "Featured", "Active", "Sort", "Products", "Action"],
@@ -704,7 +756,7 @@ function Table({ resource, items, selectedProductIds = [], allVisibleProductsSel
 
   const rows = {
     products: <ProductRows items={items} selectedProductIds={selectedProductIds} onToggleProductSelection={onToggleProductSelection} onView={onView} onEdit={onEditProduct} onDeactivate={onDeactivateProduct} onDelete={onDeleteProduct} canManageProducts={canManageProducts} canHardDeleteProducts={canHardDeleteProducts} />,
-    categories: <CategoryRows items={items} onView={onView} onEdit={onEditCategory} onDeactivate={onDeactivateCategory} canManageCategories={canManageCategories} />,
+    categories: <CategoryRows items={items} onView={onView} onEdit={onEditCategory} onDeactivate={onDeactivateCategory} onDelete={onDeleteCategory} canManageCategories={canManageCategories} canHardDeleteCategories={canHardDeleteCategories} />,
     orders: <ManagedOrderRows items={items} onView={onView} />,
     customers: <CustomerRows items={items} onView={onView} />,
     campaigns: <CampaignRows items={items} onView={onView} onEdit={onEditCampaign} onActivate={onActivateCampaign} onDeactivate={onDeactivateCampaign} canManageCampaigns={canManageCampaigns} />
@@ -1109,13 +1161,18 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
 
   const selectedCategoryOption = categorySelectOptions.find((category) => category.id === form.category_id || category.slug === form.category_slug);
   const categorySelectValue = selectedCategoryOption?.id || "";
+  const categoryDropdownOptions = categorySelectOptions.map((category) => ({
+    value: category.id,
+    label: `${category.name}${category.isActive === false ? " (inactive)" : ""}`
+  }));
 
   const selectCategory = (categoryValue) => {
     const category = categorySelectOptions.find((item) => item.id === categoryValue || item.slug === categoryValue.replace(/^slug:/, ""));
+    const categoryId = category?.id && !String(category.id).startsWith("slug:") ? category.id : "";
     setForm((current) => {
       const next = {
         ...current,
-        category_id: category?.id || "",
+        category_id: categoryId,
         category_slug: category?.slug || "",
         category_name: category?.name || ""
       };
@@ -1298,14 +1355,12 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
               </label>
               <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
                 Category *
-                <select value={categorySelectValue} onChange={(event) => selectCategory(event.target.value)} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]">
-                  <option value="">Select category</option>
-                  {categorySelectOptions.map((category) => (
-                    <option key={category.id || category.slug} value={category.id}>
-                      {category.name}{category.isActive === false ? " (inactive)" : ""}
-                    </option>
-                  ))}
-                </select>
+                <AdminSelect
+                  value={categorySelectValue}
+                  options={categoryDropdownOptions}
+                  placeholder="Select category"
+                  onChange={selectCategory}
+                />
               </label>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -1880,11 +1935,24 @@ function ManagementContent({ resource, admin }) {
   }, [loadItems]);
 
   const categories = useMemo(() => [...new Set(items.map((item) => item.categorySlug).filter(Boolean))], [items]);
+  const productCategoryFilterOptions = useMemo(() => {
+    const liveOptions = categoryOptions.map((category) => ({
+      value: category.slug,
+      label: category.name
+    }));
+    const knownSlugs = new Set(liveOptions.map((category) => category.value));
+    const fallbackOptions = categories
+      .filter((slug) => !knownSlugs.has(slug))
+      .map((slug) => ({ value: slug, label: formatCategoryLabel(slug) }));
+
+    return [{ value: "", label: "All categories" }, ...liveOptions, ...fallbackOptions];
+  }, [categories, categoryOptions]);
   const visibleItems = useMemo(() => sortItems(filterItems(items, resource, query, filters), resource, sortBy), [filters, items, query, resource, sortBy]);
   const visibleProductIds = useMemo(() => resource === "products" ? visibleItems.map((item) => item.id).filter(Boolean) : [], [resource, visibleItems]);
   const canManageProducts = resource === "products" && meta.mode === "supabase";
   const canHardDeleteProducts = canManageProducts && admin?.role === "owner";
   const canManageCategories = resource === "categories" && meta.mode === "supabase";
+  const canHardDeleteCategories = canManageCategories && admin?.role === "owner";
   const canManageCampaigns = resource === "campaigns" && meta.mode === "supabase";
   const canManageOrders = resource === "orders" && meta.mode === "supabase";
   const canViewCustomers = resource === "customers" && meta.mode === "supabase";
@@ -2250,6 +2318,34 @@ function ManagementContent({ resource, admin }) {
     }
   };
 
+  const deleteCategory = async (category) => {
+    if (!canHardDeleteCategories) {
+      setNotice("Only owner can permanently delete categories.");
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete ${category.name} permanently?\n\nThis is only for dummy or test categories. Products will not be deleted.`);
+    if (!confirmed) return;
+
+    try {
+      const token = await getAdminToken();
+      const response = await fetch(`/api/admin/categories/${category.id}?mode=hard`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Unable to delete category.");
+
+      setSelectedItem(null);
+      setNotice(result.message || "Category permanently deleted.");
+      loadItems();
+    } catch (error) {
+      setNotice(error.message || "Unable to delete category.");
+    }
+  };
+
   const submitCampaign = async (payload) => {
     if (!canManageCampaigns) {
       setCampaignFormState((current) => ({ ...current, error: "Connect Supabase to manage campaigns." }));
@@ -2384,10 +2480,12 @@ function ManagementContent({ resource, admin }) {
           </label>
 
           {resource === "products" ? (
-            <select value={filters.category} onChange={(event) => setFilters((current) => ({ ...current, category: event.target.value }))} className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 text-sm font-bold text-[#3A2417]">
-              <option value="">All categories</option>
-              {categories.map((category) => <option key={category} value={category}>{category}</option>)}
-            </select>
+            <AdminSelect
+              value={filters.category}
+              options={productCategoryFilterOptions}
+              placeholder="All categories"
+              onChange={(value) => setFilters((current) => ({ ...current, category: value }))}
+            />
           ) : null}
 
           {["products", "categories", "campaigns"].includes(resource) ? (
@@ -2456,7 +2554,9 @@ function ManagementContent({ resource, admin }) {
             canHardDeleteProducts={canHardDeleteProducts}
             onEditCategory={(category) => openCategoryForm("edit", category)}
             onDeactivateCategory={deactivateCategory}
+            onDeleteCategory={deleteCategory}
             canManageCategories={canManageCategories}
+            canHardDeleteCategories={canHardDeleteCategories}
             onEditCampaign={(campaign) => openCampaignForm("edit", campaign)}
             onActivateCampaign={activateCampaign}
             onDeactivateCampaign={deactivateCampaign}
@@ -2520,7 +2620,9 @@ function ManagementContent({ resource, admin }) {
           canHardDeleteProducts={canHardDeleteProducts}
           onEditCategory={(category) => openCategoryForm("edit", category)}
           onToggleCategoryStatus={toggleCategoryStatus}
+          onDeleteCategory={deleteCategory}
           canManageCategories={canManageCategories}
+          canHardDeleteCategories={canHardDeleteCategories}
         />
       )}
       {formState.open ? (
