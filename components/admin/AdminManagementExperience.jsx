@@ -107,6 +107,10 @@ const emptyCampaignForm = {
 
 const campaignThemes = ["rakhi", "diwali", "wedding", "navratri", "gifting", "custom"];
 
+function isUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ""));
+}
+
 const orderStatusOptions = [
   { value: "new", label: "New Order", tone: "gold" },
   { value: "confirmed", label: "Confirmed", tone: "blue" },
@@ -290,7 +294,7 @@ function formToPayload(form) {
     rating: form.rating,
     sort_order: form.sort_order,
     tags: form.tags,
-    category_id: form.category_id || null,
+    category_id: isUuid(form.category_id) ? form.category_id : null,
     category_slug: form.category_slug || null,
     category_name: form.category_name || null
   };
@@ -1168,7 +1172,7 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
 
   const selectCategory = (categoryValue) => {
     const category = categorySelectOptions.find((item) => item.id === categoryValue || item.slug === categoryValue.replace(/^slug:/, ""));
-    const categoryId = category?.id && !String(category.id).startsWith("slug:") ? category.id : "";
+    const categoryId = isUuid(category?.id) ? category.id : "";
     setForm((current) => {
       const next = {
         ...current,
