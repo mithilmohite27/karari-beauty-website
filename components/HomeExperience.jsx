@@ -82,14 +82,15 @@ function readStoredValue(key, fallback) {
 function Countdown({ campaign = localSeasonalCampaign }) {
   const countdownDate = campaign?.countdownDate || campaign?.endDate || localSeasonalCampaign.countdownDate;
   const targetDate = useMemo(() => new Date(countdownDate), [countdownDate]);
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState(null);
 
   useEffect(() => {
+    setNow(new Date());
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const diff = Math.max(0, targetDate.getTime() - now.getTime());
+  const diff = now ? Math.max(0, targetDate.getTime() - now.getTime()) : 0;
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
   const minutes = Math.floor((diff / (1000 * 60)) % 60);
@@ -1052,7 +1053,7 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, p
           </motion.div>
         ) : (
           <div className="mt-10 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white/82 p-8 text-center shadow-soft">
-            <p className="font-display text-2xl font-semibold text-wine">Products will be added soon</p>
+            <p className="font-display text-2xl font-semibold text-wine">No products are available in this collection.</p>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#3A2417]/66">We're curating this collection for Karari Beauty.</p>
             <button type="button" onClick={onClearCategory} className="mt-5 rounded-md bg-wine px-5 py-3 text-sm font-bold text-white transition hover:bg-charcoal">
               View All Products

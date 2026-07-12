@@ -99,7 +99,7 @@ export default function AdminLoginExperience() {
           <section className="rounded-3xl border border-[rgba(122,24,61,0.14)] bg-white/90 p-5 shadow-boutique sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#C9962D]">Admin Login</p>
             <h2 className="mt-2 font-display text-3xl font-semibold text-[#7A183D]">Sign in securely</h2>
-            <p className="mt-2 text-sm leading-6 text-[#3A2417]/62">Use your Supabase admin email and password.</p>
+            <p className="mt-2 text-sm leading-6 text-[#3A2417]/62">Use your Karari Beauty admin email and password.</p>
 
             <form onSubmit={submit} className="mt-5 space-y-4">
               <label className="block text-sm font-bold text-[#3A2417]">

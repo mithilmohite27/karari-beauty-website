@@ -139,7 +139,7 @@ export default function SignInExperience() {
 
     const supabase = createBrowserSupabaseClient();
     if (!supabase) {
-      setNotice("Customer login requires Supabase setup.");
+      setNotice("Customer sign-in is temporarily unavailable. Please try again shortly.");
       return;
     }
 

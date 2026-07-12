@@ -2,6 +2,12 @@
 
 Premium Karari Beauty ecommerce website with storefront collections, product pages, checkout/order requests and a Supabase-backed admin CMS.
 
+## Production Launch
+
+The final domain, deployment checklist, live payment checks and client admin guide are documented in [`LAUNCH_HANDOVER.md`](./LAUNCH_HANDOVER.md).
+
+The phase notes below are retained as implementation history. Use the launch handover document as the current production source of truth.
+
 ## Run Locally
 
 ```bash

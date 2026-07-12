@@ -174,7 +174,7 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
     const supabase = createBrowserSupabaseClient();
     if (!supabase) {
       setAuthChecking(false);
-      setSubmitError("Customer checkout requires Supabase setup.");
+      setSubmitError("Customer checkout is temporarily unavailable. Please try again shortly.");
       return undefined;
     }
 

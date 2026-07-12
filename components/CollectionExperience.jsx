@@ -193,7 +193,7 @@ export default function CollectionExperience({ category, products, relatedCatego
                 </motion.div>
               ) : (
                 <div className="rounded-lg border border-[rgba(122,24,61,0.14)] bg-white/82 p-8 text-center shadow-soft">
-                  <p className="font-display text-2xl font-semibold text-wine">Products will be added soon</p>
+                  <p className="font-display text-2xl font-semibold text-wine">No products are available in this collection.</p>
                   <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#3A2417]/66">We're curating this collection for Karari Beauty.</p>
                   <Link href="/#collections" className="mt-5 inline-flex rounded-md bg-wine px-5 py-3 text-sm font-bold text-white transition hover:bg-charcoal">
                     Back to Collections

@@ -33,7 +33,7 @@ const resourceConfig = {
     endpoint: "/api/admin/orders",
     searchPlaceholder: "Search order number, customer, phone or email",
     emptyTitle: "No live orders yet",
-    emptyText: "Customer order requests will appear here after checkout is connected to Supabase.",
+    emptyText: "Customer order requests will appear here after checkout.",
     defaultSort: "newest"
   },
   customers: {
