@@ -175,11 +175,40 @@ create table if not exists public.site_settings (
 alter table public.admin_profiles drop constraint if exists admin_profiles_role_check;
 alter table public.admin_profiles add constraint admin_profiles_role_check check (role in ('owner', 'admin'));
 
+alter table public.categories add column if not exists product_count_label text;
+alter table public.categories add column if not exists image_url text;
+alter table public.categories add column if not exists featured boolean default false;
+alter table public.categories add column if not exists sort_order int default 0;
+alter table public.categories add column if not exists is_active boolean default true;
+alter table public.categories add column if not exists updated_at timestamptz default now();
+
+alter table public.products add column if not exists category_id uuid references public.categories(id) on delete set null;
+alter table public.products add column if not exists sku text;
+alter table public.products add column if not exists description text;
+alter table public.products add column if not exists short_description text;
+alter table public.products add column if not exists original_price numeric(10,2);
+alter table public.products add column if not exists discount_label text;
+alter table public.products add column if not exists rating numeric(2,1);
+alter table public.products add column if not exists badge text;
+alter table public.products add column if not exists offer text;
+alter table public.products add column if not exists image_url text;
+alter table public.products add column if not exists category_name text;
+alter table public.products add column if not exists category_slug text;
+alter table public.products add column if not exists tags text[] default '{}';
+alter table public.products add column if not exists is_featured boolean default false;
+alter table public.products add column if not exists is_active boolean default true;
+alter table public.products add column if not exists cod_available boolean default false;
+alter table public.products add column if not exists stock_status text default 'in_stock';
+alter table public.products add column if not exists sort_order int default 0;
+alter table public.products add column if not exists updated_at timestamptz default now();
 alter table public.products drop constraint if exists products_stock_status_check;
 alter table public.products add constraint products_stock_status_check check (stock_status in ('in_stock', 'low_stock', 'out_of_stock', 'made_to_order', 'preorder'));
 
-alter table public.orders drop constraint if exists orders_status_check;
-alter table public.orders add constraint orders_status_check check (status in ('new', 'confirmed', 'processing', 'packed', 'shipped', 'delivered', 'cancelled'));
+alter table public.product_images add column if not exists storage_path text;
+alter table public.product_images add column if not exists alt_text text;
+alter table public.product_images add column if not exists is_main boolean default false;
+alter table public.product_images add column if not exists sort_order int default 0;
+
 alter table public.orders add column if not exists payment_method text;
 alter table public.orders add column if not exists payment_status text default 'pending';
 alter table public.orders add column if not exists payment_reference text;
@@ -194,11 +223,29 @@ alter table public.orders add column if not exists payment_verified_at timestamp
 alter table public.orders add column if not exists payment_failure_reason text;
 alter table public.orders add column if not exists cod_selected boolean default false;
 alter table public.orders add column if not exists cod_eligible boolean default false;
+alter table public.orders add column if not exists subtotal numeric(10,2) default 0;
 alter table public.orders add column if not exists delivery_charge numeric(10,2) default 0;
+alter table public.orders add column if not exists discount_amount numeric(10,2) default 0;
+alter table public.orders add column if not exists total_amount numeric(10,2) default 0;
+alter table public.orders drop constraint if exists orders_status_check;
+alter table public.orders add constraint orders_status_check check (status in ('new', 'confirmed', 'processing', 'packed', 'shipped', 'delivered', 'cancelled'));
 update public.orders set payment_status = 'pending' where payment_status is null;
 alter table public.orders drop constraint if exists orders_payment_status_check;
 alter table public.orders add constraint orders_payment_status_check check (payment_status in ('pending', 'pending_confirmation', 'submitted', 'verified', 'paid', 'failed', 'cod_pending', 'refunded'));
-alter table public.products add column if not exists cod_available boolean default false;
+
+alter table public.order_items add column if not exists product_slug text;
+alter table public.order_items add column if not exists product_image text;
+alter table public.order_items add column if not exists category_slug text;
+
+alter table public.seasonal_campaigns add column if not exists theme text;
+alter table public.seasonal_campaigns add column if not exists start_date date;
+alter table public.seasonal_campaigns add column if not exists end_date date;
+alter table public.seasonal_campaigns add column if not exists hero_title text;
+alter table public.seasonal_campaigns add column if not exists hero_subtitle text;
+alter table public.seasonal_campaigns add column if not exists offer_label text;
+alter table public.seasonal_campaigns add column if not exists featured_category_slugs text[] default '{}';
+alter table public.seasonal_campaigns add column if not exists config jsonb default '{}';
+alter table public.seasonal_campaigns add column if not exists updated_at timestamptz default now();
 
 drop trigger if exists set_categories_updated_at on public.categories;
 create trigger set_categories_updated_at before update on public.categories for each row execute function public.set_updated_at();

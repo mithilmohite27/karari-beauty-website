@@ -49,7 +49,11 @@ export async function generateMetadata({ params }) {
 }
 
 function ProductJsonLd({ product, category }) {
-  const image = product.image ? [product.image] : [getDefaultOgImage()];
+  const image = product.galleryImages?.length
+    ? product.galleryImages.map((item) => item.imageUrl)
+    : product.image
+      ? [product.image]
+      : [getDefaultOgImage()];
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",

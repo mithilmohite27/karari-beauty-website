@@ -579,7 +579,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
               <HeaderIconButton icon={Heart} label="Wishlist" count={wishlistItems.length} onClick={() => toggleHeaderDropdown("wishlist")} active={activeHeaderDropdown === "wishlist"} />
               <HeaderDropdown open={activeHeaderDropdown === "wishlist"}>
                 {wishlistItems.length ? (
-                  <p className="rounded-md bg-[#FFF8EE] p-3 text-sm font-medium text-[#3A2417]/65">Wishlist items are saved locally for the upcoming wishlist page.</p>
+                  <p className="rounded-md bg-[#FFF8EE] p-3 text-sm font-medium text-[#3A2417]/65">Wishlist items are saved on this device.</p>
                 ) : (
                   <p className="rounded-md bg-[#FFF8EE] p-3 text-sm font-medium text-[#3A2417]/65">Your wishlist is empty.</p>
                 )}
@@ -693,7 +693,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-3 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white p-3 shadow-boutique lg:hidden">
             {activeHeaderDropdown === "wishlist" ? (
               wishlistItems.length ? (
-                <p className="rounded-md bg-[#FFF8EE] p-3 text-sm font-medium text-[#3A2417]/65">Wishlist items are saved locally for the upcoming wishlist page.</p>
+                <p className="rounded-md bg-[#FFF8EE] p-3 text-sm font-medium text-[#3A2417]/65">Wishlist items are saved on this device.</p>
               ) : (
                 <p className="rounded-md bg-[#FFF8EE] p-3 text-sm font-medium text-[#3A2417]/65">Your wishlist is empty.</p>
               )
@@ -703,7 +703,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
         ) : null}
       </div>
       </header>
-      <CartDrawer open={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
+      <CartDrawer open={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} products={products} />
       {campaignActive ? (
         <div className="border-t border-antiqueGold/20 bg-wine px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white">
           {getCampaignOfferLabel(seasonalCampaign)}

@@ -13,11 +13,11 @@ import {
   addRecentlyViewed,
   clearBuyNowItem,
   clearCart,
-  getBuyNowItem,
-  getCartItems,
   getCartSubtotal,
   getRecentlyViewed,
-  saveOrderRequest
+  saveOrderRequest,
+  syncBuyNowItemWithCatalog,
+  syncCartItemsWithCatalog
 } from "@/lib/ecommerceStorage";
 import { formatCurrency } from "@/lib/whatsapp";
 
@@ -226,8 +226,8 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
 
   useEffect(() => {
     const syncCheckoutItems = () => {
-      const buyNowItem = isBuyNowMode ? getBuyNowItem() : null;
-      setItems(isBuyNowMode ? (buyNowItem ? [buyNowItem] : []) : getCartItems());
+      const buyNowItem = isBuyNowMode ? syncBuyNowItemWithCatalog(products) : null;
+      setItems(isBuyNowMode ? (buyNowItem ? [buyNowItem] : []) : syncCartItemsWithCatalog(products));
     };
     const syncRecentlyViewed = () => setRecentlyViewed(getRecentlyViewed(products));
 

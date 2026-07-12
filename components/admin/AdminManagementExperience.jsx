@@ -374,6 +374,76 @@ function boolBadge(value, trueLabel = "Yes", falseLabel = "No") {
   return <AdminBadge tone={value ? "green" : "muted"}>{value ? trueLabel : falseLabel}</AdminBadge>;
 }
 
+const detailLabelMap = {
+  slug: "URL slug",
+  sku: "SKU",
+  category: "Category",
+  categorySlug: "Category slug",
+  price: "Selling price",
+  originalPrice: "Original price",
+  discountLabel: "Discount label",
+  rating: "Rating",
+  badge: "Badge",
+  offer: "Offer note",
+  description: "Full description",
+  shortDescription: "Short description",
+  isFeatured: "Featured",
+  isActive: "Visible on website",
+  stockStatus: "Stock status",
+  codAvailable: "Cash on Delivery",
+  tags: "Tags",
+  sortOrder: "Display order",
+  createdAt: "Created",
+  theme: "Campaign theme",
+  active: "Campaign active",
+  startDate: "Start date",
+  endDate: "End date",
+  heroTitle: "Hero title",
+  heroSubtitle: "Hero subtitle",
+  offerLabel: "Offer label",
+  featuredCategorySlugs: "Featured categories"
+};
+
+const detailFieldOrder = {
+  products: ["name", "sku", "slug", "category", "categorySlug", "price", "originalPrice", "discountLabel", "stockStatus", "isActive", "isFeatured", "codAvailable", "rating", "badge", "offer", "shortDescription", "description", "tags", "sortOrder", "createdAt"],
+  campaigns: ["name", "slug", "theme", "active", "startDate", "endDate", "heroTitle", "heroSubtitle", "offerLabel", "featuredCategorySlugs", "createdAt"]
+};
+
+function humanizeDetailKey(key) {
+  return detailLabelMap[key] || String(key).replace(/([a-z])([A-Z])/g, "$1 $2").replace(/_/g, " ").replace(/^./, (char) => char.toUpperCase());
+}
+
+function formatDetailValue(key, value) {
+  if (["price", "originalPrice"].includes(key)) return formatCurrency(value);
+  if (["createdAt", "startDate", "endDate"].includes(key)) return formatDate(value);
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (Array.isArray(value)) return value.length ? value.join(", ") : "Not set";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+function getDetailEntries(item, resource) {
+  const hiddenKeys = new Set(["id", "categoryId", "image", "href", "config", "featuredCategories", "isMain"]);
+  const preferredOrder = detailFieldOrder[resource] || [];
+  const seen = new Set();
+  const orderedEntries = [];
+
+  for (const key of preferredOrder) {
+    const value = item[key];
+    if (value !== undefined && value !== null && value !== "") {
+      orderedEntries.push([key, value]);
+      seen.add(key);
+    }
+  }
+
+  for (const [key, value] of Object.entries(item)) {
+    if (seen.has(key) || hiddenKeys.has(key) || value === undefined || value === null || value === "") continue;
+    orderedEntries.push([key, value]);
+  }
+
+  return orderedEntries;
+}
+
 function textForSearch(item, resource) {
   if (resource === "products") return [item.name, item.slug, item.sku, item.category, item.categorySlug].join(" ");
   if (resource === "categories") return [item.name, item.slug, item.description].join(" ");
@@ -545,7 +615,7 @@ function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeacti
     return <CategoryDetailDrawer category={item} onClose={onClose} onEdit={onEditCategory} onToggleStatus={onToggleCategoryStatus} onDelete={onDeleteCategory} canManageCategories={canManageCategories} canHardDeleteCategories={canHardDeleteCategories} />;
   }
 
-  const entries = Object.entries(item).filter(([, value]) => value !== undefined && value !== null && value !== "");
+  const entries = getDetailEntries(item, resource);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-[#3A2417]/35">
@@ -576,8 +646,8 @@ function DetailsDrawer({ item, resource, gallery = [], onClose, onEdit, onDeacti
         <div className="mt-5 space-y-3">
           {entries.map(([key, value]) => (
             <div key={key} className="rounded-xl border border-[rgba(122,24,61,0.12)] bg-white/72 p-3">
-              <p className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#C9962D]">{key}</p>
-              <p className="mt-1 break-words text-sm font-semibold leading-6 text-[#3A2417]/72">{Array.isArray(value) ? value.join(", ") : typeof value === "object" ? JSON.stringify(value) : String(value)}</p>
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#C9962D]">{humanizeDetailKey(key)}</p>
+              <p className="mt-1 break-words text-sm font-semibold leading-6 text-[#3A2417]/72">{formatDetailValue(key, value)}</p>
             </div>
           ))}
         </div>
@@ -2143,7 +2213,7 @@ function ManagementContent({ resource, admin }) {
       return;
     }
 
-    const confirmed = window.confirm(`Delete ${product.name} permanently?\n\nThis action cannot be undone. Use this only for dummy or test products.`);
+    const confirmed = window.confirm(`Delete ${product.name} permanently?\n\nThis action cannot be undone. Only use permanent delete when you are sure this product should be removed from admin.`);
     if (!confirmed) return;
 
     try {
@@ -2198,7 +2268,7 @@ function ManagementContent({ resource, admin }) {
     }
 
     const confirmed = action === "delete"
-      ? window.confirm(`Delete products permanently?\n\nThis action cannot be undone. Use this only for dummy or test products.\n\nSelected products: ${selectedProductIds.length}`)
+      ? window.confirm(`Delete products permanently?\n\nThis action cannot be undone. Only use permanent delete when these products should be removed from admin.\n\nSelected products: ${selectedProductIds.length}`)
       : window.confirm(`Hide selected products from website?\n\nThese products will no longer appear on the website, but they will remain saved in admin.\n\nSelected products: ${selectedProductIds.length}`);
 
     if (!confirmed) return;
@@ -2328,7 +2398,7 @@ function ManagementContent({ resource, admin }) {
       return;
     }
 
-    const confirmed = window.confirm(`Delete ${category.name} permanently?\n\nThis is only for dummy or test categories. Products will not be deleted.`);
+    const confirmed = window.confirm(`Delete ${category.name} permanently?\n\nProducts will not be deleted. This action is blocked if products are still linked to this category.`);
     if (!confirmed) return;
 
     try {
@@ -2445,7 +2515,7 @@ function ManagementContent({ resource, admin }) {
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[#3A2417]/68">{config.description}</p>
             {resource === "products" && !canManageProducts ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage products. Local fallback catalog can be viewed safely.</p> : null}
             {resource === "categories" && !canManageCategories ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage categories. Local fallback categories can be viewed safely.</p> : null}
-            {resource === "campaigns" && !canManageCampaigns ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage campaigns. Fallback campaigns stay read-only.</p> : null}
+            {resource === "campaigns" && !canManageCampaigns ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage campaigns. Local campaign data is shown for reference.</p> : null}
             {resource === "orders" && !canManageOrders ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to manage live orders. Fallback mode does not show customer orders.</p> : null}
             {resource === "customers" && !canViewCustomers ? <p className="mt-2 text-sm font-bold text-[#7A183D]">Connect Supabase to view customers. Fallback mode does not show customer profiles.</p> : null}
           </div>
@@ -2570,7 +2640,7 @@ function ManagementContent({ resource, admin }) {
           <div className="rounded-2xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-8 text-center shadow-soft">
             <p className="font-display text-2xl font-semibold text-[#7A183D]">{config.emptyTitle}</p>
             <p className="mx-auto mt-3 max-w-md text-sm font-semibold leading-6 text-[#3A2417]/64">{config.emptyText}</p>
-            {["orders", "customers"].includes(resource) ? <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">Demo/fallback mode does not show fake customer data.</p> : null}
+            {["orders", "customers"].includes(resource) ? <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">Local fallback mode does not show customer records.</p> : null}
           </div>
         )}
       </section>

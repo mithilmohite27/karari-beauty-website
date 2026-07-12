@@ -40,19 +40,11 @@ function AdminSidebar({ open, onClose }) {
         {navItems.map(({ label, href, icon: Icon }) => {
           const active = href === "/admin" ? pathname === href : href && pathname?.startsWith(href);
 
-          return href ? (
+          return (
             <Link key={label} href={href} onClick={onClose} className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-bold transition ${active ? "bg-[#7A183D] text-white" : "text-[#3A2417]/68 hover:bg-[#FCE7EC] hover:text-[#7A183D]"}`}>
               <Icon className="h-4 w-4" />
               {label}
             </Link>
-          ) : (
-            <div key={label} className="flex min-h-11 items-center justify-between gap-3 rounded-lg px-3 text-sm font-bold text-[#3A2417]/42">
-              <span className="inline-flex items-center gap-3">
-                <Icon className="h-4 w-4" />
-                {label}
-              </span>
-              <span className="rounded-full bg-white px-2 py-1 text-[0.62rem] uppercase tracking-[0.12em] text-[#C9962D]">Soon</span>
-            </div>
           );
         })}
       </nav>

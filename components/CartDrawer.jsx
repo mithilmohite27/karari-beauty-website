@@ -8,19 +8,19 @@ import CartSummary from "@/components/CartSummary";
 import EmptyCartState from "@/components/EmptyCartState";
 import {
   getCartCount,
-  getCartItems,
   getCartSubtotal,
   removeCartItem,
+  syncCartItemsWithCatalog,
   updateCartItemQuantity
 } from "@/lib/ecommerceStorage";
 
-export default function CartDrawer({ open, onClose }) {
+export default function CartDrawer({ open, onClose, products = [] }) {
   const [items, setItems] = useState([]);
   const itemCount = getCartCount();
   const subtotal = getCartSubtotal(items);
 
   useEffect(() => {
-    const syncCart = () => setItems(getCartItems());
+    const syncCart = () => setItems(syncCartItemsWithCatalog(products));
 
     syncCart();
     window.addEventListener("cart:updated", syncCart);
@@ -30,7 +30,7 @@ export default function CartDrawer({ open, onClose }) {
       window.removeEventListener("cart:updated", syncCart);
       window.removeEventListener("storage", syncCart);
     };
-  }, []);
+  }, [products]);
 
   useEffect(() => {
     if (!open) return undefined;

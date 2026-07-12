@@ -33,7 +33,18 @@ export default function ProductDetailExperience({ product, category, relatedProd
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [toast, setToast] = useState("");
+  const galleryImages = useMemo(() => {
+    if (Array.isArray(product.galleryImages) && product.galleryImages.length) return product.galleryImages;
+    return product.image
+      ? [{ id: `${product.id || product.slug}-main`, imageUrl: product.image, altText: product.name, isMain: true }]
+      : [];
+  }, [product]);
+  const [selectedImage, setSelectedImage] = useState(galleryImages[0]?.imageUrl || product.image);
   const isWished = wishlistIds.includes(product.id);
+
+  useEffect(() => {
+    setSelectedImage(galleryImages[0]?.imageUrl || product.image);
+  }, [galleryImages, product.image]);
 
   useEffect(() => {
     setWishlistIds(getWishlistItems());
@@ -115,18 +126,31 @@ export default function ProductDetailExperience({ product, category, relatedProd
             <div className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-2.5 shadow-boutique sm:p-3">
               <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#FFF8EE]">
                 <Image
-                  src={product.image}
+                  src={selectedImage || product.image}
                   alt={product.name}
                   fill
                   priority
                   sizes="(min-width: 1024px) 50vw, 100vw"
                   className="object-cover"
+                  onError={() => setSelectedImage(product.image)}
                 />
               </div>
-              <div className="mt-2 flex gap-2 sm:mt-3">
-                <div className="relative h-16 w-16 overflow-hidden rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE]">
-                  <Image src={product.image} alt={`${product.name} thumbnail`} fill sizes="4rem" className="object-cover" />
-                </div>
+              <div className="mt-2 flex gap-2 overflow-x-auto pb-1 overscroll-contain sm:mt-3">
+                {galleryImages.map((image) => {
+                  const isSelected = image.imageUrl === selectedImage;
+                  return (
+                    <button
+                      key={image.id || image.imageUrl}
+                      type="button"
+                      onClick={() => setSelectedImage(image.imageUrl)}
+                      aria-label={`View ${image.altText || product.name}`}
+                      aria-pressed={isSelected}
+                      className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-md border-2 bg-[#FFF8EE] transition ${isSelected ? "border-[#7A183D] shadow-sm" : "border-transparent hover:border-[#C9962D]"}`}
+                    >
+                      <Image src={image.imageUrl} alt={image.altText || `${product.name} thumbnail`} fill sizes="4rem" className="object-cover" />
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

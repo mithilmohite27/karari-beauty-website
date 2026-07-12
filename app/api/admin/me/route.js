@@ -35,7 +35,8 @@ export async function GET(request) {
       {
         configured: true,
         ok: false,
-        reason: "access_denied"
+        reason: currentAdmin.adminDeniedReason === "inactive" ? "inactive" : "not_authorized",
+        error: currentAdmin.adminDeniedReason === "inactive" ? "Admin account inactive." : "Not authorized."
       },
       { status: 403 }
     );

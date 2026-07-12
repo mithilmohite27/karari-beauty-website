@@ -12,10 +12,10 @@ import { products as localProducts } from "@/data/products";
 import {
   addRecentlyViewed,
   getCartCount,
-  getCartItems,
   getCartSubtotal,
   getRecentlyViewed,
   removeCartItem,
+  syncCartItemsWithCatalog,
   updateCartItemQuantity
 } from "@/lib/ecommerceStorage";
 
@@ -27,7 +27,7 @@ export default function CartPageExperience({ products = localProducts }) {
   const subtotal = getCartSubtotal(items);
 
   useEffect(() => {
-    const syncCart = () => setItems(getCartItems());
+    const syncCart = () => setItems(syncCartItemsWithCatalog(products));
 
     syncCart();
     window.addEventListener("cart:updated", syncCart);
@@ -85,7 +85,7 @@ export default function CartPageExperience({ products = localProducts }) {
               </p>
               <h1 className="mt-3 font-display text-3xl font-semibold text-[#7A183D] sm:text-5xl">Your Shopping Cart</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3A2417]/68">
-                Review your boutique picks, adjust quantities, and keep everything ready for the next checkout phase.
+                Review your boutique picks, adjust quantities, and continue to secure checkout when you are ready.
               </p>
             </div>
             <span className="w-fit rounded-full border border-[rgba(201,150,45,0.32)] bg-[#FFF8EE] px-4 py-2 text-sm font-bold text-[#7A183D]">
