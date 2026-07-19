@@ -8,7 +8,7 @@ export const giftCombos = [
   {
     title: "Bhabhi Grace Set",
     price: 999,
-    image: "https://images.unsplash.com/photo-1563302111-eab4b145e6c2?auto=format&fit=crop&w=900&q=80",
+    image: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&w=900&q=80",
     includes: ["Bhabhi Rakhi", "Mini beauty accessory", "Premium pouch"]
   },
   {

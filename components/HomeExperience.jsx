@@ -52,6 +52,7 @@ import { createWhatsAppUrl, formatCurrency } from "@/lib/whatsapp";
 import { getCustomerDisplayName, getCustomerSession, goToCheckout, signOutCustomer } from "@/lib/customer/session";
 
 const CAMPAIGN_OFFER_FALLBACK = "Festive offers live now";
+const GIFT_COMBO_FALLBACK_IMAGE = "/images/fallbacks/karari-product-fallback.svg";
 
 function getCampaignOfferLabel(campaign) {
   return campaign?.offerLabel || campaign?.offer_label || CAMPAIGN_OFFER_FALLBACK;
@@ -1077,13 +1078,7 @@ function GiftCombos({ onView, products = localProducts }) {
           {giftCombos.map((combo) => (
             <motion.article key={combo.title} whileHover={{ y: -5 }} className="overflow-hidden rounded-lg border border-black/8 bg-silk shadow-soft">
               <div className="relative aspect-[16/10] bg-cream">
-                <Image
-                  src={combo.image}
-                  alt={combo.title}
-                  fill
-                  sizes="(min-width: 1024px) 33vw, 100vw"
-                  className="object-cover"
-                />
+                <GiftComboImage src={combo.image} alt={combo.title} />
               </div>
               <div className="p-5">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-karariGold">Starts at {formatCurrency(combo.price)}</p>
@@ -1110,6 +1105,26 @@ function GiftCombos({ onView, products = localProducts }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function GiftComboImage({ src, alt }) {
+  const [imageSrc, setImageSrc] = useState(src || GIFT_COMBO_FALLBACK_IMAGE);
+
+  useEffect(() => {
+    setImageSrc(src || GIFT_COMBO_FALLBACK_IMAGE);
+  }, [src]);
+
+  return (
+    <Image
+      src={imageSrc}
+      alt={alt}
+      fill
+      sizes="(min-width: 1024px) 33vw, 100vw"
+      className="object-cover"
+      unoptimized={imageSrc === GIFT_COMBO_FALLBACK_IMAGE}
+      onError={() => setImageSrc((current) => (current === GIFT_COMBO_FALLBACK_IMAGE ? current : GIFT_COMBO_FALLBACK_IMAGE))}
+    />
   );
 }
 

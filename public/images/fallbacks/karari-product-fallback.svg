@@ -1,0 +1,20 @@
+<svg width="900" height="560" viewBox="0 0 900 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="560" fill="#FFF8EE"/>
+  <rect x="1" y="1" width="898" height="558" rx="20" fill="url(#paint0_linear)" stroke="#E9CAD2" stroke-width="2"/>
+  <circle cx="708" cy="108" r="132" fill="#FCE7EC" fill-opacity="0.68"/>
+  <circle cx="166" cy="448" r="116" fill="#FCE7EC" fill-opacity="0.78"/>
+  <path d="M318 348C318 287.801 366.801 239 427 239H477C537.199 239 586 287.801 586 348V383H318V348Z" fill="#F7D7D4"/>
+  <path d="M371 239C371 194.265 407.265 158 452 158C496.735 158 533 194.265 533 239" stroke="#7A183D" stroke-width="18" stroke-linecap="round"/>
+  <rect x="302" y="333" width="300" height="145" rx="20" fill="#E9B7AD"/>
+  <rect x="415" y="371" width="74" height="48" rx="10" fill="#FFF8EE" stroke="#C9962D" stroke-width="6"/>
+  <path d="M318 368H586" stroke="#7A183D" stroke-opacity="0.22" stroke-width="8"/>
+  <text x="450" y="104" text-anchor="middle" fill="#7A183D" font-family="Georgia, serif" font-size="42" font-weight="700">Karari Beauty</text>
+  <text x="450" y="520" text-anchor="middle" fill="#3A2417" fill-opacity="0.62" font-family="Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="2">BOUTIQUE GIFTING</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="900" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8EE"/>
+      <stop offset="0.55" stop-color="#FCE7EC"/>
+      <stop offset="1" stop-color="#FFF8EE"/>
+    </linearGradient>
+  </defs>
+</svg>

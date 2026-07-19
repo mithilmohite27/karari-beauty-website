@@ -25,16 +25,6 @@ export default function AuthCallbackPage() {
       const supabase = createBrowserSupabaseClient();
       const params = new URLSearchParams(window.location.search);
       const next = getSafeNext(params.get("next"));
-      const code = params.get("code");
-      const providerError = params.get("error_description") || params.get("error");
-      const hasHashParams = window.location.hash.length > 1;
-
-      console.info("[oauth-callback]", {
-        hasCode: Boolean(code),
-        hasHashParams,
-        providerError: providerError || "",
-        flow: "browser-implicit"
-      });
 
       if (!supabase) {
         setFailed(true);
@@ -43,7 +33,6 @@ export default function AuthCallbackPage() {
       }
 
       const finishWithSession = (session) => {
-        console.info("[oauth-callback]", { sessionCreated: Boolean(session) });
         window.dispatchEvent(new Event("customerAuth:updated"));
         window.location.replace(getCanonicalUrl(next));
       };
@@ -60,20 +49,15 @@ export default function AuthCallbackPage() {
         if (resolved) return;
         resolved = true;
         authSubscription?.unsubscribe();
-        console.info("[oauth-callback]", { sessionCreated: false });
         setFailed(true);
         setMessage("Google sign-in could not be completed. Please try again.");
       }, 3500);
 
-      const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
         if (resolved || !session) return;
         resolved = true;
         window.clearTimeout(timeout);
         listener.subscription.unsubscribe();
-        console.info("[oauth-callback]", {
-          event,
-          sessionCreated: true
-        });
         finishWithSession(session);
       });
 
