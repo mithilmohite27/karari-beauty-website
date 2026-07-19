@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Heart, Search, ShoppingCart, Star } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import ProductImage from "@/components/ProductImage";
 import { formatCurrency } from "@/lib/whatsapp";
 
 export default function ProductCard({ product, onView, onAddToCart, onBuyNow, onToggleWishlist, wished }) {
@@ -20,7 +20,7 @@ export default function ProductCard({ product, onView, onAddToCart, onBuyNow, on
     >
       <div className="image-sheen relative aspect-[1.05/1] overflow-hidden bg-cream sm:aspect-[4/3]">
         <Link href={productHref} className="block h-full w-full text-left" aria-label={`View ${product.name}`}>
-          <Image
+          <ProductImage
             src={product.image}
             alt={product.name}
             fill

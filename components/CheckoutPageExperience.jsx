@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, BadgeCheck, ChevronRight, Globe2, MessageCircle, PackageCheck, ShieldCheck, Truck } from "lucide-react";
 import EmptyCartState from "@/components/EmptyCartState";
 import { Header } from "@/components/HomeExperience";
+import ProductImage from "@/components/ProductImage";
 import QuickViewModal from "@/components/QuickViewModal";
 import { products as localProducts } from "@/data/products";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
@@ -46,6 +46,7 @@ const trustBadges = [
   { label: "International Inquiry", icon: Globe2 },
   { label: "Gift Ready Picks", icon: PackageCheck }
 ];
+const PRODUCT_IMAGE_FALLBACK = "/images/fallbacks/karari-product-fallback.svg";
 
 const initialForm = {
   fullName: "",
@@ -112,6 +113,46 @@ function getPaymentStartupMessage(errorCode, fallbackMessage) {
   };
 
   return messages[errorCode] || fallbackMessage || "Unable to create Razorpay order. Please try again.";
+}
+
+function getImageValue(candidate) {
+  if (!candidate) return "";
+  if (typeof candidate === "string") return candidate.trim();
+  return String(candidate.image || candidate.imageUrl || candidate.url || candidate.thumbnail || "").trim();
+}
+
+function isUsableImageValue(value) {
+  if (!value || typeof value !== "string") return false;
+  const trimmed = value.trim();
+  if (!trimmed || ["undefined", "null", "false"].includes(trimmed.toLowerCase())) return false;
+  return trimmed.startsWith("/") || trimmed.startsWith("http://") || trimmed.startsWith("https://");
+}
+
+function findCatalogProduct(item, products = []) {
+  return products.find((product) => {
+    if (item.productId && product.id === item.productId) return true;
+    if (item.id && product.id === item.id) return true;
+    if (item.slug && product.slug === item.slug) return true;
+    if (item.sku && product.sku === item.sku) return true;
+    return false;
+  });
+}
+
+function resolveCheckoutItemImage(item, products = []) {
+  const product = item.product || findCatalogProduct(item, products);
+  const sources = [
+    item.image,
+    item.imageUrl,
+    item.thumbnail,
+    Array.isArray(item.images) ? item.images.map(getImageValue).find(isUsableImageValue) : "",
+    product?.thumbnail,
+    product?.image,
+    product?.imageUrl,
+    Array.isArray(product?.images) ? product.images.map(getImageValue).find(isUsableImageValue) : "",
+    Array.isArray(product?.galleryImages) ? product.galleryImages.map(getImageValue).find(isUsableImageValue) : ""
+  ];
+
+  return sources.map(getImageValue).find(isUsableImageValue) || PRODUCT_IMAGE_FALLBACK;
 }
 
 function loadRazorpayCheckout() {
@@ -653,10 +694,13 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
                 <section className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/86 p-4 shadow-boutique">
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#C9962D]">Order Summary</p>
                   <div className="mt-4 space-y-3">
-                    {items.map((item) => (
-                      <div key={item.productId} className="flex gap-3 rounded-lg bg-[#FFF8EE] p-3">
+                    {items.map((item) => {
+                      const imageSrc = resolveCheckoutItemImage(item, products);
+
+                      return (
+                      <div key={item.productId || item.slug || item.sku || item.name} className="flex gap-3 rounded-lg bg-[#FFF8EE] p-3">
                         <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-[#FFF8EE]">
-                          <Image src={item.image} alt={item.name} fill sizes="4rem" className="object-cover" />
+                          <ProductImage src={imageSrc} alt={item.name || "Karari Beauty product"} fill sizes="4rem" className="object-cover" />
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="line-clamp-2 text-sm font-bold text-[#3A2417]">{item.name}</p>
@@ -664,7 +708,8 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
                           <p className="mt-1 text-sm font-bold text-[#7A183D]">{formatCurrency((Number(item.price) || 0) * (Number(item.quantity) || 0))}</p>
                         </div>
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                   <div className="mt-4 space-y-3 border-t border-[rgba(122,24,61,0.12)] pt-4 text-sm font-semibold text-[#3A2417]/72">
                     <div className="flex items-center justify-between">

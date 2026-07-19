@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { ArrowRight, Globe2, Heart, Share2, X } from "lucide-react";
+import ProductImage from "@/components/ProductImage";
 import { frequentlyBoughtTogether } from "@/data/frequentlyBoughtTogether";
 import { businessSettings } from "@/data/businessSettings";
 import { products as localProducts } from "@/data/products";
@@ -177,13 +177,12 @@ export default function QuickViewModal({ product, onClose, products = localProdu
         </div>
         <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 overscroll-contain sm:p-5 lg:grid-cols-[0.92fr_1fr] lg:overflow-hidden">
           <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-cream">
-            <Image src={product.image} alt={product.name} fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
+            <ProductImage src={product.image} alt={product.name} fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
           </div>
           <div className="min-h-0 lg:flex lg:flex-col">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-karariGold">{product.category}</p>
             <h4 className="mt-2 font-display text-2xl font-semibold text-charcoal sm:text-3xl">{product.name}</h4>
             <p className="mt-3 text-2xl font-bold text-rose">{formatCurrency(product.price)}</p>
-            <p className="mt-2 text-sm text-ink/58">SKU: {product.sku}</p>
             <p className="mt-3 line-clamp-4 leading-7 text-ink/70">{product.description}</p>
 
             <div className="mt-4 rounded-lg border border-antiqueGold/25 bg-white p-3">
@@ -255,7 +254,7 @@ export default function QuickViewModal({ product, onClose, products = localProdu
             {relatedProducts.map((item) => (
               <div key={item.id} className="flex gap-3 rounded-lg border border-black/8 bg-white p-3">
                 <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-cream">
-                  <Image src={item.image} alt={item.name} fill sizes="4rem" className="object-cover" />
+                  <ProductImage src={item.image} alt={item.name} fill sizes="4rem" className="object-cover" />
                 </span>
                 <div>
                   <p className="line-clamp-2 text-sm font-semibold text-charcoal">{item.name}</p>

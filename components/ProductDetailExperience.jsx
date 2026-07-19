@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, BadgeCheck, ChevronRight, Heart, Minus, PackageCheck, Plus, ShieldCheck, ShoppingCart, Star, Truck } from "lucide-react";
 import { Header } from "@/components/HomeExperience";
 import ProductCard from "@/components/ProductCard";
+import ProductImage from "@/components/ProductImage";
 import QuickViewModal from "@/components/QuickViewModal";
 import { products as localProducts } from "@/data/products";
 import { goToCheckout } from "@/lib/customer/session";
@@ -125,7 +125,7 @@ export default function ProductDetailExperience({ product, category, relatedProd
           <div className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_0.9fr]">
             <div className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/72 p-2.5 shadow-boutique sm:p-3">
               <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#FFF8EE]">
-                <Image
+                <ProductImage
                   src={selectedImage || product.image}
                   alt={product.name}
                   fill
@@ -147,7 +147,7 @@ export default function ProductDetailExperience({ product, category, relatedProd
                       aria-pressed={isSelected}
                       className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-md border-2 bg-[#FFF8EE] transition ${isSelected ? "border-[#7A183D] shadow-sm" : "border-transparent hover:border-[#C9962D]"}`}
                     >
-                      <Image src={image.imageUrl} alt={image.altText || `${product.name} thumbnail`} fill sizes="4rem" className="object-cover" />
+                      <ProductImage src={image.imageUrl} alt={image.altText || `${product.name} thumbnail`} fill sizes="4rem" className="object-cover" />
                     </button>
                   );
                 })}
@@ -175,7 +175,6 @@ export default function ProductDetailExperience({ product, category, relatedProd
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2 text-sm font-semibold text-[#3A2417]/62">
-                {product.sku ? <span>SKU: {product.sku}</span> : null}
                 {productTags.slice(0, 3).map((tag) => (
                   <span key={tag} className="rounded-full bg-[#FFF8EE] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[#C9962D]">{tag}</span>
                 ))}

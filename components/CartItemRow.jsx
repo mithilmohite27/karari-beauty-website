@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import ProductImage from "@/components/ProductImage";
 import { formatCurrency } from "@/lib/whatsapp";
 
 export default function CartItemRow({ item, compact = false, onQuantityChange, onRemove }) {
@@ -19,7 +19,7 @@ export default function CartItemRow({ item, compact = false, onQuantityChange, o
     <article className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-3 shadow-soft">
       <div className="flex gap-3">
         <div className={`${compact ? "h-[4.5rem] w-[4.5rem] min-[390px]:h-20 min-[390px]:w-20" : "h-20 w-20 sm:h-24 sm:w-24"} relative shrink-0 overflow-hidden rounded-lg border border-[rgba(122,24,61,0.12)] bg-[#FFF8EE]`}>
-          <Image src={item.image} alt={item.name} fill sizes={compact ? "5rem" : "6rem"} className="object-cover" />
+          <ProductImage src={item.image} alt={item.name} fill sizes={compact ? "5rem" : "6rem"} className="object-cover" />
         </div>
 
         <div className="min-w-0 flex-1">

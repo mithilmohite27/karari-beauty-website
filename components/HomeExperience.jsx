@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import CartDrawer from "@/components/CartDrawer";
 import ProductCard from "@/components/ProductCard";
+import ProductImage from "@/components/ProductImage";
 import QuickViewModal from "@/components/QuickViewModal";
 import { businessSettings } from "@/data/businessSettings";
 import { categories as localCategories } from "@/data/categories";
@@ -201,7 +202,7 @@ function SearchBox({ onViewProduct, products = localProducts }) {
                   className="flex w-full items-center gap-3 border-b border-[rgba(122,24,61,0.08)] p-3 text-left transition last:border-b-0 hover:bg-[#FFF8EE]"
                 >
                   <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-[#FFF8EE]">
-                    <Image src={product.image} alt={product.name} fill sizes="3rem" className="object-cover" />
+                    <ProductImage src={product.image} alt={product.name} fill sizes="3rem" className="object-cover" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold text-[#3A2417]">{product.name}</span>
@@ -235,7 +236,7 @@ function RecentlyViewedList({ products: viewedProducts, onViewProduct }) {
           className="flex w-full items-center gap-3 rounded-md p-2 text-left transition hover:bg-[#FFF8EE]"
         >
           <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-[#FFF8EE]">
-            <Image src={product.image} alt={product.name} fill sizes="3rem" className="object-cover" />
+            <ProductImage src={product.image} alt={product.name} fill sizes="3rem" className="object-cover" />
           </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-bold text-[#3A2417]">{product.name}</span>
@@ -1151,7 +1152,7 @@ function FrequentlyBoughtTogetherSection({ onView, products = localProducts }) {
           {items.map((item) => (
             <button key={item.id} type="button" onClick={() => onView(item)} className="flex gap-4 rounded-lg border border-black/8 bg-silk p-3 text-left transition hover:-translate-y-1 hover:shadow-soft">
               <span className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-cream">
-                <Image src={item.image} alt={item.name} fill sizes="6rem" className="object-cover" />
+                <ProductImage src={item.image} alt={item.name} fill sizes="6rem" className="object-cover" />
               </span>
               <div>
                 <p className="line-clamp-2 text-sm font-bold text-charcoal">{item.name}</p>
