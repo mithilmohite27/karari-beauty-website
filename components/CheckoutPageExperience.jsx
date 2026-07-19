@@ -623,6 +623,12 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
                   <p className="mt-4 rounded-lg border border-[rgba(201,150,45,0.24)] bg-[#FFF8EE] p-3 text-sm font-semibold leading-6 text-[#3A2417]/70">
                     Payments are securely processed by Razorpay. Your order will be confirmed after successful payment.
                   </p>
+                  <p className="mt-3 text-xs font-semibold leading-5 text-[#3A2417]/58">
+                    By placing an order, you agree to Karari Beauty's{" "}
+                    <Link href="/terms-and-conditions" className="text-[#7A183D] underline underline-offset-2">Terms &amp; Conditions</Link>,{" "}
+                    <Link href="/privacy-policy" className="text-[#7A183D] underline underline-offset-2">Privacy Policy</Link>, and{" "}
+                    <Link href="/return-refund-policy" className="text-[#7A183D] underline underline-offset-2">Return &amp; Refund Policy</Link>.
+                  </p>
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     {orderTypes.map((option) => (
                       <label key={option} className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm font-bold transition ${

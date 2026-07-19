@@ -250,12 +250,30 @@ Checkout behavior:
 - Buy Now uses temporary session checkout storage and does not overwrite the customer cart.
 - Checkout requires a signed-in Supabase customer session.
 - For faster ecommerce checkout, disable Supabase email confirmation: Supabase Dashboard -> Authentication -> Providers -> Email -> Confirm email OFF. If confirmation remains ON, customers must verify email before signing in and continuing checkout.
+- Customer Google sign-in uses Supabase Auth OAuth. Configure Supabase Dashboard -> Authentication -> Providers -> Google with the Google OAuth client ID and client secret.
+- Add OAuth redirect URLs in both Supabase and Google Cloud:
+  - Local: `http://localhost:3000/auth/callback`
+  - Production: `https://kararibeauty.com/auth/callback`
+- Google authorised JavaScript origins should include `http://localhost:3000` for development and `https://kararibeauty.com` for production.
 - Online payment creates a Razorpay order server-side and verifies the Razorpay signature before clearing the cart.
 - Successful Razorpay payment saves `payment_status = paid` and confirms the order.
 - Failed/cancelled Razorpay payment keeps the cart available for retry.
 - Cash on Delivery is available only when total quantity is 10 or more and every selected product has COD enabled.
 - COD orders save `payment_status = cod_pending`.
 - No gateway charge is shown separately to customers.
+
+### Ecommerce policy pages
+
+Customer-facing policy pages are available at:
+
+- `/terms-and-conditions`
+- `/privacy-policy`
+- `/shipping-policy`
+- `/return-refund-policy`
+- `/cancellation-policy`
+- `/contact-us`
+
+Policy pages use the shared business settings in `data/businessSettings.js` for the business name, address, phone number and temporary support email. Replace `support@kararibeauty.com` after the official domain email is created.
 
 ### Razorpay QA checklist
 

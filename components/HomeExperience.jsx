@@ -1160,12 +1160,14 @@ const footerTrustItems = [
 
 const footerCareLinks = [
   { label: "About Karari", href: "#about" },
-  { label: "Contact Us", href: "#contact" },
+  { label: "Contact Us", href: "/contact-us" },
   { label: "International Orders", href: "#international-orders" },
   { label: "Order Support", href: "#support" },
-  { label: "Return & Exchange", href: "#return-exchange" },
-  { label: "Privacy Policy", href: "#privacy" },
-  { label: "Terms & Conditions", href: "#terms" }
+  { label: "Shipping Policy", href: "/shipping-policy" },
+  { label: "Return & Refund", href: "/return-refund-policy" },
+  { label: "Cancellation Policy", href: "/cancellation-policy" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms & Conditions", href: "/terms-and-conditions" }
 ];
 
 function getSettingsValue(siteSettings, section, field, fallback = "") {
@@ -1247,7 +1249,7 @@ function SupportItem({ icon: Icon, title, children }) {
   );
 }
 
-function Footer({ categories = localCategories, siteSettings }) {
+export function Footer({ categories = localCategories, siteSettings }) {
   const footerShopLinks = categories.map((category) => ({ label: category.name, href: category.href }));
   const businessName = getSettingsValue(siteSettings, "business", "name", businessSettings.name);
   const businessTagline = getSettingsValue(siteSettings, "business", "tagline", businessSettings.tagline);

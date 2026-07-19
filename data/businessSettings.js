@@ -12,6 +12,8 @@ export const businessSettings = {
   facebookUrl: "https://www.facebook.com/karari1999",
   youtubeUrl: "",
   email: "kararib222192@gmail.com",
+  // Temporary customer support email. Replace after the official domain email is created.
+  supportEmail: "support@kararibeauty.com",
   mapsUrl: "https://maps.app.goo.gl/ZRJuqngNS7CdnaWR9?g_st=ic",
   address: "Tower Road, Main Bazar, Vansda - 396580, Dist. Navsari, Gujarat",
   city: "Vansda",
