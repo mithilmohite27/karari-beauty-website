@@ -10,6 +10,12 @@ function getSafeNext(value) {
   return value;
 }
 
+const CANONICAL_ORIGIN = "https://kararibeauty.com";
+
+function getCanonicalUrl(path) {
+  return `${CANONICAL_ORIGIN}${getSafeNext(path)}`;
+}
+
 export default function AuthCallbackPage() {
   const [message, setMessage] = useState("Completing your sign-in...");
   const [failed, setFailed] = useState(false);
@@ -20,22 +26,58 @@ export default function AuthCallbackPage() {
       const params = new URLSearchParams(window.location.search);
       const next = getSafeNext(params.get("next"));
       const code = params.get("code");
+      const providerError = params.get("error_description") || params.get("error");
+      const hasHashParams = window.location.hash.length > 1;
 
-      if (!supabase || !code) {
+      console.info("[oauth-callback]", {
+        hasCode: Boolean(code),
+        hasHashParams,
+        providerError: providerError || "",
+        flow: "browser-implicit"
+      });
+
+      if (!supabase) {
         setFailed(true);
         setMessage("Google sign-in could not be completed. Please try again.");
         return;
       }
 
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) {
-        setFailed(true);
-        setMessage("Google sign-in could not be completed. Please try again.");
+      const finishWithSession = (session) => {
+        console.info("[oauth-callback]", { sessionCreated: Boolean(session) });
+        window.dispatchEvent(new Event("customerAuth:updated"));
+        window.location.replace(getCanonicalUrl(next));
+      };
+
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        finishWithSession(data.session);
         return;
       }
 
-      window.dispatchEvent(new Event("customerAuth:updated"));
-      window.location.replace(next);
+      let resolved = false;
+      let authSubscription = null;
+      const timeout = window.setTimeout(() => {
+        if (resolved) return;
+        resolved = true;
+        authSubscription?.unsubscribe();
+        console.info("[oauth-callback]", { sessionCreated: false });
+        setFailed(true);
+        setMessage("Google sign-in could not be completed. Please try again.");
+      }, 3500);
+
+      const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+        if (resolved || !session) return;
+        resolved = true;
+        window.clearTimeout(timeout);
+        listener.subscription.unsubscribe();
+        console.info("[oauth-callback]", {
+          event,
+          sessionCreated: true
+        });
+        finishWithSession(session);
+      });
+
+      authSubscription = listener.subscription;
     };
 
     finishSignIn();

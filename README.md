@@ -15,7 +15,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `https://kararibeauty.com`.
 
 ## Project Structure
 
@@ -251,10 +251,9 @@ Checkout behavior:
 - Checkout requires a signed-in Supabase customer session.
 - For faster ecommerce checkout, disable Supabase email confirmation: Supabase Dashboard -> Authentication -> Providers -> Email -> Confirm email OFF. If confirmation remains ON, customers must verify email before signing in and continuing checkout.
 - Customer Google sign-in uses Supabase Auth OAuth. Configure Supabase Dashboard -> Authentication -> Providers -> Google with the Google OAuth client ID and client secret.
-- Add OAuth redirect URLs in both Supabase and Google Cloud:
-  - Local: `http://localhost:3000/auth/callback`
-  - Production: `https://kararibeauty.com/auth/callback`
-- Google authorised JavaScript origins should include `http://localhost:3000` for development and `https://kararibeauty.com` for production.
+- Add the OAuth redirect URL in both Supabase and Google Cloud:
+  - `https://kararibeauty.com/auth/callback`
+- Google authorised JavaScript origins should include `https://kararibeauty.com`.
 - Online payment creates a Razorpay order server-side and verifies the Razorpay signature before clearing the cart.
 - Successful Razorpay payment saves `payment_status = paid` and confirms the order.
 - Failed/cancelled Razorpay payment keeps the cart available for retry.
@@ -273,7 +272,7 @@ Customer-facing policy pages are available at:
 - `/cancellation-policy`
 - `/contact-us`
 
-Policy pages use the shared business settings in `data/businessSettings.js` for the business name, address, phone number and temporary support email. Replace `support@kararibeauty.com` after the official domain email is created.
+Policy pages use the shared business settings in `data/businessSettings.js` for the business name, address, phone number and support email.
 
 ### Razorpay QA checklist
 

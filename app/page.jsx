@@ -1,4 +1,5 @@
 import HomeExperience from "@/components/HomeExperience";
+import { businessSettings } from "@/data/businessSettings";
 import { getActiveCategories } from "@/lib/data/categories";
 import { getProducts } from "@/lib/data/products";
 import { getActiveSeasonalCampaign } from "@/lib/data/seasonalCampaigns";
@@ -20,7 +21,7 @@ function StoreJsonLd({ siteSettings }) {
     description: siteSettings.seo.metaDescription || defaultSeo.description,
     url: getSiteUrl(),
     image: absoluteUrl(business.logoUrl || "/logo.png"),
-    email: contact.email,
+    email: businessSettings.supportEmail || contact.email,
     address: {
       "@type": "PostalAddress",
       streetAddress: contact.address,

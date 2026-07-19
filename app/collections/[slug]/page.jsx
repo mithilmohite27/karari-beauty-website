@@ -23,7 +23,7 @@ export async function generateMetadata({ params }) {
   const href = category.href || `/collections/${category.slug}`;
   const title = `${category.name} Collection | Karari Beauty`;
   const description = `${category.description} Explore premium boutique products, gifts and seasonal collections from Karari Beauty.`;
-  const image = category.image || getDefaultOgImage();
+  const image = absoluteUrl(category.image || getDefaultOgImage());
 
   return {
     title: {

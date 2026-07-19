@@ -5,7 +5,7 @@ export const policyLastUpdated = "July 19, 2026";
 export const policyContact = {
   businessName: businessSettings.name,
   address: businessSettings.address || "[BUSINESS ADDRESS TO BE CONFIRMED]",
-  supportEmail: businessSettings.supportEmail,
+  supportEmail: businessSettings.supportEmail || businessSettings.email,
   phoneNumber: "+91 7435984499",
   jurisdiction: "Navsari, Gujarat, India"
 };

@@ -26,6 +26,8 @@ const phoneCountries = [
   { code: "AE", name: "UAE", flag: "AE", dialCode: "971", min: 9, max: 9 }
 ];
 
+const CANONICAL_ORIGIN = "https://kararibeauty.com";
+
 function countryFlag(code) {
   return code.replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
 }
@@ -57,6 +59,12 @@ function isValidMobile(value, countryCode = "IN") {
 function getSafeRedirect(value) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
   return value;
+}
+
+function getOAuthCallbackUrl(nextPath) {
+  const url = new URL("/auth/callback", CANONICAL_ORIGIN);
+  url.searchParams.set("next", getSafeRedirect(nextPath));
+  return url.toString();
 }
 
 function friendlyAuthError(error) {
@@ -306,6 +314,7 @@ export default function SignInExperience() {
     const params = new URLSearchParams(window.location.search);
     setRedirectTo(getSafeRedirect(params.get("redirect")));
     if (params.get("mode") === "register") setMode("register");
+    if (params.get("auth_error") === "google") setNotice("Google sign-in could not be completed. Please try again.");
   }, []);
 
   const switchMode = (nextMode) => {
@@ -332,12 +341,10 @@ export default function SignInExperience() {
     setNotice("");
 
     try {
-      const callbackUrl = new URL("/auth/callback", window.location.origin);
-      callbackUrl.searchParams.set("next", redirectTo);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: callbackUrl.toString()
+          redirectTo: getOAuthCallbackUrl(redirectTo)
         }
       });
 

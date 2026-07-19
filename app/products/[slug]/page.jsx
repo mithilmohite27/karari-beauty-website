@@ -22,7 +22,7 @@ export async function generateMetadata({ params }) {
   const title = `${product.name} | Karari Beauty`;
   const description = product.shortDescription || product.description;
   const url = absoluteUrl(`/products/${product.slug}`);
-  const image = product.image || getDefaultOgImage();
+  const image = absoluteUrl(product.image || getDefaultOgImage());
 
   return {
     title: {
@@ -50,9 +50,9 @@ export async function generateMetadata({ params }) {
 
 function ProductJsonLd({ product, category }) {
   const image = product.galleryImages?.length
-    ? product.galleryImages.map((item) => item.imageUrl)
+    ? product.galleryImages.map((item) => absoluteUrl(item.imageUrl))
     : product.image
-      ? [product.image]
+      ? [absoluteUrl(product.image)]
       : [getDefaultOgImage()];
   const schema = {
     "@context": "https://schema.org",
