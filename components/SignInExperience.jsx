@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -27,6 +27,9 @@ const phoneCountries = [
 ];
 
 const CANONICAL_ORIGIN = "https://kararibeauty.com";
+const AUTH_ARTWORK_SRC = "/images/auth/karari-auth-artwork.webp";
+const AUTH_MOBILE_ARTWORK_SRC = "/images/auth/karari-auth-mobile.webp";
+const AUTH_ARTWORK_FALLBACK_SRC = "/images/fallbacks/karari-auth-fallback.svg";
 
 function countryFlag(code) {
   return code.replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
@@ -106,16 +109,52 @@ function Ornament() {
 }
 
 function AuthBrandPanel() {
+  const [artworkFailed, setArtworkFailed] = useState(false);
+
+  const { props: mobileArtworkProps } = getImageProps({
+    src: AUTH_MOBILE_ARTWORK_SRC,
+    alt: "",
+    width: 1200,
+    height: 600,
+    quality: 88,
+    sizes: "100vw"
+  });
+  const { props: desktopArtworkProps } = getImageProps({
+    src: AUTH_ARTWORK_SRC,
+    alt: "",
+    width: 1122,
+    height: 1402,
+    quality: 88,
+    sizes: "(min-width: 1024px) 543px, 100vw"
+  });
+
   return (
-    <aside className="relative aspect-[1122/1402] min-w-0 overflow-hidden bg-[#FCEDEA] lg:block lg:h-full lg:min-h-0 lg:aspect-auto">
-      <Image
-        src="/images/auth/karari-auth-panel.webp"
-        alt="Welcome to Karari Beauty"
-        fill
-        priority
-        sizes="(min-width: 1024px) 543px, 100vw"
-        className="object-cover object-center lg:object-[center_48%]"
-      />
+    <aside className="relative h-[190px] min-w-0 overflow-hidden bg-[#FCEDEA] min-[360px]:h-[200px] min-[390px]:h-[210px] min-[430px]:h-[220px] sm:h-[280px] md:h-[290px] lg:block lg:h-full lg:min-h-0">
+      {artworkFailed ? (
+        <Image
+          src={AUTH_ARTWORK_FALLBACK_SRC}
+          alt=""
+          fill
+          priority
+          sizes="(min-width: 1024px) 543px, 100vw"
+          className="object-cover object-center"
+        />
+      ) : (
+        <picture>
+          <source
+            media="(min-width: 1024px)"
+            srcSet={desktopArtworkProps.srcSet}
+            sizes={desktopArtworkProps.sizes}
+          />
+          <img
+            {...mobileArtworkProps}
+            alt=""
+            fetchPriority="high"
+            className="absolute inset-0 h-full w-full object-cover object-center lg:object-[center_48%]"
+            onError={() => setArtworkFailed(true)}
+          />
+        </picture>
+      )}
     </aside>
   );
 }
@@ -456,7 +495,7 @@ export default function SignInExperience() {
       <section className="grid w-[calc(100vw-1.5rem)] min-w-0 max-w-[1400px] grid-cols-1 overflow-hidden rounded-[24px] border border-white/80 bg-white shadow-[0_22px_62px_rgba(90,37,49,0.14)] sm:w-full lg:h-[min(720px,86vh)] lg:max-h-[760px] lg:w-[min(1180px,92vw)] lg:max-w-[1180px] lg:grid-cols-[46fr_54fr]">
         <AuthBrandPanel />
 
-        <div className="flex min-h-[620px] w-full min-w-0 max-w-full items-center justify-center bg-white px-4 py-7 sm:px-8 sm:py-9 lg:h-full lg:min-h-0 lg:overflow-hidden lg:px-9 lg:py-5 xl:px-12">
+        <div className="flex min-h-[620px] w-full min-w-0 max-w-full items-center justify-center bg-white px-4 py-5 sm:px-8 sm:py-7 lg:h-full lg:min-h-0 lg:overflow-hidden lg:px-9 lg:py-5 xl:px-12">
           <div className="mx-auto flex w-full min-w-0 max-w-[480px] flex-col overflow-hidden lg:my-auto">
             <div className="text-center">
               <h1 className="font-display text-[2rem] font-semibold leading-tight text-[#7A183D] sm:text-[2.25rem] lg:text-[2rem]">

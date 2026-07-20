@@ -1,0 +1,21 @@
+<svg width="1122" height="1402" viewBox="0 0 1122 1402" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1122" height="1402" fill="#FCEDEA"/>
+  <rect width="1122" height="1402" fill="url(#paint0_linear)"/>
+  <circle cx="902" cy="180" r="210" fill="#FFF8EE" fill-opacity="0.7"/>
+  <circle cx="138" cy="1210" r="260" fill="#FCE7EC"/>
+  <path d="M170 0C270 206 275 356 170 555C94 697 96 852 170 1028" stroke="#FFF8EE" stroke-width="62" stroke-linecap="round" opacity="0.9"/>
+  <path d="M560 328C653 328 728 403 728 496V570H394V496C394 403 467 328 560 328Z" fill="#F7D7D4"/>
+  <path d="M438 329C438 261 493 206 561 206C629 206 684 261 684 329" stroke="#7A183D" stroke-width="28" stroke-linecap="round" opacity="0.72"/>
+  <rect x="356" y="546" width="410" height="220" rx="32" fill="#E9B7AD"/>
+  <rect x="508" y="600" width="106" height="72" rx="16" fill="#FFF8EE" stroke="#C9962D" stroke-width="8"/>
+  <text x="561" y="885" text-anchor="middle" fill="#7A183D" font-family="Georgia, serif" font-size="82" font-weight="700">Karari Beauty</text>
+  <text x="561" y="955" text-anchor="middle" fill="#3A2417" fill-opacity="0.72" font-family="Arial, sans-serif" font-size="30" font-weight="700">Boutique gifts, jewellery and festive collections</text>
+  <text x="561" y="1030" text-anchor="middle" fill="#C9962D" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="6">BOUTIQUE FOR YOU</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="1122" y2="1402" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8EE"/>
+      <stop offset="0.48" stop-color="#FCE7EC"/>
+      <stop offset="1" stop-color="#FFF8EE"/>
+    </linearGradient>
+  </defs>
+</svg>
