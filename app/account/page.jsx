@@ -1,4 +1,5 @@
 import AccountExperience from "@/components/AccountExperience";
+import { getProducts } from "@/lib/data/products";
 
 export const metadata = {
   title: {
@@ -11,6 +12,11 @@ export const metadata = {
   }
 };
 
-export default function AccountPage() {
-  return <AccountExperience />;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export default async function AccountPage() {
+  const products = await getProducts();
+
+  return <AccountExperience products={products} />;
 }
