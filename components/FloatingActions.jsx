@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ArrowUp, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { createWhatsAppUrl } from "@/lib/whatsapp";
 
 function WhatsAppIcon({ className = "h-6 w-6" }) {
@@ -91,10 +92,13 @@ function WhatsAppWidget({ siteSettings }) {
 }
 
 export default function FloatingActions({ siteSettings }) {
+  const pathname = usePathname();
+  const isAuthenticationPage = pathname === "/sign-in";
+
   return (
     <div className="fixed bottom-5 right-4 z-40 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       <BackToTopButton />
-      <WhatsAppWidget siteSettings={siteSettings} />
+      {!isAuthenticationPage ? <WhatsAppWidget siteSettings={siteSettings} /> : null}
     </div>
   );
 }
