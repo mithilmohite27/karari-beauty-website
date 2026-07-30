@@ -1,0 +1,566 @@
+# Product Image Audit Summary
+Generated: 2026-07-20T17:42:47.998Z
+Data source: supabase
+## Totals
+- Total products: 167
+- Total image URLs: 501
+- Unique image URLs: 106
+- Broken URLs: 0
+- Unique broken URLs: 0
+- Slow URLs over 1500ms: 3
+- Unique slow URLs over 1500ms: 1
+- Severe slow URLs over 3000ms: 3
+- Oversized images over 500 KB: 270
+- Unique oversized images over 500 KB: 89
+- Severe oversized images over 1.50 MB: 270
+- Excessive dimensions over 2000px: 0
+- Temp-path images: 261
+- Unique temp-path images: 87
+- Duplicate URL groups: 106
+- Missing primary images: 0
+- Malformed URLs: 0
+- Supabase URLs: 270
+## Broken URLs
+- None
+## Slow URLs
+- 8699ms - Krishna Square Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783242173670-ad-50-krishna-rs-125.png
+- 8699ms - Krishna Square Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783242173670-ad-50-krishna-rs-125.png
+- 8699ms - Krishna Square Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783242173670-ad-50-krishna-rs-125.png
+## Oversized URLs
+- 1.96 MB 1774x887 - Divine Spiritual Om Rakhi (image): /hero/raksha-bandhan-2026.png
+- 1.96 MB 1774x887 - Divine Spiritual Om Rakhi (imageUrl): /hero/raksha-bandhan-2026.png
+- 1.96 MB 1774x887 - Divine Spiritual Om Rakhi (product_images[0].image_url): /hero/raksha-bandhan-2026.png
+- 1.96 MB 1774x887 - Set of 2 Kids Rakhi (image): /hero/raksha-bandhan-2026.png
+- 1.96 MB 1774x887 - Set of 2 Kids Rakhi (imageUrl): /hero/raksha-bandhan-2026.png
+- 1.96 MB 1774x887 - Set of 2 Kids Rakhi (product_images[0].image_url): /hero/raksha-bandhan-2026.png
+- 2.00 MB 1402x1122 - Sky Bloom Floral Compact Umbrella (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784110583963-b9c4122c-bb7f-4e1a-ad05-01130f382f16.png
+- 2.00 MB 1402x1122 - Sky Bloom Floral Compact Umbrella (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784110583963-b9c4122c-bb7f-4e1a-ad05-01130f382f16.png
+- 2.00 MB 1402x1122 - Sky Bloom Floral Compact Umbrella (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784110583963-b9c4122c-bb7f-4e1a-ad05-01130f382f16.png
+- 1.93 MB 1086x1448 - Astronaut Rocket Glitter Kids Tumbler (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/b53d57dd-374a-45f3-944b-d1e0de199bcd/gallery/1784108896724-304b2131-7431-4035-a6b8-7fbd22f425fc.png
+- 1.93 MB 1086x1448 - Astronaut Rocket Glitter Kids Tumbler (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/b53d57dd-374a-45f3-944b-d1e0de199bcd/gallery/1784108896724-304b2131-7431-4035-a6b8-7fbd22f425fc.png
+- 1.93 MB 1086x1448 - Astronaut Rocket Glitter Kids Tumbler (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/b53d57dd-374a-45f3-944b-d1e0de199bcd/gallery/1784108896724-304b2131-7431-4035-a6b8-7fbd22f425fc.png
+- 1.77 MB 1086x1448 - Space Walk Glitter Kids Tumbler with Straw (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784108387965-2747557e-9ac7-47d3-ac7f-80eb015c955c.png
+- 1.77 MB 1086x1448 - Space Walk Glitter Kids Tumbler with Straw (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784108387965-2747557e-9ac7-47d3-ac7f-80eb015c955c.png
+- 1.77 MB 1086x1448 - Space Walk Glitter Kids Tumbler with Straw (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784108387965-2747557e-9ac7-47d3-ac7f-80eb015c955c.png
+- 1.60 MB 1086x1449 - Believe Luxury Matte Black Soap Dispenser with Gold Pump (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784008655144-elegant-spa-dispenser-with-gold-details.png
+- 1.60 MB 1086x1449 - Believe Luxury Matte Black Soap Dispenser with Gold Pump (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784008655144-elegant-spa-dispenser-with-gold-details.png
+- 1.60 MB 1086x1449 - Believe Luxury Matte Black Soap Dispenser with Gold Pump (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784008655144-elegant-spa-dispenser-with-gold-details.png
+- 1.83 MB 1447x1087 - Royal Heritage Ceramic Mug Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784008451616-elegant-ceramic-mugs-with-indian-portraits.png
+- 1.83 MB 1447x1087 - Royal Heritage Ceramic Mug Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784008451616-elegant-ceramic-mugs-with-indian-portraits.png
+- 1.83 MB 1447x1087 - Royal Heritage Ceramic Mug Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784008451616-elegant-ceramic-mugs-with-indian-portraits.png
+- 1.74 MB 1086x1448 - Bugatti La Voiture Noire 3D Shadow Box Frame (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784007823390-bugatti-la-voiture-noire-poster-display.png
+- 1.74 MB 1086x1448 - Bugatti La Voiture Noire 3D Shadow Box Frame (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784007823390-bugatti-la-voiture-noire-poster-display.png
+- 1.74 MB 1086x1448 - Bugatti La Voiture Noire 3D Shadow Box Frame (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1784007823390-bugatti-la-voiture-noire-poster-display.png
+- 2.16 MB 1086x1449 - Premium Lakshmi Charan Pooja Box – Gold Finish (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/ae53ce39-8ac3-4344-b55e-071724010d81/gallery/1783674843168-chatgpt-image-jul-10-2026-02-43-38-pm.png
+- 2.16 MB 1086x1449 - Premium Lakshmi Charan Pooja Box – Gold Finish (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/ae53ce39-8ac3-4344-b55e-071724010d81/gallery/1783674843168-chatgpt-image-jul-10-2026-02-43-38-pm.png
+- 2.16 MB 1086x1449 - Premium Lakshmi Charan Pooja Box – Gold Finish (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/ae53ce39-8ac3-4344-b55e-071724010d81/gallery/1783674843168-chatgpt-image-jul-10-2026-02-43-38-pm.png
+- 1.97 MB 1086x1448 - Premium White & Gold Radha Krishna Idol with Peacock (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783672678048-rk.png
+- 1.97 MB 1086x1448 - Premium White & Gold Radha Krishna Idol with Peacock (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783672678048-rk.png
+- 1.97 MB 1086x1448 - Premium White & Gold Radha Krishna Idol with Peacock (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783672678048-rk.png
+- 2.04 MB 1086x1448 - Premium Lord Ganesha Idol with Acrylic Display Case (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783667813651-ganesh-1-gift.png
+- 2.04 MB 1086x1448 - Premium Lord Ganesha Idol with Acrylic Display Case (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783667813651-ganesh-1-gift.png
+- 2.04 MB 1086x1448 - Premium Lord Ganesha Idol with Acrylic Display Case (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783667813651-ganesh-1-gift.png
+- 1.95 MB 1085x1450 - Handmade Crochet Flower Bouquet (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/e8adadea-6b9b-4768-a4c1-7b68fb7fa1a4/main/1784006032336-gift-1.png
+- 1.95 MB 1085x1450 - Handmade Crochet Flower Bouquet (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/e8adadea-6b9b-4768-a4c1-7b68fb7fa1a4/main/1784006032336-gift-1.png
+- 1.95 MB 1085x1450 - Handmade Crochet Flower Bouquet (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/e8adadea-6b9b-4768-a4c1-7b68fb7fa1a4/main/1784006032336-gift-1.png
+- 1.84 MB 1086x1448 - Divine Rudraksha White Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783663538145-aa-15-rs-45.png
+- 1.84 MB 1086x1448 - Divine Rudraksha White Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783663538145-aa-15-rs-45.png
+- 1.84 MB 1086x1448 - Divine Rudraksha White Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783663538145-aa-15-rs-45.png
+- 1.99 MB 1086x1448 - Traditional Sukhad Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783605706957-aa-13-rs-50.png
+- 1.99 MB 1086x1448 - Traditional Sukhad Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783605706957-aa-13-rs-50.png
+- 1.99 MB 1086x1448 - Traditional Sukhad Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783605706957-aa-13-rs-50.png
+- 2.13 MB 1086x1448 - Traditional Sukhad Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783603968448-aa-12-rs-50.png
+- 2.13 MB 1086x1448 - Traditional Sukhad Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783603968448-aa-12-rs-50.png
+- 2.13 MB 1086x1448 - Traditional Sukhad Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783603968448-aa-12-rs-50.png
+- 1.95 MB 1086x1448 - Golden Aura Crystal Rakh (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783603060201-aa-11-rs-35.png
+- 1.95 MB 1086x1448 - Golden Aura Crystal Rakh (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783603060201-aa-11-rs-35.png
+- 1.95 MB 1086x1448 - Golden Aura Crystal Rakh (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783603060201-aa-11-rs-35.png
+- 2.12 MB 1086x1448 - Tiger Eye Stone Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783601932098-aa-10-rs-75.png
+- 2.12 MB 1086x1448 - Tiger Eye Stone Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783601932098-aa-10-rs-75.png
+- 2.12 MB 1086x1448 - Tiger Eye Stone Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783601932098-aa-10-rs-75.png
+- 1.71 MB 1086x1449 - Tiger Eye Stone Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783600179610-aa-9-rs-75.png
+- 1.71 MB 1086x1449 - Tiger Eye Stone Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783600179610-aa-9-rs-75.png
+- 1.71 MB 1086x1449 - Tiger Eye Stone Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783600179610-aa-9-rs-75.png
+- 1.57 MB 1086x1448 - Pastel Rudraksha Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783598928873-aa-8-rs-15.png
+- 1.57 MB 1086x1448 - Pastel Rudraksha Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783598928873-aa-8-rs-15.png
+- 1.57 MB 1086x1448 - Pastel Rudraksha Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783598928873-aa-8-rs-15.png
+- 2.64 MB 1086x1448 - Pastel Rudraksha Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783596571752-aa-7-rs-15.png
+- 2.64 MB 1086x1448 - Pastel Rudraksha Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783596571752-aa-7-rs-15.png
+- 2.64 MB 1086x1448 - Pastel Rudraksha Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783596571752-aa-7-rs-15.png
+- 2.54 MB 1086x1448 - Classic Multicolor Thread Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783594131048-aa-6-rs-30.png
+- 2.54 MB 1086x1448 - Classic Multicolor Thread Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783594131048-aa-6-rs-30.png
+- 2.54 MB 1086x1448 - Classic Multicolor Thread Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783594131048-aa-6-rs-30.png
+- 2.60 MB 1086x1448 - Royal Blue Floral Designer Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783592952115-aa-5-rs-90.png
+- 2.60 MB 1086x1448 - Royal Blue Floral Designer Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783592952115-aa-5-rs-90.png
+- 2.60 MB 1086x1448 - Royal Blue Floral Designer Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783592952115-aa-5-rs-90.png
+- 2.69 MB 1086x1448 - Traditional Multicolor Designer Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783592501712-aa-4-rs-70.png
+- 2.69 MB 1086x1448 - Traditional Multicolor Designer Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783592501712-aa-4-rs-70.png
+- 2.69 MB 1086x1448 - Traditional Multicolor Designer Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783592501712-aa-4-rs-70.png
+- 2.57 MB 1086x1448 - Sacred Rudraksha Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783592244088-aa-3-25.png
+- 2.57 MB 1086x1448 - Sacred Rudraksha Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783592244088-aa-3-25.png
+- 2.57 MB 1086x1448 - Sacred Rudraksha Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783592244088-aa-3-25.png
+- 2.51 MB 1086x1448 - Traditional Multicolor Beaded Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783591364447-aa-f-1-mrp-90.png
+- 2.51 MB 1086x1448 - Traditional Multicolor Beaded Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783591364447-aa-f-1-mrp-90.png
+- 2.51 MB 1086x1448 - Traditional Multicolor Beaded Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783591364447-aa-f-1-mrp-90.png
+- 1.99 MB 1086x1448 - Ivory Scarf Handle Designer Handbag (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522625744-purse-5.png
+- 1.99 MB 1086x1448 - Ivory Scarf Handle Designer Handbag (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522625744-purse-5.png
+- 1.99 MB 1086x1448 - Ivory Scarf Handle Designer Handbag (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522625744-purse-5.png
+- 2.16 MB 1086x1448 - Classic Black Leather Handbag (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522501941-purse-4.png
+- 2.16 MB 1086x1448 - Classic Black Leather Handbag (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522501941-purse-4.png
+- 2.16 MB 1086x1448 - Classic Black Leather Handbag (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522501941-purse-4.png
+- 1.76 MB 1086x1448 - Quilted Beige Tote Handbag (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522371995-purse-3.png
+- 1.76 MB 1086x1448 - Quilted Beige Tote Handbag (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522371995-purse-3.png
+- 1.76 MB 1086x1448 - Quilted Beige Tote Handbag (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522371995-purse-3.png
+- 2.07 MB 1122x1402 - Ivory White Elegant Handbag (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522126609-purse-2.png
+- 2.07 MB 1122x1402 - Ivory White Elegant Handbag (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522126609-purse-2.png
+- 2.07 MB 1122x1402 - Ivory White Elegant Handbag (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783522126609-purse-2.png
+- 2.15 MB 1122x1402 - Classic Beige Premium Handbag (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783521577419-purse-1.png
+- 2.15 MB 1122x1402 - Classic Beige Premium Handbag (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783521577419-purse-1.png
+- 2.15 MB 1122x1402 - Classic Beige Premium Handbag (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783521577419-purse-1.png
+- 2.32 MB 1086x1448 - Ruby Crystal Designer Necklace Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783521152744-ad-silver-mrp-1695.png
+- 2.32 MB 1086x1448 - Ruby Crystal Designer Necklace Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783521152744-ad-silver-mrp-1695.png
+- 2.32 MB 1086x1448 - Ruby Crystal Designer Necklace Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783521152744-ad-silver-mrp-1695.png
+- 2.34 MB 1086x1448 - Diamond Look Crystal Choker Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783520933364-ad-set-mrp-4595.png
+- 2.34 MB 1086x1448 - Diamond Look Crystal Choker Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783520933364-ad-set-mrp-4595.png
+- 2.34 MB 1086x1448 - Diamond Look Crystal Choker Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783520933364-ad-set-mrp-4595.png
+- 2.46 MB 1086x1448 - Emerald Floral Designer Necklace Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783514180589-ad-set-mrp-1445.png
+- 2.46 MB 1086x1448 - Emerald Floral Designer Necklace Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783514180589-ad-set-mrp-1445.png
+- 2.46 MB 1086x1448 - Emerald Floral Designer Necklace Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783514180589-ad-set-mrp-1445.png
+- 2.14 MB 1086x1448 - Emerald Crystal Necklace Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783513672257-ad-mrp-995.png
+- 2.14 MB 1086x1448 - Emerald Crystal Necklace Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783513672257-ad-mrp-995.png
+- 2.14 MB 1086x1448 - Emerald Crystal Necklace Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783513672257-ad-mrp-995.png
+- 2.39 MB 1086x1448 - Royal Antique Pearl Necklace Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783513361107-ad-log-set-mrp-2495.png
+- 2.39 MB 1086x1448 - Royal Antique Pearl Necklace Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783513361107-ad-log-set-mrp-2495.png
+- 2.39 MB 1086x1448 - Royal Antique Pearl Necklace Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783513361107-ad-log-set-mrp-2495.png
+- 1.95 MB 1086x1448 - Royal Kashmiri Bell Jhumka Earrings (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783513107508-kashmiri-earrings-mrp-375.png
+- 1.95 MB 1086x1448 - Royal Kashmiri Bell Jhumka Earrings (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783513107508-kashmiri-earrings-mrp-375.png
+- 1.95 MB 1086x1448 - Royal Kashmiri Bell Jhumka Earrings (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783513107508-kashmiri-earrings-mrp-375.png
+- 2.23 MB 1086x1448 - Golden Crystal Tassel Drop Earrings (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783512929976-kashmir-earings-mrp-225.png
+- 2.23 MB 1086x1448 - Golden Crystal Tassel Drop Earrings (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783512929976-kashmir-earings-mrp-225.png
+- 2.23 MB 1086x1448 - Golden Crystal Tassel Drop Earrings (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783512929976-kashmir-earings-mrp-225.png
+- 2.01 MB 1086x1448 - Midnight Beaded Hoop Earrings (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783512828754-earrings-mrp-120.png
+- 2.01 MB 1086x1448 - Midnight Beaded Hoop Earrings (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783512828754-earrings-mrp-120.png
+- 2.01 MB 1086x1448 - Midnight Beaded Hoop Earrings (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783512828754-earrings-mrp-120.png
+- 2.17 MB 1448x1086 - Flower Stone Designer Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783259982089-37eb99d8-e1b5-4b36-9912-a2e1ffccc034.png
+- 2.17 MB 1448x1086 - Flower Stone Designer Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783259982089-37eb99d8-e1b5-4b36-9912-a2e1ffccc034.png
+- 2.17 MB 1448x1086 - Flower Stone Designer Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783259982089-37eb99d8-e1b5-4b36-9912-a2e1ffccc034.png
+- 2.40 MB 1086x1448 - Elephant Charm Designer Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783259076870-40359808-d691-4add-bb80-311bea39f0af.png
+- 2.40 MB 1086x1448 - Elephant Charm Designer Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783259076870-40359808-d691-4add-bb80-311bea39f0af.png
+- 2.40 MB 1086x1448 - Elephant Charm Designer Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783259076870-40359808-d691-4add-bb80-311bea39f0af.png
+- 2.10 MB 1086x1448 - Lavender Bloom Tassel Earrings (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783243890894-earings-mrp-495.png
+- 2.10 MB 1086x1448 - Lavender Bloom Tassel Earrings (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783243890894-earings-mrp-495.png
+- 2.10 MB 1086x1448 - Lavender Bloom Tassel Earrings (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783243890894-earings-mrp-495.png
+- 2.20 MB 1086x1448 - AD Yellow Crystal Necklace Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783242954586-ad-mrp-1285.png
+- 2.20 MB 1086x1448 - AD Yellow Crystal Necklace Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783242954586-ad-mrp-1285.png
+- 2.20 MB 1086x1448 - AD Yellow Crystal Necklace Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783242954586-ad-mrp-1285.png
+- 2.18 MB 1086x1448 - Krishna Square Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783242173670-ad-50-krishna-rs-125.png
+- 2.18 MB 1086x1448 - Krishna Square Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783242173670-ad-50-krishna-rs-125.png
+- 2.18 MB 1086x1448 - Krishna Square Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783242173670-ad-50-krishna-rs-125.png
+- 1.96 MB 1086x1448 - Om Classic Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783241263874-ad-49-om-rs-150.png
+- 1.96 MB 1086x1448 - Om Classic Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783241263874-ad-49-om-rs-150.png
+- 1.96 MB 1086x1448 - Om Classic Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783241263874-ad-49-om-rs-150.png
+- 1.99 MB 1086x1448 - Om Gold AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239514066-ad-48-om-250.png
+- 1.99 MB 1086x1448 - Om Gold AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239514066-ad-48-om-250.png
+- 1.99 MB 1086x1448 - Om Gold AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239514066-ad-48-om-250.png
+- 2.45 MB 1086x1448 - Ganesh Circle AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239347654-ad-47-ganesh-250.png
+- 2.45 MB 1086x1448 - Ganesh Circle AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239347654-ad-47-ganesh-250.png
+- 2.45 MB 1086x1448 - Ganesh Circle AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239347654-ad-47-ganesh-250.png
+- 2.13 MB 1086x1448 - Om Royal AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239149142-ad-46-om-rs-250.png
+- 2.13 MB 1086x1448 - Om Royal AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239149142-ad-46-om-rs-250.png
+- 2.13 MB 1086x1448 - Om Royal AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239149142-ad-46-om-rs-250.png
+- 2.29 MB 1448x1086 - Krishna Premium AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239038024-ad-45-krishna-rs-250.png
+- 2.29 MB 1448x1086 - Krishna Premium AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239038024-ad-45-krishna-rs-250.png
+- 2.29 MB 1448x1086 - Krishna Premium AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783239038024-ad-45-krishna-rs-250.png
+- 2.29 MB 1448x1086 - Ganesh  AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783238801241-ad-ganesh-44-rs-250.png
+- 2.29 MB 1448x1086 - Ganesh  AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783238801241-ad-ganesh-44-rs-250.png
+- 2.29 MB 1448x1086 - Ganesh  AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783238801241-ad-ganesh-44-rs-250.png
+- 2.18 MB 1448x1086 - Shivling AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783232057398-ad-shiva-43-rs-250.png
+- 2.18 MB 1448x1086 - Shivling AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783232057398-ad-shiva-43-rs-250.png
+- 2.18 MB 1448x1086 - Shivling AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783232057398-ad-shiva-43-rs-250.png
+- 2.08 MB 1448x1086 - Om Divine AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783231392663-ad-42-om-rs-175.png
+- 2.08 MB 1448x1086 - Om Divine AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783231392663-ad-42-om-rs-175.png
+- 2.08 MB 1448x1086 - Om Divine AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783231392663-ad-42-om-rs-175.png
+- 2.02 MB 1086x1448 - Krishna Blessing AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783231081056-ad-41-krishna-rs-175.png
+- 2.02 MB 1086x1448 - Krishna Blessing AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783231081056-ad-41-krishna-rs-175.png
+- 2.02 MB 1086x1448 - Krishna Blessing AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783231081056-ad-41-krishna-rs-175.png
+- 2.12 MB 1448x1086 - Om Square AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783225459948-ad-om-40-rs-175.png
+- 2.12 MB 1448x1086 - Om Square AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783225459948-ad-om-40-rs-175.png
+- 2.12 MB 1448x1086 - Om Square AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783225459948-ad-om-40-rs-175.png
+- 1.71 MB 1086x1448 - Om Silver Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189751350-ad-38-rs-125.png
+- 1.71 MB 1086x1448 - Om Silver Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189751350-ad-38-rs-125.png
+- 1.71 MB 1086x1448 - Om Silver Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189751350-ad-38-rs-125.png
+- 2.01 MB 1086x1448 - Floral Silver AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189605945-ad-37-rs-175.png
+- 2.01 MB 1086x1448 - Floral Silver AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189605945-ad-37-rs-175.png
+- 2.01 MB 1086x1448 - Floral Silver AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189605945-ad-37-rs-175.png
+- 2.06 MB 1086x1448 - Swan AD Pendant Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189460532-ad-36-rs-150.png
+- 2.06 MB 1086x1448 - Swan AD Pendant Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189460532-ad-36-rs-150.png
+- 2.06 MB 1086x1448 - Swan AD Pendant Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189460532-ad-36-rs-150.png
+- 2.07 MB 1086x1448 - Round Floral AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189127284-ad-35-rs-175.png
+- 2.07 MB 1086x1448 - Round Floral AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189127284-ad-35-rs-175.png
+- 2.07 MB 1086x1448 - Round Floral AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783189127284-ad-35-rs-175.png
+- 2.10 MB 1086x1448 - Ganesh Blessing AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188943510-ad-34-rs-130.png
+- 2.10 MB 1086x1448 - Ganesh Blessing AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188943510-ad-34-rs-130.png
+- 2.10 MB 1086x1448 - Ganesh Blessing AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188943510-ad-34-rs-130.png
+- 2.71 MB 1086x1448 - Infinity AD Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188796912-ad-33-rs-175.png
+- 2.71 MB 1086x1448 - Infinity AD Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188796912-ad-33-rs-175.png
+- 2.71 MB 1086x1448 - Infinity AD Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188796912-ad-33-rs-175.png
+- 2.54 MB 1086x1448 - Twin Leaf AD Pendant Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188510149-ad32-rs-175.png
+- 2.54 MB 1086x1448 - Twin Leaf AD Pendant Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188510149-ad32-rs-175.png
+- 2.54 MB 1086x1448 - Twin Leaf AD Pendant Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188510149-ad32-rs-175.png
+- 2.84 MB 1448x1086 - 💎 Classic AD Pendant (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188381813-ad-31-rs-175.png
+- 2.84 MB 1448x1086 - 💎 Classic AD Pendant (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188381813-ad-31-rs-175.png
+- 2.84 MB 1448x1086 - 💎 Classic AD Pendant (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783188381813-ad-31-rs-175.png
+- 2.79 MB 1086x1448 - Round AD Pendant Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187996836-ad-30-rs-175.png
+- 2.79 MB 1086x1448 - Round AD Pendant Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187996836-ad-30-rs-175.png
+- 2.79 MB 1086x1448 - Round AD Pendant Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187996836-ad-30-rs-175.png
+- 2.35 MB 1086x1448 - Krishna AD Pendant Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187872567-ad-krishna-29-rs-175.png
+- 2.35 MB 1086x1448 - Krishna AD Pendant Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187872567-ad-krishna-29-rs-175.png
+- 2.35 MB 1086x1448 - Krishna AD Pendant Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187872567-ad-krishna-29-rs-175.png
+- 2.79 MB 1086x1448 - Floral AD Pendant Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187757473-ad-28-rs-150.png
+- 2.79 MB 1086x1448 - Floral AD Pendant Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187757473-ad-28-rs-150.png
+- 2.79 MB 1086x1448 - Floral AD Pendant Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187757473-ad-28-rs-150.png
+- 2.62 MB 1086x1448 - Oval AD Pendant Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187565203-ad-27-rs-175.png
+- 2.62 MB 1086x1448 - Oval AD Pendant Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187565203-ad-27-rs-175.png
+- 2.62 MB 1086x1448 - Oval AD Pendant Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187565203-ad-27-rs-175.png
+- 2.28 MB 1448x1086 - Ganesh AD Pendant Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187424233-ad-26-rs-150.png
+- 2.28 MB 1448x1086 - Ganesh AD Pendant Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187424233-ad-26-rs-150.png
+- 2.28 MB 1448x1086 - Ganesh AD Pendant Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783187424233-ad-26-rs-150.png
+- 2.40 MB 1086x1448 - Classic Floral Couple Rakhi Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783186912312-couple-no-25-rs-250.png
+- 2.40 MB 1086x1448 - Classic Floral Couple Rakhi Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783186912312-couple-no-25-rs-250.png
+- 2.40 MB 1086x1448 - Classic Floral Couple Rakhi Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783186912312-couple-no-25-rs-250.png
+- 2.54 MB 1086x1448 - Om Premium Couple Rakhi Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783186332052-couple-24-rs-275.png
+- 2.54 MB 1086x1448 - Om Premium Couple Rakhi Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783186332052-couple-24-rs-275.png
+- 2.54 MB 1086x1448 - Om Premium Couple Rakhi Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783186332052-couple-24-rs-275.png
+- 2.48 MB 1086x1448 - Classic Stone Couple Rakhi Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783180112736-couple-23-rs-250.png
+- 2.48 MB 1086x1448 - Classic Stone Couple Rakhi Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783180112736-couple-23-rs-250.png
+- 2.48 MB 1086x1448 - Classic Stone Couple Rakhi Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783180112736-couple-23-rs-250.png
+- 3.72 MB 1086x1448 - Om Designer Couple Rakhi Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783179958963-couple-22-rs-225.png
+- 3.72 MB 1086x1448 - Om Designer Couple Rakhi Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783179958963-couple-22-rs-225.png
+- 3.72 MB 1086x1448 - Om Designer Couple Rakhi Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783179958963-couple-22-rs-225.png
+- 2.56 MB 1086x1448 - Traditional Star Couple Rakhi Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783179360744-couple-21-rs-250.png
+- 2.56 MB 1086x1448 - Traditional Star Couple Rakhi Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783179360744-couple-21-rs-250.png
+- 2.56 MB 1086x1448 - Traditional Star Couple Rakhi Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783179360744-couple-21-rs-250.png
+- 2.27 MB 1086x1448 - Traditional Designer Couple Rakhi Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783178551706-couple-no-20-rs-250.png
+- 2.27 MB 1086x1448 - Traditional Designer Couple Rakhi Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783178551706-couple-no-20-rs-250.png
+- 2.27 MB 1086x1448 - Traditional Designer Couple Rakhi Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783178551706-couple-no-20-rs-250.png
+- 2.10 MB 1086x1448 - Evil Eye Couple Rakhi Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783178347989-couple-no-19-rs-315.png
+- 2.10 MB 1086x1448 - Evil Eye Couple Rakhi Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783178347989-couple-no-19-rs-315.png
+- 2.10 MB 1086x1448 - Evil Eye Couple Rakhi Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783178347989-couple-no-19-rs-315.png
+- 2.09 MB 1086x1448 - Floral Mini Couple Rakhi Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783178196000-couple-no-18-rs-275.png
+- 2.09 MB 1086x1448 - Floral Mini Couple Rakhi Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783178196000-couple-no-18-rs-275.png
+- 2.09 MB 1086x1448 - Floral Mini Couple Rakhi Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783178196000-couple-no-18-rs-275.png
+- 2.14 MB 1086x1448 - Swan Designer Couple Rakhi Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783177774105-couple-no-17-rs-315.png
+- 2.14 MB 1086x1448 - Swan Designer Couple Rakhi Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783177774105-couple-no-17-rs-315.png
+- 2.14 MB 1086x1448 - Swan Designer Couple Rakhi Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783177774105-couple-no-17-rs-315.png
+- 2.17 MB 1086x1448 - Premium Stone Couple Rakhi Set (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783177603248-couple-no-16-rs-340.png
+- 2.17 MB 1086x1448 - Premium Stone Couple Rakhi Set (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783177603248-couple-no-16-rs-340.png
+- 2.17 MB 1086x1448 - Premium Stone Couple Rakhi Set (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783177603248-couple-no-16-rs-340.png
+- 2.14 MB 1086x1448 - Couple Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783177176374-couple-no-15-rs-340.png
+- 2.14 MB 1086x1448 - Couple Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783177176374-couple-no-15-rs-340.png
+- 2.14 MB 1086x1448 - Couple Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783177176374-couple-no-15-rs-340.png
+- 2.35 MB 1086x1448 - Couplel Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783176937948-couple-no-14-rs-315.png
+- 2.35 MB 1086x1448 - Couplel Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783176937948-couple-no-14-rs-315.png
+- 2.35 MB 1086x1448 - Couplel Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783176937948-couple-no-14-rs-315.png
+- 1.92 MB 1086x1448 - Couple Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783176522562-couple-13-rs-315.png
+- 1.92 MB 1086x1448 - Couple Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783176522562-couple-13-rs-315.png
+- 1.92 MB 1086x1448 - Couple Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783176522562-couple-13-rs-315.png
+- 2.09 MB 1085x1450 - Couple Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783176258793-couple-no-12-rs-340.png
+- 2.09 MB 1085x1450 - Couple Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783176258793-couple-no-12-rs-340.png
+- 2.09 MB 1085x1450 - Couple Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783176258793-couple-no-12-rs-340.png
+- 2.06 MB 1085x1450 - Couple Rakhi AD (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783172534910-couple-no-11-rs-315.png
+- 2.06 MB 1085x1450 - Couple Rakhi AD (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783172534910-couple-no-11-rs-315.png
+- 2.06 MB 1085x1450 - Couple Rakhi AD (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783172534910-couple-no-11-rs-315.png
+- 2.19 MB 1086x1448 - Couple Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783171203103-couple-no-10-pc-275.png
+- 2.19 MB 1086x1448 - Couple Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783171203103-couple-no-10-pc-275.png
+- 2.19 MB 1086x1448 - Couple Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783171203103-couple-no-10-pc-275.png
+- 2.41 MB 1086x1448 - Couple Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783170863485-couple-no-9-pc-315.png
+- 2.41 MB 1086x1448 - Couple Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783170863485-couple-no-9-pc-315.png
+- 2.41 MB 1086x1448 - Couple Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783170863485-couple-no-9-pc-315.png
+- 2.77 MB 1086x1448 - Couple Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783170576325-coup-no-8-pc-315.png
+- 2.77 MB 1086x1448 - Couple Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783170576325-coup-no-8-pc-315.png
+- 2.77 MB 1086x1448 - Couple Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783170576325-coup-no-8-pc-315.png
+- 2.51 MB 1086x1448 - Spinner Rakhi Flower (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783169677050-spinner-no-7-ps-355.png
+- 2.51 MB 1086x1448 - Spinner Rakhi Flower (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783169677050-spinner-no-7-ps-355.png
+- 2.51 MB 1086x1448 - Spinner Rakhi Flower (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783169677050-spinner-no-7-ps-355.png
+- 2.35 MB 1086x1448 - Spinner Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783168670416-spinner-no-6-ps-355.png
+- 2.35 MB 1086x1448 - Spinner Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783168670416-spinner-no-6-ps-355.png
+- 2.35 MB 1086x1448 - Spinner Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783168670416-spinner-no-6-ps-355.png
+- 2.32 MB 1086x1448 - Spinner Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783168357690-spinner-no-5-pc-355.png
+- 2.32 MB 1086x1448 - Spinner Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783168357690-spinner-no-5-pc-355.png
+- 2.32 MB 1086x1448 - Spinner Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783168357690-spinner-no-5-pc-355.png
+- 2.41 MB 1086x1448 - Spinner Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783167351228-spinner-no-3-ps355.png
+- 2.41 MB 1086x1448 - Spinner Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783167351228-spinner-no-3-ps355.png
+- 2.41 MB 1086x1448 - Spinner Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783167351228-spinner-no-3-ps355.png
+- 2.00 MB 1086x1448 - Spinner Rakhi (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783166545417-spinner-no-2-ps-330.png
+- 2.00 MB 1086x1448 - Spinner Rakhi (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783166545417-spinner-no-2-ps-330.png
+- 2.00 MB 1086x1448 - Spinner Rakhi (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783166545417-spinner-no-2-ps-330.png
+- 2.19 MB 1086x1448 - Rakhi Spinner (image): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783165023319-spinner-no-1-ps-330.png
+- 2.19 MB 1086x1448 - Rakhi Spinner (imageUrl): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783165023319-spinner-no-1-ps-330.png
+- 2.19 MB 1086x1448 - Rakhi Spinner (image_url): https://pwdbvmplcftqnrnyizkf.supabase.co/storage/v1/object/public/product-images/temp/main/1783165023319-spinner-no-1-ps-330.png
+## Temp Path URLs
+- Sky Bloom Floral Compact Umbrella (image): /storage/v1/object/public/product-images/temp/main/1784110583963-b9c4122c-bb7f-4e1a-ad05-01130f382f16.png
+- Sky Bloom Floral Compact Umbrella (imageUrl): /storage/v1/object/public/product-images/temp/main/1784110583963-b9c4122c-bb7f-4e1a-ad05-01130f382f16.png
+- Sky Bloom Floral Compact Umbrella (image_url): /storage/v1/object/public/product-images/temp/main/1784110583963-b9c4122c-bb7f-4e1a-ad05-01130f382f16.png
+- Space Walk Glitter Kids Tumbler with Straw (image): /storage/v1/object/public/product-images/temp/main/1784108387965-2747557e-9ac7-47d3-ac7f-80eb015c955c.png
+- Space Walk Glitter Kids Tumbler with Straw (imageUrl): /storage/v1/object/public/product-images/temp/main/1784108387965-2747557e-9ac7-47d3-ac7f-80eb015c955c.png
+- Space Walk Glitter Kids Tumbler with Straw (image_url): /storage/v1/object/public/product-images/temp/main/1784108387965-2747557e-9ac7-47d3-ac7f-80eb015c955c.png
+- Believe Luxury Matte Black Soap Dispenser with Gold Pump (image): /storage/v1/object/public/product-images/temp/main/1784008655144-elegant-spa-dispenser-with-gold-details.png
+- Believe Luxury Matte Black Soap Dispenser with Gold Pump (imageUrl): /storage/v1/object/public/product-images/temp/main/1784008655144-elegant-spa-dispenser-with-gold-details.png
+- Believe Luxury Matte Black Soap Dispenser with Gold Pump (image_url): /storage/v1/object/public/product-images/temp/main/1784008655144-elegant-spa-dispenser-with-gold-details.png
+- Royal Heritage Ceramic Mug Set (image): /storage/v1/object/public/product-images/temp/main/1784008451616-elegant-ceramic-mugs-with-indian-portraits.png
+- Royal Heritage Ceramic Mug Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1784008451616-elegant-ceramic-mugs-with-indian-portraits.png
+- Royal Heritage Ceramic Mug Set (image_url): /storage/v1/object/public/product-images/temp/main/1784008451616-elegant-ceramic-mugs-with-indian-portraits.png
+- Bugatti La Voiture Noire 3D Shadow Box Frame (image): /storage/v1/object/public/product-images/temp/main/1784007823390-bugatti-la-voiture-noire-poster-display.png
+- Bugatti La Voiture Noire 3D Shadow Box Frame (imageUrl): /storage/v1/object/public/product-images/temp/main/1784007823390-bugatti-la-voiture-noire-poster-display.png
+- Bugatti La Voiture Noire 3D Shadow Box Frame (image_url): /storage/v1/object/public/product-images/temp/main/1784007823390-bugatti-la-voiture-noire-poster-display.png
+- Premium White & Gold Radha Krishna Idol with Peacock (image): /storage/v1/object/public/product-images/temp/main/1783672678048-rk.png
+- Premium White & Gold Radha Krishna Idol with Peacock (imageUrl): /storage/v1/object/public/product-images/temp/main/1783672678048-rk.png
+- Premium White & Gold Radha Krishna Idol with Peacock (image_url): /storage/v1/object/public/product-images/temp/main/1783672678048-rk.png
+- Premium Lord Ganesha Idol with Acrylic Display Case (image): /storage/v1/object/public/product-images/temp/main/1783667813651-ganesh-1-gift.png
+- Premium Lord Ganesha Idol with Acrylic Display Case (imageUrl): /storage/v1/object/public/product-images/temp/main/1783667813651-ganesh-1-gift.png
+- Premium Lord Ganesha Idol with Acrylic Display Case (image_url): /storage/v1/object/public/product-images/temp/main/1783667813651-ganesh-1-gift.png
+- Divine Rudraksha White Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783663538145-aa-15-rs-45.png
+- Divine Rudraksha White Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783663538145-aa-15-rs-45.png
+- Divine Rudraksha White Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783663538145-aa-15-rs-45.png
+- Om Charm Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783662402138-aa-14-rs-25.jpg
+- Om Charm Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783662402138-aa-14-rs-25.jpg
+- Om Charm Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783662402138-aa-14-rs-25.jpg
+- Traditional Sukhad Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783605706957-aa-13-rs-50.png
+- Traditional Sukhad Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783605706957-aa-13-rs-50.png
+- Traditional Sukhad Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783605706957-aa-13-rs-50.png
+- Traditional Sukhad Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783603968448-aa-12-rs-50.png
+- Traditional Sukhad Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783603968448-aa-12-rs-50.png
+- Traditional Sukhad Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783603968448-aa-12-rs-50.png
+- Golden Aura Crystal Rakh (image): /storage/v1/object/public/product-images/temp/main/1783603060201-aa-11-rs-35.png
+- Golden Aura Crystal Rakh (imageUrl): /storage/v1/object/public/product-images/temp/main/1783603060201-aa-11-rs-35.png
+- Golden Aura Crystal Rakh (image_url): /storage/v1/object/public/product-images/temp/main/1783603060201-aa-11-rs-35.png
+- Tiger Eye Stone Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783601932098-aa-10-rs-75.png
+- Tiger Eye Stone Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783601932098-aa-10-rs-75.png
+- Tiger Eye Stone Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783601932098-aa-10-rs-75.png
+- Tiger Eye Stone Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783600179610-aa-9-rs-75.png
+- Tiger Eye Stone Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783600179610-aa-9-rs-75.png
+- Tiger Eye Stone Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783600179610-aa-9-rs-75.png
+- Pastel Rudraksha Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783598928873-aa-8-rs-15.png
+- Pastel Rudraksha Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783598928873-aa-8-rs-15.png
+- Pastel Rudraksha Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783598928873-aa-8-rs-15.png
+- Pastel Rudraksha Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783596571752-aa-7-rs-15.png
+- Pastel Rudraksha Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783596571752-aa-7-rs-15.png
+- Pastel Rudraksha Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783596571752-aa-7-rs-15.png
+- Classic Multicolor Thread Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783594131048-aa-6-rs-30.png
+- Classic Multicolor Thread Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783594131048-aa-6-rs-30.png
+- Classic Multicolor Thread Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783594131048-aa-6-rs-30.png
+- Royal Blue Floral Designer Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783592952115-aa-5-rs-90.png
+- Royal Blue Floral Designer Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783592952115-aa-5-rs-90.png
+- Royal Blue Floral Designer Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783592952115-aa-5-rs-90.png
+- Traditional Multicolor Designer Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783592501712-aa-4-rs-70.png
+- Traditional Multicolor Designer Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783592501712-aa-4-rs-70.png
+- Traditional Multicolor Designer Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783592501712-aa-4-rs-70.png
+- Sacred Rudraksha Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783592244088-aa-3-25.png
+- Sacred Rudraksha Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783592244088-aa-3-25.png
+- Sacred Rudraksha Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783592244088-aa-3-25.png
+- Traditional Multicolor Beaded Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783591364447-aa-f-1-mrp-90.png
+- Traditional Multicolor Beaded Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783591364447-aa-f-1-mrp-90.png
+- Traditional Multicolor Beaded Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783591364447-aa-f-1-mrp-90.png
+- Ivory Scarf Handle Designer Handbag (image): /storage/v1/object/public/product-images/temp/main/1783522625744-purse-5.png
+- Ivory Scarf Handle Designer Handbag (imageUrl): /storage/v1/object/public/product-images/temp/main/1783522625744-purse-5.png
+- Ivory Scarf Handle Designer Handbag (image_url): /storage/v1/object/public/product-images/temp/main/1783522625744-purse-5.png
+- Classic Black Leather Handbag (image): /storage/v1/object/public/product-images/temp/main/1783522501941-purse-4.png
+- Classic Black Leather Handbag (imageUrl): /storage/v1/object/public/product-images/temp/main/1783522501941-purse-4.png
+- Classic Black Leather Handbag (image_url): /storage/v1/object/public/product-images/temp/main/1783522501941-purse-4.png
+- Quilted Beige Tote Handbag (image): /storage/v1/object/public/product-images/temp/main/1783522371995-purse-3.png
+- Quilted Beige Tote Handbag (imageUrl): /storage/v1/object/public/product-images/temp/main/1783522371995-purse-3.png
+- Quilted Beige Tote Handbag (image_url): /storage/v1/object/public/product-images/temp/main/1783522371995-purse-3.png
+- Ivory White Elegant Handbag (image): /storage/v1/object/public/product-images/temp/main/1783522126609-purse-2.png
+- Ivory White Elegant Handbag (imageUrl): /storage/v1/object/public/product-images/temp/main/1783522126609-purse-2.png
+- Ivory White Elegant Handbag (image_url): /storage/v1/object/public/product-images/temp/main/1783522126609-purse-2.png
+- Classic Beige Premium Handbag (image): /storage/v1/object/public/product-images/temp/main/1783521577419-purse-1.png
+- Classic Beige Premium Handbag (imageUrl): /storage/v1/object/public/product-images/temp/main/1783521577419-purse-1.png
+- Classic Beige Premium Handbag (image_url): /storage/v1/object/public/product-images/temp/main/1783521577419-purse-1.png
+- Ruby Crystal Designer Necklace Set (image): /storage/v1/object/public/product-images/temp/main/1783521152744-ad-silver-mrp-1695.png
+- Ruby Crystal Designer Necklace Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783521152744-ad-silver-mrp-1695.png
+- Ruby Crystal Designer Necklace Set (image_url): /storage/v1/object/public/product-images/temp/main/1783521152744-ad-silver-mrp-1695.png
+- Diamond Look Crystal Choker Set (image): /storage/v1/object/public/product-images/temp/main/1783520933364-ad-set-mrp-4595.png
+- Diamond Look Crystal Choker Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783520933364-ad-set-mrp-4595.png
+- Diamond Look Crystal Choker Set (image_url): /storage/v1/object/public/product-images/temp/main/1783520933364-ad-set-mrp-4595.png
+- Emerald Floral Designer Necklace Set (image): /storage/v1/object/public/product-images/temp/main/1783514180589-ad-set-mrp-1445.png
+- Emerald Floral Designer Necklace Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783514180589-ad-set-mrp-1445.png
+- Emerald Floral Designer Necklace Set (image_url): /storage/v1/object/public/product-images/temp/main/1783514180589-ad-set-mrp-1445.png
+- Emerald Crystal Necklace Set (image): /storage/v1/object/public/product-images/temp/main/1783513672257-ad-mrp-995.png
+- Emerald Crystal Necklace Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783513672257-ad-mrp-995.png
+- Emerald Crystal Necklace Set (image_url): /storage/v1/object/public/product-images/temp/main/1783513672257-ad-mrp-995.png
+- Royal Antique Pearl Necklace Set (image): /storage/v1/object/public/product-images/temp/main/1783513361107-ad-log-set-mrp-2495.png
+- Royal Antique Pearl Necklace Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783513361107-ad-log-set-mrp-2495.png
+- Royal Antique Pearl Necklace Set (image_url): /storage/v1/object/public/product-images/temp/main/1783513361107-ad-log-set-mrp-2495.png
+- Royal Kashmiri Bell Jhumka Earrings (image): /storage/v1/object/public/product-images/temp/main/1783513107508-kashmiri-earrings-mrp-375.png
+- Royal Kashmiri Bell Jhumka Earrings (imageUrl): /storage/v1/object/public/product-images/temp/main/1783513107508-kashmiri-earrings-mrp-375.png
+- Royal Kashmiri Bell Jhumka Earrings (image_url): /storage/v1/object/public/product-images/temp/main/1783513107508-kashmiri-earrings-mrp-375.png
+- Golden Crystal Tassel Drop Earrings (image): /storage/v1/object/public/product-images/temp/main/1783512929976-kashmir-earings-mrp-225.png
+- Golden Crystal Tassel Drop Earrings (imageUrl): /storage/v1/object/public/product-images/temp/main/1783512929976-kashmir-earings-mrp-225.png
+- Golden Crystal Tassel Drop Earrings (image_url): /storage/v1/object/public/product-images/temp/main/1783512929976-kashmir-earings-mrp-225.png
+- Midnight Beaded Hoop Earrings (image): /storage/v1/object/public/product-images/temp/main/1783512828754-earrings-mrp-120.png
+- Midnight Beaded Hoop Earrings (imageUrl): /storage/v1/object/public/product-images/temp/main/1783512828754-earrings-mrp-120.png
+- Midnight Beaded Hoop Earrings (image_url): /storage/v1/object/public/product-images/temp/main/1783512828754-earrings-mrp-120.png
+- Flower Stone Designer Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783259982089-37eb99d8-e1b5-4b36-9912-a2e1ffccc034.png
+- Flower Stone Designer Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783259982089-37eb99d8-e1b5-4b36-9912-a2e1ffccc034.png
+- Flower Stone Designer Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783259982089-37eb99d8-e1b5-4b36-9912-a2e1ffccc034.png
+- Elephant Charm Designer Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783259076870-40359808-d691-4add-bb80-311bea39f0af.png
+- Elephant Charm Designer Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783259076870-40359808-d691-4add-bb80-311bea39f0af.png
+- Elephant Charm Designer Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783259076870-40359808-d691-4add-bb80-311bea39f0af.png
+- Lavender Bloom Tassel Earrings (image): /storage/v1/object/public/product-images/temp/main/1783243890894-earings-mrp-495.png
+- Lavender Bloom Tassel Earrings (imageUrl): /storage/v1/object/public/product-images/temp/main/1783243890894-earings-mrp-495.png
+- Lavender Bloom Tassel Earrings (image_url): /storage/v1/object/public/product-images/temp/main/1783243890894-earings-mrp-495.png
+- AD Yellow Crystal Necklace Set (image): /storage/v1/object/public/product-images/temp/main/1783242954586-ad-mrp-1285.png
+- AD Yellow Crystal Necklace Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783242954586-ad-mrp-1285.png
+- AD Yellow Crystal Necklace Set (image_url): /storage/v1/object/public/product-images/temp/main/1783242954586-ad-mrp-1285.png
+- Krishna Square Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783242173670-ad-50-krishna-rs-125.png
+- Krishna Square Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783242173670-ad-50-krishna-rs-125.png
+- Krishna Square Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783242173670-ad-50-krishna-rs-125.png
+- Om Classic Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783241263874-ad-49-om-rs-150.png
+- Om Classic Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783241263874-ad-49-om-rs-150.png
+- Om Classic Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783241263874-ad-49-om-rs-150.png
+- Om Gold AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783239514066-ad-48-om-250.png
+- Om Gold AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783239514066-ad-48-om-250.png
+- Om Gold AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783239514066-ad-48-om-250.png
+- Ganesh Circle AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783239347654-ad-47-ganesh-250.png
+- Ganesh Circle AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783239347654-ad-47-ganesh-250.png
+- Ganesh Circle AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783239347654-ad-47-ganesh-250.png
+- Om Royal AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783239149142-ad-46-om-rs-250.png
+- Om Royal AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783239149142-ad-46-om-rs-250.png
+- Om Royal AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783239149142-ad-46-om-rs-250.png
+- Krishna Premium AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783239038024-ad-45-krishna-rs-250.png
+- Krishna Premium AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783239038024-ad-45-krishna-rs-250.png
+- Krishna Premium AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783239038024-ad-45-krishna-rs-250.png
+- Ganesh  AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783238801241-ad-ganesh-44-rs-250.png
+- Ganesh  AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783238801241-ad-ganesh-44-rs-250.png
+- Ganesh  AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783238801241-ad-ganesh-44-rs-250.png
+- Shivling AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783232057398-ad-shiva-43-rs-250.png
+- Shivling AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783232057398-ad-shiva-43-rs-250.png
+- Shivling AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783232057398-ad-shiva-43-rs-250.png
+- Om Divine AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783231392663-ad-42-om-rs-175.png
+- Om Divine AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783231392663-ad-42-om-rs-175.png
+- Om Divine AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783231392663-ad-42-om-rs-175.png
+- Krishna Blessing AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783231081056-ad-41-krishna-rs-175.png
+- Krishna Blessing AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783231081056-ad-41-krishna-rs-175.png
+- Krishna Blessing AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783231081056-ad-41-krishna-rs-175.png
+- Om Square AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783225459948-ad-om-40-rs-175.png
+- Om Square AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783225459948-ad-om-40-rs-175.png
+- Om Square AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783225459948-ad-om-40-rs-175.png
+- Ganesh Silver Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783225198311-ad-39-ganesh-rs-125.jpg
+- Ganesh Silver Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783225198311-ad-39-ganesh-rs-125.jpg
+- Ganesh Silver Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783225198311-ad-39-ganesh-rs-125.jpg
+- Om Silver Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783189751350-ad-38-rs-125.png
+- Om Silver Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783189751350-ad-38-rs-125.png
+- Om Silver Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783189751350-ad-38-rs-125.png
+- Floral Silver AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783189605945-ad-37-rs-175.png
+- Floral Silver AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783189605945-ad-37-rs-175.png
+- Floral Silver AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783189605945-ad-37-rs-175.png
+- Swan AD Pendant Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783189460532-ad-36-rs-150.png
+- Swan AD Pendant Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783189460532-ad-36-rs-150.png
+- Swan AD Pendant Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783189460532-ad-36-rs-150.png
+- Round Floral AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783189127284-ad-35-rs-175.png
+- Round Floral AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783189127284-ad-35-rs-175.png
+- Round Floral AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783189127284-ad-35-rs-175.png
+- Ganesh Blessing AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783188943510-ad-34-rs-130.png
+- Ganesh Blessing AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783188943510-ad-34-rs-130.png
+- Ganesh Blessing AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783188943510-ad-34-rs-130.png
+- Infinity AD Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783188796912-ad-33-rs-175.png
+- Infinity AD Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783188796912-ad-33-rs-175.png
+- Infinity AD Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783188796912-ad-33-rs-175.png
+- Twin Leaf AD Pendant Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783188510149-ad32-rs-175.png
+- Twin Leaf AD Pendant Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783188510149-ad32-rs-175.png
+- Twin Leaf AD Pendant Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783188510149-ad32-rs-175.png
+- 💎 Classic AD Pendant (image): /storage/v1/object/public/product-images/temp/main/1783188381813-ad-31-rs-175.png
+- 💎 Classic AD Pendant (imageUrl): /storage/v1/object/public/product-images/temp/main/1783188381813-ad-31-rs-175.png
+- 💎 Classic AD Pendant (image_url): /storage/v1/object/public/product-images/temp/main/1783188381813-ad-31-rs-175.png
+- Round AD Pendant Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783187996836-ad-30-rs-175.png
+- Round AD Pendant Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783187996836-ad-30-rs-175.png
+- Round AD Pendant Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783187996836-ad-30-rs-175.png
+- Krishna AD Pendant Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783187872567-ad-krishna-29-rs-175.png
+- Krishna AD Pendant Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783187872567-ad-krishna-29-rs-175.png
+- Krishna AD Pendant Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783187872567-ad-krishna-29-rs-175.png
+- Floral AD Pendant Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783187757473-ad-28-rs-150.png
+- Floral AD Pendant Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783187757473-ad-28-rs-150.png
+- Floral AD Pendant Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783187757473-ad-28-rs-150.png
+- Oval AD Pendant Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783187565203-ad-27-rs-175.png
+- Oval AD Pendant Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783187565203-ad-27-rs-175.png
+- Oval AD Pendant Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783187565203-ad-27-rs-175.png
+- Ganesh AD Pendant Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783187424233-ad-26-rs-150.png
+- Ganesh AD Pendant Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783187424233-ad-26-rs-150.png
+- Ganesh AD Pendant Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783187424233-ad-26-rs-150.png
+- Classic Floral Couple Rakhi Set (image): /storage/v1/object/public/product-images/temp/main/1783186912312-couple-no-25-rs-250.png
+- Classic Floral Couple Rakhi Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783186912312-couple-no-25-rs-250.png
+- Classic Floral Couple Rakhi Set (image_url): /storage/v1/object/public/product-images/temp/main/1783186912312-couple-no-25-rs-250.png
+- Om Premium Couple Rakhi Set (image): /storage/v1/object/public/product-images/temp/main/1783186332052-couple-24-rs-275.png
+- Om Premium Couple Rakhi Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783186332052-couple-24-rs-275.png
+- Om Premium Couple Rakhi Set (image_url): /storage/v1/object/public/product-images/temp/main/1783186332052-couple-24-rs-275.png
+- Classic Stone Couple Rakhi Set (image): /storage/v1/object/public/product-images/temp/main/1783180112736-couple-23-rs-250.png
+- Classic Stone Couple Rakhi Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783180112736-couple-23-rs-250.png
+- Classic Stone Couple Rakhi Set (image_url): /storage/v1/object/public/product-images/temp/main/1783180112736-couple-23-rs-250.png
+- Om Designer Couple Rakhi Set (image): /storage/v1/object/public/product-images/temp/main/1783179958963-couple-22-rs-225.png
+- Om Designer Couple Rakhi Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783179958963-couple-22-rs-225.png
+- Om Designer Couple Rakhi Set (image_url): /storage/v1/object/public/product-images/temp/main/1783179958963-couple-22-rs-225.png
+- Traditional Star Couple Rakhi Set (image): /storage/v1/object/public/product-images/temp/main/1783179360744-couple-21-rs-250.png
+- Traditional Star Couple Rakhi Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783179360744-couple-21-rs-250.png
+- Traditional Star Couple Rakhi Set (image_url): /storage/v1/object/public/product-images/temp/main/1783179360744-couple-21-rs-250.png
+- Traditional Designer Couple Rakhi Set (image): /storage/v1/object/public/product-images/temp/main/1783178551706-couple-no-20-rs-250.png
+- Traditional Designer Couple Rakhi Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783178551706-couple-no-20-rs-250.png
+- Traditional Designer Couple Rakhi Set (image_url): /storage/v1/object/public/product-images/temp/main/1783178551706-couple-no-20-rs-250.png
+- Evil Eye Couple Rakhi Set (image): /storage/v1/object/public/product-images/temp/main/1783178347989-couple-no-19-rs-315.png
+- Evil Eye Couple Rakhi Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783178347989-couple-no-19-rs-315.png
+- Evil Eye Couple Rakhi Set (image_url): /storage/v1/object/public/product-images/temp/main/1783178347989-couple-no-19-rs-315.png
+- Floral Mini Couple Rakhi Set (image): /storage/v1/object/public/product-images/temp/main/1783178196000-couple-no-18-rs-275.png
+- Floral Mini Couple Rakhi Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783178196000-couple-no-18-rs-275.png
+- Floral Mini Couple Rakhi Set (image_url): /storage/v1/object/public/product-images/temp/main/1783178196000-couple-no-18-rs-275.png
+- Swan Designer Couple Rakhi Set (image): /storage/v1/object/public/product-images/temp/main/1783177774105-couple-no-17-rs-315.png
+- Swan Designer Couple Rakhi Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783177774105-couple-no-17-rs-315.png
+- Swan Designer Couple Rakhi Set (image_url): /storage/v1/object/public/product-images/temp/main/1783177774105-couple-no-17-rs-315.png
+- Premium Stone Couple Rakhi Set (image): /storage/v1/object/public/product-images/temp/main/1783177603248-couple-no-16-rs-340.png
+- Premium Stone Couple Rakhi Set (imageUrl): /storage/v1/object/public/product-images/temp/main/1783177603248-couple-no-16-rs-340.png
+- Premium Stone Couple Rakhi Set (image_url): /storage/v1/object/public/product-images/temp/main/1783177603248-couple-no-16-rs-340.png
+- Couple Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783177176374-couple-no-15-rs-340.png
+- Couple Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783177176374-couple-no-15-rs-340.png
+- Couple Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783177176374-couple-no-15-rs-340.png
+- Couplel Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783176937948-couple-no-14-rs-315.png
+- Couplel Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783176937948-couple-no-14-rs-315.png
+- Couplel Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783176937948-couple-no-14-rs-315.png
+- Couple Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783176522562-couple-13-rs-315.png
+- Couple Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783176522562-couple-13-rs-315.png
+- Couple Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783176522562-couple-13-rs-315.png
+- Couple Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783176258793-couple-no-12-rs-340.png
+- Couple Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783176258793-couple-no-12-rs-340.png
+- Couple Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783176258793-couple-no-12-rs-340.png
+- Couple Rakhi AD (image): /storage/v1/object/public/product-images/temp/main/1783172534910-couple-no-11-rs-315.png
+- Couple Rakhi AD (imageUrl): /storage/v1/object/public/product-images/temp/main/1783172534910-couple-no-11-rs-315.png
+- Couple Rakhi AD (image_url): /storage/v1/object/public/product-images/temp/main/1783172534910-couple-no-11-rs-315.png
+- Couple Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783171203103-couple-no-10-pc-275.png
+- Couple Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783171203103-couple-no-10-pc-275.png
+- Couple Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783171203103-couple-no-10-pc-275.png
+- Couple Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783170863485-couple-no-9-pc-315.png
+- Couple Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783170863485-couple-no-9-pc-315.png
+- Couple Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783170863485-couple-no-9-pc-315.png
+- Couple Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783170576325-coup-no-8-pc-315.png
+- Couple Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783170576325-coup-no-8-pc-315.png
+- Couple Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783170576325-coup-no-8-pc-315.png
+- Spinner Rakhi Flower (image): /storage/v1/object/public/product-images/temp/main/1783169677050-spinner-no-7-ps-355.png
+- Spinner Rakhi Flower (imageUrl): /storage/v1/object/public/product-images/temp/main/1783169677050-spinner-no-7-ps-355.png
+- Spinner Rakhi Flower (image_url): /storage/v1/object/public/product-images/temp/main/1783169677050-spinner-no-7-ps-355.png
+- Spinner Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783168670416-spinner-no-6-ps-355.png
+- Spinner Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783168670416-spinner-no-6-ps-355.png
+- Spinner Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783168670416-spinner-no-6-ps-355.png
+- Spinner Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783168357690-spinner-no-5-pc-355.png
+- Spinner Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783168357690-spinner-no-5-pc-355.png
+- Spinner Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783168357690-spinner-no-5-pc-355.png
+- Spinner Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783167351228-spinner-no-3-ps355.png
+- Spinner Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783167351228-spinner-no-3-ps355.png
+- Spinner Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783167351228-spinner-no-3-ps355.png
+- Spinner Rakhi (image): /storage/v1/object/public/product-images/temp/main/1783166545417-spinner-no-2-ps-330.png
+- Spinner Rakhi (imageUrl): /storage/v1/object/public/product-images/temp/main/1783166545417-spinner-no-2-ps-330.png
+- Spinner Rakhi (image_url): /storage/v1/object/public/product-images/temp/main/1783166545417-spinner-no-2-ps-330.png
+- Rakhi Spinner (image): /storage/v1/object/public/product-images/temp/main/1783165023319-spinner-no-1-ps-330.png
+- Rakhi Spinner (imageUrl): /storage/v1/object/public/product-images/temp/main/1783165023319-spinner-no-1-ps-330.png
+- Rakhi Spinner (image_url): /storage/v1/object/public/product-images/temp/main/1783165023319-spinner-no-1-ps-330.png
+## Recommendations
+- Keep Supabase-hosted product images bypassing Next.js optimization until a thumbnail/variant pipeline exists.
+- Move any `product-images/temp/` records into stable product folders before deleting temporary objects.
+- Standardize product image resolution through one shared helper before adding currency or larger storefront changes.
+- Add upload-time WebP conversion and card/detail thumbnails to reduce direct image payload size.
