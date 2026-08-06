@@ -3,7 +3,7 @@ import { convertFromBase, getCurrencyForCountry, resolveChargeCurrency, toMinorU
 import { CustomerAuthError, verifyCustomerRequest } from "@/lib/customerAuth";
 import { createOrder } from "@/lib/data/orders";
 import { getProducts } from "@/lib/data/products";
-import { createRazorpayOrder, getRazorpayStatus, RazorpayConfigError } from "@/lib/razorpay";
+import { createRazorpayOrder, getRazorpayStatus, RazorpayAuthError, RazorpayConfigError } from "@/lib/razorpay";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 function cleanString(value) {
@@ -233,6 +233,20 @@ export async function POST(request) {
       });
     } catch (razorpayError) {
       if (razorpayError instanceof RazorpayConfigError) throw razorpayError;
+
+      if (razorpayError instanceof RazorpayAuthError) {
+        console.error("[razorpay-create-order:auth-failed]", {
+          message: razorpayError.message,
+          keyMode: getRazorpayStatus().keyMode
+        });
+        return errorResponse(
+          "RAZORPAY_AUTH_FAILED",
+          "Payments are temporarily unavailable. Please choose Pay after confirmation, or try again shortly.",
+          502,
+          razorpayError.message
+        );
+      }
+
       console.error("[razorpay-create-order:api-error]", {
         message: razorpayError?.message || "Unknown Razorpay API error",
         finalAmount: serverFinalAmount,

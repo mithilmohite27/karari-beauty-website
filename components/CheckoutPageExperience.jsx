@@ -110,7 +110,10 @@ function getPaymentStartupMessage(errorCode, fallbackMessage) {
     CUSTOMER_DETAILS_REQUIRED: "Customer details are required.",
     SUPABASE_ORDER_CREATE_FAILED: "Payment setup issue. Please try again or choose Pay after confirmation.",
     SUPABASE_PAYMENT_LINK_FAILED: "Payment setup issue. Please try again or choose Pay after confirmation.",
-    RAZORPAY_ORDER_CREATE_FAILED: "Unable to create Razorpay order. Please try again."
+    RAZORPAY_ORDER_CREATE_FAILED: "Unable to create Razorpay order. Please try again.",
+    // Configuration fault, not a transient one - retrying will not help, so
+    // point the customer at a payment route that still works.
+    RAZORPAY_AUTH_FAILED: "Online payment is temporarily unavailable. Please choose Pay after confirmation and we will send you a payment link."
   };
 
   return messages[errorCode] || fallbackMessage || "Unable to create Razorpay order. Please try again.";
