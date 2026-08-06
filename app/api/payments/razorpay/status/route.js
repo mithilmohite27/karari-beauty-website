@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { verifyAdminRequest } from "@/lib/admin/api";
 import { getRazorpayStatus, probeRazorpayCredentials } from "@/lib/razorpay";
 import { BASE_CURRENCY, COUNTRY_CURRENCY, resolveChargeCurrency } from "@/lib/currency";
 
@@ -20,8 +21,14 @@ export async function GET(request) {
   };
 
   // ?probe=1 additionally verifies the key/secret pair against Razorpay's API.
-  // Returns Razorpay's own error code and description only - never key values.
+  // Admin-only: on a live store this reports whether payment authentication is
+  // healthy, which is useful to an operator and useful to an attacker deciding
+  // when to probe. The unauthenticated fields above stay public because the
+  // launch checklist relies on them.
   if (searchParams.get("probe") === "1") {
+    const { response } = await verifyAdminRequest(request);
+    if (response) return response;
+
     payload.credentialProbe = await probeRazorpayCredentials();
   }
 

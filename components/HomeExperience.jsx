@@ -608,15 +608,17 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-2 lg:hidden">
-            <button type="button" onClick={() => toggleHeaderDropdown("wishlist")} className="relative rounded-md border border-[rgba(122,24,61,0.14)] bg-white/80 p-2.5 text-[#3A2417]" aria-label="Wishlist">
+            {/* h-11 w-11 = 44px, the minimum comfortable touch target. p-2.5 around a
+                16px icon gave 38px, which is easy to miss on a phone. */}
+            <button type="button" onClick={() => toggleHeaderDropdown("wishlist")} className="relative flex h-11 w-11 items-center justify-center rounded-md border border-[rgba(122,24,61,0.14)] bg-white/80 text-[#3A2417]" aria-label="Wishlist">
               <Heart className="h-4 w-4" />
               {wishlistItems.length ? <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-wine px-1 text-[0.65rem] font-bold text-white">{wishlistItems.length}</span> : null}
             </button>
-            <button type="button" onClick={openCartDrawer} className="relative rounded-md border border-[rgba(122,24,61,0.14)] bg-white/80 p-2.5 text-[#3A2417]" aria-label="Cart">
+            <button type="button" onClick={openCartDrawer} className="relative flex h-11 w-11 items-center justify-center rounded-md border border-[rgba(122,24,61,0.14)] bg-white/80 text-[#3A2417]" aria-label="Cart">
               <ShoppingCart className="h-4 w-4" />
               {cartCount ? <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-wine px-1 text-[0.65rem] font-bold text-white">{cartCount}</span> : null}
             </button>
-            <button type="button" onClick={() => toggleHeaderDropdown("mobile")} className="rounded-md border border-[rgba(122,24,61,0.14)] bg-[#7A183D] p-2.5 text-white" aria-label="Open header menu">
+            <button type="button" onClick={() => toggleHeaderDropdown("mobile")} className="flex h-11 w-11 items-center justify-center rounded-md border border-[rgba(122,24,61,0.14)] bg-[#7A183D] text-white" aria-label="Open header menu">
               {activeHeaderDropdown === "mobile" ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
           </div>

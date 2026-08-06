@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, ChevronRight, Globe2, MessageCircle, PackageCheck, ShieldCheck, Truck } from "lucide-react";
+import { ArrowRight, BadgeCheck, Check, ChevronDown, ChevronRight, Globe2, Loader2, Lock, MessageCircle, PackageCheck, ShieldCheck, Truck } from "lucide-react";
 import EmptyCartState from "@/components/EmptyCartState";
 import { Header } from "@/components/HomeExperience";
 import ProductImage from "@/components/ProductImage";
@@ -19,6 +19,7 @@ import {
   syncBuyNowItemWithCatalog,
   syncCartItemsWithCatalog
 } from "@/lib/ecommerceStorage";
+import { lookupIndianPincode, validateCheckoutForm } from "@/lib/checkoutValidation";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { setDisplayCurrency, useDisplayCurrency } from "@/lib/useDisplayCurrency";
 
@@ -83,20 +84,112 @@ function buildWhatsAppOrderUrl(order) {
   return `https://wa.me/917435984499?text=${encodeURIComponent(message)}`;
 }
 
-function Field({ label, name, value, error, required, as = "input", children, ...props }) {
-  const inputClass = `mt-2 w-full rounded-md border bg-white/82 px-3 py-3 text-base font-semibold text-[#3A2417] outline-none transition placeholder:text-[#3A2417]/38 sm:text-sm ${
-    error ? "border-[#7A183D] shadow-[0_0_0_3px_rgba(122,24,61,0.08)]" : "border-[rgba(122,24,61,0.14)] focus:border-[#C9962D]"
+function Field({ label, name, value, error, valid = false, hint, required, as = "input", children, ...props }) {
+  // A checkmark is only meaningful once the field has been filled and passed;
+  // showing it on an untouched empty field would be noise.
+  const showValid = valid && !error;
+  const borderClass = error
+    ? "border-[#7A183D] shadow-[0_0_0_3px_rgba(122,24,61,0.08)]"
+    : showValid
+      ? "border-[#1B6B3A] shadow-[0_0_0_3px_rgba(27,107,58,0.08)]"
+      : "border-[rgba(122,24,61,0.14)] focus:border-[#C9962D]";
+
+  // pr-10 keeps the value clear of the checkmark. Selects and textareas render
+  // their own affordances, so the icon is only placed on plain inputs.
+  const isPlainInput = as === "input";
+  const inputClass = `mt-2 w-full rounded-md border bg-white/82 px-3 py-3 text-base font-semibold text-[#3A2417] outline-none transition placeholder:text-[#3A2417]/38 sm:text-sm ${borderClass} ${
+    isPlainInput && showValid ? "pr-10" : ""
   }`;
   const Input = as;
 
   return (
     <label className="block text-sm font-bold text-[#3A2417]">
       {label} {required ? <span className="text-[#7A183D]">*</span> : null}
-      <Input name={name} value={value} className={inputClass} {...props}>
-        {children}
-      </Input>
-      {error ? <span className="mt-1 block text-xs font-semibold text-[#7A183D]">{error}</span> : null}
+      <span className="relative block">
+        <Input name={name} value={value} className={inputClass} aria-invalid={Boolean(error)} {...props}>
+          {children}
+        </Input>
+        {isPlainInput && showValid ? (
+          <Check className="pointer-events-none absolute right-3 top-1/2 mt-1 h-4 w-4 -translate-y-1/2 text-[#1B6B3A]" aria-hidden="true" />
+        ) : null}
+      </span>
+      {error ? (
+        <span role="alert" className="mt-1 block text-xs font-semibold text-[#7A183D]">{error}</span>
+      ) : hint ? (
+        <span className="mt-1 block text-xs font-semibold text-[#3A2417]/52">{hint}</span>
+      ) : null}
     </label>
+  );
+}
+
+/**
+ * Line items and totals. Shared so the mobile banner and the desktop sidebar
+ * cannot drift apart - two copies of pricing markup is how a checkout ends up
+ * showing one total on a phone and another on a laptop.
+ */
+function OrderSummaryLines({ items, products, format, subtotal, deliveryCharge, discount, finalAmount, hasFinalAmount }) {
+  return (
+    <>
+      <div className="space-y-3">
+        {items.map((item) => {
+          const imageSrc = resolveCheckoutItemImage(item, products);
+
+          return (
+            <div key={item.productId || item.slug || item.sku || item.name} className="flex gap-3 rounded-lg bg-[#FFF8EE] p-3">
+              <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-[#FFF8EE]">
+                <ProductImage src={imageSrc} alt={item.name || "Karari Beauty product"} fill sizes="4rem" className="object-cover" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 text-sm font-bold text-[#3A2417]">{item.name}</p>
+                <p className="mt-1 text-xs font-semibold text-[#3A2417]/55">Qty {item.quantity} x {format(item.price)}</p>
+                <p className="mt-1 text-sm font-bold text-[#7A183D]">{format((Number(item.price) || 0) * (Number(item.quantity) || 0))}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-4 space-y-3 border-t border-[rgba(122,24,61,0.12)] pt-4 text-sm font-semibold text-[#3A2417]/72">
+        <div className="flex items-center justify-between">
+          <span>Cart subtotal</span>
+          <span className="text-[#3A2417]">{format(subtotal)}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span>Delivery</span>
+          <span className="text-[#3A2417]">{deliveryCharge > 0 ? format(deliveryCharge) : "Free delivery"}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span>Discount</span>
+          <span className="text-[#3A2417]">{discount > 0 ? `-${format(discount)}` : format(0)}</span>
+        </div>
+        <div className="flex items-center justify-between border-t border-[rgba(122,24,61,0.12)] pt-3 text-base">
+          <span className="font-bold text-[#3A2417]">Total</span>
+          <span className="font-bold text-[#7A183D]">{hasFinalAmount ? format(finalAmount) : "To be confirmed"}</span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/**
+ * Numbered section heading. Sections stay expanded rather than becoming
+ * accordions: on a three-section checkout, collapsing hides progress and adds a
+ * click per step, which is the opposite of what Shopify and Amazon do on
+ * desktop. The numbers give the same sense of sequence without the cost.
+ */
+function StepHeading({ step, title, children }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span
+        aria-hidden="true"
+        className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#7A183D] text-sm font-bold text-white"
+      >
+        {step}
+      </span>
+      <div className="min-w-0">
+        <h2 className="font-display text-2xl font-semibold text-[#7A183D]">{title}</h2>
+        {children ? <p className="mt-1 text-sm font-semibold text-[#3A2417]/58">{children}</p> : null}
+      </div>
+    </div>
   );
 }
 
@@ -192,6 +285,9 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [customerSession, setCustomerSession] = useState(null);
   const [authChecking, setAuthChecking] = useState(true);
+  const [touched, setTouched] = useState({});
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [pincodeLookup, setPincodeLookup] = useState("idle");
   const subtotal = useMemo(() => getCartSubtotal(items), [items]);
   const deliveryCharge = 0;
   const discount = 0;
@@ -210,6 +306,51 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
     [items, products, totalQuantity]
   );
   const codUnavailableReason = "Cash on Delivery is available only for eligible products and orders with 10 or more items.";
+  // Recomputed as the customer types so the success checkmark can appear the
+  // moment a field becomes valid, without waiting for another blur.
+  const liveErrors = useMemo(() => validateCheckoutForm(form), [form]);
+
+  // Address autocomplete for the store's main market. India Post's public API
+  // needs no key or billing, so a 6-digit PIN fills City and State - the two
+  // fields customers most often get wrong or abandon on mobile.
+  useEffect(() => {
+    if (form.country !== "India") return undefined;
+
+    const digits = String(form.pincode || "").replace(/\D/g, "");
+    if (digits.length !== 6) {
+      setPincodeLookup("idle");
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    setPincodeLookup("loading");
+
+    // Debounced: the field fires on every keystroke.
+    const timer = setTimeout(async () => {
+      const match = await lookupIndianPincode(digits, { signal: controller.signal });
+      if (!active) return;
+
+      if (!match) {
+        setPincodeLookup("failed");
+        return;
+      }
+
+      setPincodeLookup("found");
+      // Never overwrite something the customer typed themselves.
+      setForm((current) => ({
+        ...current,
+        city: current.city?.trim() ? current.city : match.city,
+        state: current.state?.trim() ? current.state : match.state
+      }));
+    }, 400);
+
+    return () => {
+      active = false;
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [form.pincode, form.country]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -326,27 +467,37 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
   };
 
   const validate = () => {
-    const nextErrors = {};
-    const requiredFields = [
-      ["fullName", "Full name is required."],
-      ["mobile", "Mobile number is required."],
-      ["country", "Country is required."],
-      ["address", "Address is required."],
-      ["city", "City is required."],
-      ["state", "State is required."],
-      ["pincode", "Pincode / ZIP is required."]
-    ];
-
-    requiredFields.forEach(([field, message]) => {
-      if (!String(form[field] || "").trim()) nextErrors[field] = message;
-    });
+    const nextErrors = validateCheckoutForm(form);
 
     if (!items.length) nextErrors.cart = "Your cart is empty.";
     if (form.paymentMethod === "online" && !hasFinalAmount) nextErrors.paymentMethod = "Online payment is available only after final amount is calculated.";
     if (form.paymentMethod === "cod" && !isCodEligible) nextErrors.paymentMethod = codUnavailableReason;
+
     setErrors(nextErrors);
+    // Reveal every message at once on submit, rather than only for fields the
+    // customer happened to visit.
+    setTouched((current) => ({ ...current, ...Object.fromEntries(Object.keys(nextErrors).map((key) => [key, true])) }));
+
+    const firstInvalid = Object.keys(nextErrors).find((key) => key !== "cart");
+    if (firstInvalid) {
+      document.querySelector(`[name="${firstInvalid}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
     return Object.keys(nextErrors).length === 0;
   };
+
+  /**
+   * Validate a single field once the customer leaves it. Errors are shown per
+   * field only after it has been touched, so the form is not hostile on load.
+   */
+  const handleBlur = (name) => {
+    setTouched((current) => ({ ...current, [name]: true }));
+    const fieldErrors = validateCheckoutForm(form);
+    setErrors((current) => ({ ...current, [name]: fieldErrors[name] || "" }));
+  };
+
+  const fieldError = (name) => (touched[name] ? errors[name] || "" : "");
+  const fieldValid = (name) => Boolean(touched[name] && !liveErrors[name] && String(form[name] || "").trim());
 
   const submitOrder = async (event) => {
     event.preventDefault();
@@ -609,35 +760,141 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
               <EmptyCartState />
             </div>
           ) : (
-            <form onSubmit={submitOrder} className="mt-6 grid gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
+            <form onSubmit={submitOrder} className="mt-6 sm:mt-8">
+              {/*
+                Mobile-only summary. On a phone the sidebar renders after the
+                entire form, so the customer could not see what they were paying
+                for without scrolling past every field. Collapsed by default to
+                keep the first field above the fold.
+              */}
+              <div className="mb-5 overflow-hidden rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/86 shadow-soft lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setSummaryOpen((open) => !open)}
+                  aria-expanded={summaryOpen}
+                  aria-controls="mobile-order-summary"
+                  className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                >
+                  <span className="flex items-center gap-2 text-sm font-bold text-[#7A183D]">
+                    <ChevronDown className={`h-4 w-4 transition-transform ${summaryOpen ? "rotate-180" : ""}`} />
+                    {summaryOpen ? "Hide order summary" : "Show order summary"}
+                    <span className="text-xs font-semibold text-[#3A2417]/55">({totalQuantity} {totalQuantity === 1 ? "item" : "items"})</span>
+                  </span>
+                  <span className="shrink-0 text-base font-bold text-[#7A183D]">{hasFinalAmount ? format(finalAmount) : "--"}</span>
+                </button>
+                {summaryOpen ? (
+                  <div id="mobile-order-summary" className="border-t border-[rgba(122,24,61,0.12)] px-4 py-4">
+                    <OrderSummaryLines
+                      items={items}
+                      products={products}
+                      format={format}
+                      subtotal={subtotal}
+                      deliveryCharge={deliveryCharge}
+                      discount={discount}
+                      finalAmount={finalAmount}
+                      hasFinalAmount={hasFinalAmount}
+                    />
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
               <div className="space-y-5 sm:space-y-6">
                 <section className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-4 shadow-soft sm:p-6">
-                  <h2 className="font-display text-2xl font-semibold text-[#7A183D]">Customer Details</h2>
+                  <StepHeading step={1} title="Customer Details">Where we send your order confirmation.</StepHeading>
                   <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                    <Field label="Full Name" name="fullName" value={form.fullName} error={errors.fullName} required onChange={(event) => updateField("fullName", event.target.value)} />
-                    <Field label="Mobile Number" name="mobile" value={form.mobile} error={errors.mobile} required onChange={(event) => updateField("mobile", event.target.value)} />
-                    <Field label="Email" name="email" type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} />
-                    <Field label="Country" name="country" value={form.country} error={errors.country} required as="select" onChange={(event) => updateField("country", event.target.value)}>
+                    <Field
+                      label="Full Name" name="fullName" value={form.fullName}
+                      error={fieldError("fullName")} valid={fieldValid("fullName")} required
+                      autoComplete="name" autoCapitalize="words"
+                      onBlur={() => handleBlur("fullName")}
+                      onChange={(event) => updateField("fullName", event.target.value)}
+                    />
+                    <Field
+                      label="Mobile Number" name="mobile" value={form.mobile}
+                      error={fieldError("mobile")} valid={fieldValid("mobile")} required
+                      // type=tel + inputMode=numeric gives the numeric keypad on
+                      // mobile instead of the full alphabetic keyboard.
+                      type="tel" inputMode="numeric" autoComplete="tel"
+                      onBlur={() => handleBlur("mobile")}
+                      onChange={(event) => updateField("mobile", event.target.value)}
+                    />
+                    <Field
+                      label="Email" name="email" type="email" value={form.email}
+                      error={fieldError("email")} valid={fieldValid("email")}
+                      inputMode="email" autoComplete="email" autoCapitalize="off" spellCheck="false"
+                      hint="Order confirmation is sent here."
+                      onBlur={() => handleBlur("email")}
+                      onChange={(event) => updateField("email", event.target.value)}
+                    />
+                    <Field
+                      label="Country" name="country" value={form.country}
+                      error={fieldError("country")} required as="select" autoComplete="country-name"
+                      onChange={(event) => updateField("country", event.target.value)}
+                    >
                       {countries.map((country) => <option key={country} value={country}>{country}</option>)}
                     </Field>
                   </div>
                 </section>
 
                 <section className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-4 shadow-soft sm:p-6">
-                  <h2 className="font-display text-2xl font-semibold text-[#7A183D]">Delivery Details</h2>
+                  <StepHeading step={2} title="Delivery Details">Where your order should arrive.</StepHeading>
                   <div className="mt-5 grid gap-4">
-                    <Field label="Address" name="address" value={form.address} error={errors.address} required as="textarea" rows={3} onChange={(event) => updateField("address", event.target.value)} />
+                    <Field
+                      label="Address" name="address" value={form.address}
+                      error={fieldError("address")} valid={fieldValid("address")} required
+                      as="textarea" rows={3} autoComplete="street-address"
+                      placeholder="House / flat number, street, area, landmark"
+                      onBlur={() => handleBlur("address")}
+                      onChange={(event) => updateField("address", event.target.value)}
+                    />
                     <div className="grid gap-4 sm:grid-cols-3">
-                      <Field label="City" name="city" value={form.city} error={errors.city} required onChange={(event) => updateField("city", event.target.value)} />
-                      <Field label="State" name="state" value={form.state} error={errors.state} required onChange={(event) => updateField("state", event.target.value)} />
-                      <Field label="Pincode / ZIP" name="pincode" value={form.pincode} error={errors.pincode} required onChange={(event) => updateField("pincode", event.target.value)} />
+                      {/* PIN first: entering it fills City and State below. */}
+                      <Field
+                        label="Pincode / ZIP" name="pincode" value={form.pincode}
+                        error={fieldError("pincode")} valid={fieldValid("pincode")} required
+                        inputMode={form.country === "India" ? "numeric" : "text"}
+                        autoComplete="postal-code" maxLength={form.country === "India" ? 6 : 12}
+                        hint={
+                          form.country === "India"
+                            ? pincodeLookup === "loading"
+                              ? "Looking up your area…"
+                              : pincodeLookup === "found"
+                                ? "City and state filled automatically."
+                                : pincodeLookup === "failed"
+                                  ? "We could not find that PIN - please fill city and state."
+                                  : "Enter your 6-digit PIN to fill city and state."
+                            : ""
+                        }
+                        onBlur={() => handleBlur("pincode")}
+                        onChange={(event) => updateField("pincode", event.target.value)}
+                      />
+                      <Field
+                        label="City" name="city" value={form.city}
+                        error={fieldError("city")} valid={fieldValid("city")} required
+                        autoComplete="address-level2"
+                        onBlur={() => handleBlur("city")}
+                        onChange={(event) => updateField("city", event.target.value)}
+                      />
+                      <Field
+                        label="State" name="state" value={form.state}
+                        error={fieldError("state")} valid={fieldValid("state")} required
+                        autoComplete="address-level1"
+                        onBlur={() => handleBlur("state")}
+                        onChange={(event) => updateField("state", event.target.value)}
+                      />
                     </div>
-                    <Field label="Delivery Note" name="deliveryNote" value={form.deliveryNote} as="textarea" rows={3} onChange={(event) => updateField("deliveryNote", event.target.value)} />
+                    <Field label="Delivery Note" name="deliveryNote" value={form.deliveryNote} as="textarea" rows={3} placeholder="Optional - gift message or delivery instructions" onChange={(event) => updateField("deliveryNote", event.target.value)} />
                   </div>
                 </section>
 
                 <section className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/82 p-4 shadow-soft sm:p-6">
-                  <h2 className="font-display text-2xl font-semibold text-[#7A183D]">Payment Method</h2>
+                  <StepHeading step={3} title="Payment Method">Cards, UPI, net banking and wallets.</StepHeading>
+                  <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-[rgba(27,107,58,0.2)] bg-[#F2F8F4] px-3 py-2 text-xs font-bold text-[#1B6B3A]">
+                    <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" aria-hidden="true" />256-bit SSL encryption</span>
+                    <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />Razorpay secured checkout</span>
+                    <span className="inline-flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5" aria-hidden="true" />Card details never stored</span>
+                  </div>
                   {isInternational ? (
                     <p className="mt-3 rounded-lg bg-[#FFF8EE] p-3 text-sm font-semibold leading-6 text-[#7A183D]">
                       Our team will confirm delivery availability and charges for international orders.
@@ -702,49 +959,26 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
               </div>
 
               <aside className="space-y-4 lg:sticky lg:top-32 lg:self-start">
-                <section className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/86 p-4 shadow-boutique">
+                {/* Hidden on mobile - the collapsible banner at the top covers it. */}
+                <section className="hidden rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/86 p-4 shadow-boutique lg:block">
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#C9962D]">Order Summary</p>
-                  <div className="mt-4 space-y-3">
-                    {items.map((item) => {
-                      const imageSrc = resolveCheckoutItemImage(item, products);
-
-                      return (
-                      <div key={item.productId || item.slug || item.sku || item.name} className="flex gap-3 rounded-lg bg-[#FFF8EE] p-3">
-                        <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-[#FFF8EE]">
-                          <ProductImage src={imageSrc} alt={item.name || "Karari Beauty product"} fill sizes="4rem" className="object-cover" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="line-clamp-2 text-sm font-bold text-[#3A2417]">{item.name}</p>
-                          <p className="mt-1 text-xs font-semibold text-[#3A2417]/55">Qty {item.quantity} x {format(item.price)}</p>
-                          <p className="mt-1 text-sm font-bold text-[#7A183D]">{format((Number(item.price) || 0) * (Number(item.quantity) || 0))}</p>
-                        </div>
-                      </div>
-                    );
-                    })}
+                  <div className="mt-4">
+                    <OrderSummaryLines
+                      items={items}
+                      products={products}
+                      format={format}
+                      subtotal={subtotal}
+                      deliveryCharge={deliveryCharge}
+                      discount={discount}
+                      finalAmount={finalAmount}
+                      hasFinalAmount={hasFinalAmount}
+                    />
                   </div>
-                  <div className="mt-4 space-y-3 border-t border-[rgba(122,24,61,0.12)] pt-4 text-sm font-semibold text-[#3A2417]/72">
-                    <div className="flex items-center justify-between">
-                      <span>Cart subtotal</span>
-                      <span className="text-[#3A2417]">{format(subtotal)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Delivery</span>
-                      <span className="text-[#3A2417]">{deliveryCharge > 0 ? format(deliveryCharge) : "Free delivery"}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Discount</span>
-                      <span className="text-[#3A2417]">{discount > 0 ? `-${format(discount)}` : format(0)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Final amount</span>
-                      <span className="font-bold text-[#7A183D]">{hasFinalAmount ? format(finalAmount) : "To be confirmed"}</span>
-                    </div>
-                    <p className="rounded-lg bg-[#FCE7EC]/72 p-3 leading-6">
-                      {form.paymentMethod === "online"
-                        ? "Delivery is included for now. Pay the final amount securely through Razorpay."
-                        : "Karari Beauty will confirm availability, delivery charges and payment details."}
-                    </p>
-                  </div>
+                  <p className="mt-4 rounded-lg bg-[#FCE7EC]/72 p-3 text-sm font-semibold leading-6 text-[#3A2417]/72">
+                    {form.paymentMethod === "online"
+                      ? "Delivery is included for now. Pay the final amount securely through Razorpay."
+                      : "Karari Beauty will confirm availability, delivery charges and payment details."}
+                  </p>
                 </section>
 
                 <section className="grid gap-2 rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/70 p-4 shadow-soft">
@@ -762,12 +996,27 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
                 <button
                   type="submit"
                   disabled={submitting || (form.paymentMethod === "online" && !hasFinalAmount)}
+                  aria-busy={submitting}
                   className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#3A2417] disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {submitting ? "Processing..." : form.paymentMethod === "online" ? "Pay Now" : form.paymentMethod === "cod" ? "Place COD Order" : "Submit Order Request"}
-                  <ArrowRight className="h-4 w-4" />
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                      Processing…
+                    </>
+                  ) : (
+                    <>
+                      {form.paymentMethod === "online" ? "Pay Now" : form.paymentMethod === "cod" ? "Place COD Order" : "Submit Order Request"}
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
                 </button>
+                <p className="flex items-center justify-center gap-1.5 text-xs font-semibold text-[#3A2417]/58">
+                  <Lock className="h-3.5 w-3.5 text-[#1B6B3A]" aria-hidden="true" />
+                  256-bit SSL encrypted · Secured by Razorpay
+                </p>
               </aside>
+              </div>
             </form>
           )}
         </div>
