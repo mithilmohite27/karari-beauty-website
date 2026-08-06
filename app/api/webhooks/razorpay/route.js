@@ -35,7 +35,8 @@ export async function POST(request) {
         razorpaySignatureVerified: true,
         paymentVerifiedAt: new Date().toISOString(),
         // Verified against the stored order total before the order is confirmed.
-        amountPaise: payment?.amount ?? order?.amount_paid
+        amountPaise: payment?.amount ?? order?.amount_paid,
+        currency: payment?.currency || order?.currency || "INR"
       });
     }
 

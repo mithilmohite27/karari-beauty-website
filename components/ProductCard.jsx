@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 import { Heart, Search, ShoppingCart, Star } from "lucide-react";
 import Link from "next/link";
 import ProductImage from "@/components/ProductImage";
-import { formatCurrency } from "@/lib/whatsapp";
+import { useDisplayCurrency } from "@/lib/useDisplayCurrency";
 
 export default function ProductCard({ product, onView, onAddToCart, onBuyNow, onToggleWishlist, wished }) {
+  const { format } = useDisplayCurrency();
   const rating = product.rating || "4.8";
   const shortDescription = product.shortDescription || product.description;
   const originalPrice = product.originalPrice;
@@ -60,8 +61,8 @@ export default function ProductCard({ product, onView, onAddToCart, onBuyNow, on
         </Link>
         <p className="mt-1.5 line-clamp-2 min-h-10 text-xs leading-5 text-ink/62 sm:mt-2 sm:min-h-12 sm:text-sm sm:leading-6">{shortDescription}</p>
         <div className="mt-2.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 sm:mt-3">
-          <p className="text-base font-bold text-rose sm:text-lg">{formatCurrency(product.price)}</p>
-          {originalPrice ? <p className="text-xs font-semibold text-ink/38 line-through sm:text-sm">{formatCurrency(originalPrice)}</p> : null}
+          <p className="text-base font-bold text-rose sm:text-lg">{format(product.price)}</p>
+          {originalPrice ? <p className="text-xs font-semibold text-ink/38 line-through sm:text-sm">{format(originalPrice)}</p> : null}
         </div>
       </div>
       <div className="grid grid-cols-[1fr_auto] gap-2 border-t border-[rgba(122,24,61,0.1)] p-3 sm:p-5">

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { convertFromBase, getCurrencyForCountry, resolveChargeCurrency, toMinorUnits } from "@/lib/currency";
 import { CustomerAuthError, verifyCustomerRequest } from "@/lib/customerAuth";
 import { createOrder } from "@/lib/data/orders";
 import { getProducts } from "@/lib/data/products";
@@ -117,7 +118,23 @@ export async function POST(request) {
     const discount = Math.max(0, Number(body.discount) || 0);
     const finalAmount = Number(body.finalAmount);
     const serverFinalAmount = Math.max(subtotal + deliveryCharge - discount, 0);
-    const amount = Math.round(serverFinalAmount * 100);
+
+    // Currency is derived from the delivery country on the server. The client
+    // never gets to choose what it is charged in, for the same reason it does
+    // not get to choose the price.
+    const displayCurrency = getCurrencyForCountry(country);
+    const { currency: chargeCurrency, fellBack, reason: fallbackReason } = resolveChargeCurrency(displayCurrency);
+    const chargeAmount = convertFromBase(serverFinalAmount, chargeCurrency);
+    const amount = toMinorUnits(chargeAmount, chargeCurrency);
+
+    if (fellBack && displayCurrency !== chargeCurrency) {
+      console.info("[razorpay-create-order:currency-fallback]", {
+        country,
+        displayCurrency,
+        chargeCurrency,
+        reason: fallbackReason
+      });
+    }
 
     startupLogDetails = {
       finalAmount,
@@ -202,7 +219,7 @@ export async function POST(request) {
       });
       razorpayOrder = await createRazorpayOrder({
         amount,
-        currency: "INR",
+        currency: chargeCurrency,
         receipt: safeReceipt(order.orderNumber),
         notes: {
           internal_order_id: cleanString(order.orderId),
@@ -259,7 +276,12 @@ export async function POST(request) {
       orderNumber: order.orderNumber,
       razorpayOrderId: razorpayOrder.id,
       amount,
-      currency: "INR"
+      currency: chargeCurrency,
+      // What the customer will actually be billed, so the UI can say so plainly
+      // when it differs from the currency they were browsing in.
+      chargeAmount,
+      displayCurrency,
+      chargedInBaseCurrencyFallback: fellBack
     });
   } catch (error) {
     if (error instanceof CustomerAuthError) {

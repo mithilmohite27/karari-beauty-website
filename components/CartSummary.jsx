@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { ArrowRight, PackageCheck, ShieldCheck, Truck } from "lucide-react";
 import { goToCheckout } from "@/lib/customer/session";
-import { formatCurrency } from "@/lib/whatsapp";
+import { useDisplayCurrency } from "@/lib/useDisplayCurrency";
 
 export default function CartSummary({ subtotal, itemCount, mode = "page", onContinueShopping, onCheckout }) {
+  const { format } = useDisplayCurrency();
   const compact = mode === "drawer";
 
   return (
@@ -13,7 +14,7 @@ export default function CartSummary({ subtotal, itemCount, mode = "page", onCont
       <div className="flex items-center justify-between gap-3 border-b border-[rgba(122,24,61,0.12)] pb-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#C9962D]">Order Summary</p>
-          <h2 className="mt-1 font-display text-2xl font-semibold text-[#7A183D]">{formatCurrency(subtotal)}</h2>
+          <h2 className="mt-1 font-display text-2xl font-semibold text-[#7A183D]">{format(subtotal)}</h2>
         </div>
         <span className="rounded-full border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 py-1 text-xs font-bold text-[#7A183D]">
           {itemCount} {itemCount === 1 ? "item" : "items"}
@@ -23,7 +24,7 @@ export default function CartSummary({ subtotal, itemCount, mode = "page", onCont
       <div className="space-y-3 py-4 text-sm font-semibold text-[#3A2417]/74">
         <div className="flex items-center justify-between gap-3">
           <span>Subtotal</span>
-          <span className="text-[#3A2417]">{formatCurrency(subtotal)}</span>
+          <span className="text-[#3A2417]">{format(subtotal)}</span>
         </div>
         <p className="flex gap-2 rounded-lg bg-[#FFF8EE] p-3 leading-6">
           <Truck className="mt-0.5 h-4 w-4 shrink-0 text-[#C9962D]" />

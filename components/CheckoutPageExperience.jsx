@@ -19,7 +19,8 @@ import {
   syncBuyNowItemWithCatalog,
   syncCartItemsWithCatalog
 } from "@/lib/ecommerceStorage";
-import { formatCurrency } from "@/lib/whatsapp";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { setDisplayCurrency, useDisplayCurrency } from "@/lib/useDisplayCurrency";
 
 const countries = ["India", "USA", "Canada", "Australia", "UAE", "UK"];
 const paymentOptions = [
@@ -70,7 +71,7 @@ function buildWhatsAppOrderUrl(order) {
     "",
     `Order ID: ${order.orderId}`,
     `Customer: ${order.customer.fullName}`,
-    `Subtotal: ${formatCurrency(order.subtotal)}`,
+    `Subtotal: ${format(order.subtotal)}`,
     `Payment Preference: ${order.paymentPreference}`,
     "",
     "Items:",
@@ -176,6 +177,7 @@ function loadRazorpayCheckout() {
 }
 
 export default function CheckoutPageExperience({ products = localProducts, siteSettings }) {
+  const { format } = useDisplayCurrency();
   const [items, setItems] = useState([]);
   const [isBuyNowMode, setIsBuyNowMode] = useState(false);
   const [form, setForm] = useState(initialForm);
@@ -293,6 +295,12 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
   };
 
   const updateField = (name, value) => {
+    // Delivery country decides the currency, and the server derives the charge
+    // currency from this same field - so the prices shown here match what the
+    // customer is billed. Done outside the state updater because it notifies
+    // every other price on the page.
+    if (name === "country") setDisplayCurrency(getCurrencyForCountry(value));
+
     setForm((current) => {
       const next = { ...current, [name]: value };
 
@@ -536,8 +544,8 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
             <div className="mt-7 grid gap-3 rounded-xl border border-[rgba(122,24,61,0.12)] bg-[#FFF8EE] p-4 text-left text-sm font-semibold text-[#3A2417]/72 sm:grid-cols-2">
               <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Order ID</span>{submittedOrder.orderId}</p>
               <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Customer</span>{submittedOrder.customer.fullName}</p>
-              <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Subtotal</span>{formatCurrency(submittedOrder.subtotal)}</p>
-              <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Final Amount</span>{formatCurrency(submittedOrder.finalAmount || submittedOrder.subtotal)}</p>
+              <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Subtotal</span>{format(submittedOrder.subtotal)}</p>
+              <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Final Amount</span>{format(submittedOrder.finalAmount || submittedOrder.subtotal)}</p>
               <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Payment</span>{submittedOrder.paymentPreference}</p>
               <p><span className="block text-xs uppercase tracking-[0.16em] text-[#C9962D]">Payment Status</span>{submittedOrder.paymentStatus}</p>
             </div>
@@ -704,8 +712,8 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="line-clamp-2 text-sm font-bold text-[#3A2417]">{item.name}</p>
-                          <p className="mt-1 text-xs font-semibold text-[#3A2417]/55">Qty {item.quantity} x {formatCurrency(item.price)}</p>
-                          <p className="mt-1 text-sm font-bold text-[#7A183D]">{formatCurrency((Number(item.price) || 0) * (Number(item.quantity) || 0))}</p>
+                          <p className="mt-1 text-xs font-semibold text-[#3A2417]/55">Qty {item.quantity} x {format(item.price)}</p>
+                          <p className="mt-1 text-sm font-bold text-[#7A183D]">{format((Number(item.price) || 0) * (Number(item.quantity) || 0))}</p>
                         </div>
                       </div>
                     );
@@ -714,19 +722,19 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
                   <div className="mt-4 space-y-3 border-t border-[rgba(122,24,61,0.12)] pt-4 text-sm font-semibold text-[#3A2417]/72">
                     <div className="flex items-center justify-between">
                       <span>Cart subtotal</span>
-                      <span className="text-[#3A2417]">{formatCurrency(subtotal)}</span>
+                      <span className="text-[#3A2417]">{format(subtotal)}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Delivery</span>
-                      <span className="text-[#3A2417]">{deliveryCharge > 0 ? formatCurrency(deliveryCharge) : "Free delivery"}</span>
+                      <span className="text-[#3A2417]">{deliveryCharge > 0 ? format(deliveryCharge) : "Free delivery"}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Discount</span>
-                      <span className="text-[#3A2417]">{discount > 0 ? `-${formatCurrency(discount)}` : formatCurrency(0)}</span>
+                      <span className="text-[#3A2417]">{discount > 0 ? `-${format(discount)}` : format(0)}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Final amount</span>
-                      <span className="font-bold text-[#7A183D]">{hasFinalAmount ? formatCurrency(finalAmount) : "To be confirmed"}</span>
+                      <span className="font-bold text-[#7A183D]">{hasFinalAmount ? format(finalAmount) : "To be confirmed"}</span>
                     </div>
                     <p className="rounded-lg bg-[#FCE7EC]/72 p-3 leading-6">
                       {form.paymentMethod === "online"

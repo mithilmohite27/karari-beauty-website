@@ -10,7 +10,7 @@ import { products as localProducts } from "@/data/products";
 import { goToCheckout } from "@/lib/customer/session";
 import { getWishlistItems, setBuyNowItem, toggleWishlist } from "@/lib/ecommerceStorage";
 import { getCanonicalProductUrl } from "@/lib/productLinks";
-import { formatCurrency } from "@/lib/whatsapp";
+import { useDisplayCurrency } from "@/lib/useDisplayCurrency";
 
 function WhatsAppGlyph({ className = "h-5 w-5" }) {
   return (
@@ -47,7 +47,7 @@ function createProductWhatsAppUrl(product, productUrl) {
   const message = [
     "Hello Karari Beauty,",
     `I'm interested in the "${product.name}".`,
-    `Price: ${formatCurrency(product.price)}`,
+    `Price: ${format(product.price)}`,
     `Product link: ${productUrl}`,
     "Please share availability and more details."
   ].join("\n");
@@ -56,6 +56,7 @@ function createProductWhatsAppUrl(product, productUrl) {
 }
 
 export default function QuickViewModal({ product, onClose, products = localProducts }) {
+  const { format } = useDisplayCurrency();
   const [wishlistIds, setWishlistIds] = useState([]);
   const [shareNotice, setShareNotice] = useState("");
   const [shareProcessing, setShareProcessing] = useState(false);
@@ -182,7 +183,7 @@ export default function QuickViewModal({ product, onClose, products = localProdu
           <div className="min-h-0 lg:flex lg:flex-col">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-karariGold">{product.category}</p>
             <h4 className="mt-2 font-display text-2xl font-semibold text-charcoal sm:text-3xl">{product.name}</h4>
-            <p className="mt-3 text-2xl font-bold text-rose">{formatCurrency(product.price)}</p>
+            <p className="mt-3 text-2xl font-bold text-rose">{format(product.price)}</p>
             <p className="mt-3 line-clamp-4 leading-7 text-ink/70">{product.description}</p>
 
             <div className="mt-4 rounded-lg border border-antiqueGold/25 bg-white p-3">
@@ -247,7 +248,7 @@ export default function QuickViewModal({ product, onClose, products = localProdu
               <h4 className="mt-1 text-lg font-semibold text-charcoal">{relatedGroup.title}</h4>
             </div>
             <p className="hidden text-sm font-semibold text-rose sm:block">
-              Total {formatCurrency(relatedProducts.reduce((sum, item) => sum + item.price, 0))}
+              Total {format(relatedProducts.reduce((sum, item) => sum + item.price, 0))}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -258,7 +259,7 @@ export default function QuickViewModal({ product, onClose, products = localProdu
                 </span>
                 <div>
                   <p className="line-clamp-2 text-sm font-semibold text-charcoal">{item.name}</p>
-                  <p className="mt-1 text-sm font-bold text-rose">{formatCurrency(item.price)}</p>
+                  <p className="mt-1 text-sm font-bold text-rose">{format(item.price)}</p>
                 </div>
               </div>
             ))}

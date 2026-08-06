@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import ProductImage from "@/components/ProductImage";
-import { formatCurrency } from "@/lib/whatsapp";
+import { useDisplayCurrency } from "@/lib/useDisplayCurrency";
 
 export default function CartItemRow({ item, compact = false, onQuantityChange, onRemove }) {
+  const { format } = useDisplayCurrency();
   const quantity = Number(item.quantity) || 0;
   const subtotal = (Number(item.price) || 0) * quantity;
   const productHref = item.slug ? `/products/${item.slug}` : null;
@@ -32,8 +33,8 @@ export default function CartItemRow({ item, compact = false, onQuantityChange, o
           )}
           <p className="mt-1 truncate text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#C9962D] sm:text-xs sm:tracking-[0.16em]">{item.category}</p>
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-            <span className="font-bold text-[#7A183D]">{formatCurrency(item.price)}</span>
-            <span className="text-[#3A2417]/45">Subtotal {formatCurrency(subtotal)}</span>
+            <span className="font-bold text-[#7A183D]">{format(item.price)}</span>
+            <span className="text-[#3A2417]/45">Subtotal {format(subtotal)}</span>
           </div>
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">

@@ -18,7 +18,7 @@ import {
   setBuyNowItem,
   toggleWishlist as toggleWishlistItem
 } from "@/lib/ecommerceStorage";
-import { formatCurrency } from "@/lib/whatsapp";
+import { useDisplayCurrency } from "@/lib/useDisplayCurrency";
 
 const trustBadges = [
   { label: "Secure Order Support", icon: ShieldCheck },
@@ -28,6 +28,7 @@ const trustBadges = [
 ];
 
 export default function ProductDetailExperience({ product, category, relatedProducts, allProducts = localProducts, allCategories }) {
+  const { format } = useDisplayCurrency();
   const [quantity, setQuantity] = useState(1);
   const [wishlistIds, setWishlistIds] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -169,8 +170,8 @@ export default function ProductDetailExperience({ product, category, relatedProd
               <p className="mt-3 text-sm leading-6 text-[#3A2417]/70 sm:mt-4 sm:text-base sm:leading-7">{product.shortDescription || product.description}</p>
 
               <div className="mt-5 flex flex-wrap items-baseline gap-3">
-                <p className="text-2xl font-bold text-rose sm:text-3xl">{formatCurrency(product.price)}</p>
-                {product.originalPrice ? <p className="text-lg font-semibold text-[#3A2417]/38 line-through">{formatCurrency(product.originalPrice)}</p> : null}
+                <p className="text-2xl font-bold text-rose sm:text-3xl">{format(product.price)}</p>
+                {product.originalPrice ? <p className="text-lg font-semibold text-[#3A2417]/38 line-through">{format(product.originalPrice)}</p> : null}
                 {product.discountLabel ? <span className="rounded-full bg-[#7A183D] px-3 py-1 text-xs font-bold text-white">{product.discountLabel}</span> : null}
               </div>
 

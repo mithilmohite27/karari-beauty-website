@@ -49,7 +49,8 @@ import {
   setBuyNowItem,
   toggleWishlist as toggleWishlistItem
 } from "@/lib/ecommerceStorage";
-import { createWhatsAppUrl, formatCurrency } from "@/lib/whatsapp";
+import { setDisplayCurrency, useDisplayCurrency } from "@/lib/useDisplayCurrency";
+import { createWhatsAppUrl } from "@/lib/whatsapp";
 import { getCustomerDisplayName, getCustomerSession, goToCheckout, signOutCustomer } from "@/lib/customer/session";
 
 const CAMPAIGN_OFFER_FALLBACK = "Festive offers live now";
@@ -151,6 +152,7 @@ function HeaderIconButton({ icon: Icon, label, count, onClick, active }) {
 }
 
 function SearchBox({ onViewProduct, products = localProducts }) {
+  const { format } = useDisplayCurrency();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const results = useMemo(() => {
@@ -208,7 +210,7 @@ function SearchBox({ onViewProduct, products = localProducts }) {
                     <span className="block truncate text-sm font-bold text-[#3A2417]">{product.name}</span>
                     <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.14em] text-karariGold">{product.category}</span>
                   </span>
-                  <span className="text-sm font-bold text-rose">{formatCurrency(product.price)}</span>
+                  <span className="text-sm font-bold text-rose">{format(product.price)}</span>
                 </button>
               ))
             ) : (
@@ -222,6 +224,7 @@ function SearchBox({ onViewProduct, products = localProducts }) {
 }
 
 function RecentlyViewedList({ products: viewedProducts, onViewProduct }) {
+  const { format } = useDisplayCurrency();
   if (!viewedProducts.length) {
     return <p className="rounded-md bg-[#FFF8EE] p-3 text-sm font-medium text-[#3A2417]/65">No products viewed yet.</p>;
   }
@@ -240,7 +243,7 @@ function RecentlyViewedList({ products: viewedProducts, onViewProduct }) {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-bold text-[#3A2417]">{product.name}</span>
-            <span className="mt-1 block text-xs font-semibold text-rose">{formatCurrency(product.price)}</span>
+            <span className="mt-1 block text-xs font-semibold text-rose">{format(product.price)}</span>
           </span>
         </button>
       ))}
@@ -416,12 +419,14 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
     setSelectedCountry(nextCountry.name);
     setSelectedCurrency(nextCountry.defaultCurrency);
     window.localStorage.setItem("karari-country", nextCountry.name);
-    window.localStorage.setItem("karari-currency", nextCountry.defaultCurrency);
+    // Publishes to every price on the page. Writing localStorage alone is not
+    // enough: the storage event does not fire in the tab that wrote it.
+    setDisplayCurrency(nextCountry.defaultCurrency);
   };
 
   const updateCurrency = (currency) => {
     setSelectedCurrency(currency);
-    window.localStorage.setItem("karari-currency", currency);
+    setDisplayCurrency(currency);
   };
 
   const businessName = getSettingsValue(siteSettings, "business", "name", businessSettings.name);
@@ -1067,6 +1072,7 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, p
   );
 }
 function GiftCombos({ onView, products = localProducts }) {
+  const { format } = useDisplayCurrency();
   return (
     <section id="gifts" className="bg-white px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -1082,7 +1088,7 @@ function GiftCombos({ onView, products = localProducts }) {
                 <GiftComboImage src={combo.image} alt={combo.title} />
               </div>
               <div className="p-5">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-karariGold">Starts at {formatCurrency(combo.price)}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-karariGold">Starts at {format(combo.price)}</p>
                 <h3 className="mt-2 font-display text-2xl font-semibold text-charcoal">{combo.title}</h3>
                 <ul className="mt-4 space-y-2">
                   {combo.includes.map((item) => (
@@ -1130,6 +1136,7 @@ function GiftComboImage({ src, alt }) {
 }
 
 function FrequentlyBoughtTogetherSection({ onView, products = localProducts }) {
+  const { format } = useDisplayCurrency();
   const group = frequentlyBoughtTogether[0];
   const items = group.productIds.map((id) => products.find((product) => product.id === id)).filter(Boolean);
 
@@ -1156,7 +1163,7 @@ function FrequentlyBoughtTogetherSection({ onView, products = localProducts }) {
               </span>
               <div>
                 <p className="line-clamp-2 text-sm font-bold text-charcoal">{item.name}</p>
-                <p className="mt-2 text-sm font-bold text-rose">{formatCurrency(item.price)}</p>
+                <p className="mt-2 text-sm font-bold text-rose">{format(item.price)}</p>
                 <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-karariGold">Selected</p>
               </div>
             </button>
