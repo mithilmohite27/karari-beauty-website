@@ -13,6 +13,7 @@ import {
   Sparkles,
   User
 } from "lucide-react";
+import { getPasswordProblem } from "@/lib/passwordPolicy";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 const initialErrors = {};
@@ -37,6 +38,7 @@ function countryFlag(code) {
 function isValidEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
 }
+
 
 function getPhoneCountry(code) {
   return phoneCountries.find((country) => country.code === code) || phoneCountries[0];
@@ -371,7 +373,10 @@ export default function SignInExperience() {
       if (!form.registerEmail.trim()) nextErrors.registerEmail = "Email is required.";
       else if (!isValidEmail(form.registerEmail)) nextErrors.registerEmail = "Please enter a valid email.";
       if (!form.registerPassword) nextErrors.registerPassword = "Password is required.";
-      else if (form.registerPassword.length < 6) nextErrors.registerPassword = "Password must be at least 6 characters.";
+      else {
+        const passwordProblem = getPasswordProblem(form.registerPassword, form.registerEmail);
+        if (passwordProblem) nextErrors.registerPassword = passwordProblem;
+      }
       if (!form.confirmPassword) nextErrors.confirmPassword = "Confirm password is required.";
       if (form.registerPassword && form.confirmPassword && form.registerPassword !== form.confirmPassword) {
         nextErrors.confirmPassword = "Passwords do not match.";
