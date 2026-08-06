@@ -10,3 +10,6 @@ out
 .codex
 preview-*.txt
 .env.local
+# Pre-compression backups of static assets
+/.original-assets
+

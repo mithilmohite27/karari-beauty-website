@@ -6,8 +6,10 @@ import { getActiveSeasonalCampaign } from "@/lib/data/seasonalCampaigns";
 import { getSiteSettings } from "@/lib/data/siteSettings";
 import { absoluteUrl, defaultSeo, getSiteUrl } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Rendered statically and served from the CDN. Admin writes purge the storefront
+// cache tags (see lib/cache.js), so published edits appear immediately; this
+// window is only a fallback for a missed purge.
+export const revalidate = 3600;
 
 function StoreJsonLd({ siteSettings }) {
   const business = siteSettings.business;

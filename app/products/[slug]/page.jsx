@@ -4,8 +4,15 @@ import { getActiveCategories } from "@/lib/data/categories";
 import { getProductBySlug, getProducts, getRelatedProducts } from "@/lib/data/products";
 import { absoluteUrl, getDefaultOgImage } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 3600;
+export const dynamicParams = true;
+
+// Prerenders the catalog at build time so product pages are served from the CDN.
+// Products created later fall back to on-demand rendering via dynamicParams.
+export async function generateStaticParams() {
+  const products = await getProducts();
+  return products.map((product) => ({ slug: product.slug }));
+}
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

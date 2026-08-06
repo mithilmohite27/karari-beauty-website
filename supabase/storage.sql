@@ -26,12 +26,18 @@ set
 -- Admin UI sends files to POST /api/admin/uploads/product-image.
 -- The API verifies active admin access, validates MIME/size, and uploads with the service role key.
 
--- Public read policy for product images.
+-- No public SELECT policy on storage.objects for this bucket.
+--
+-- The bucket is public, so object URLs are already served without any policy.
+-- A broad SELECT policy adds nothing for fetching images but does grant the
+-- storage list() API, letting anyone enumerate every file in the bucket -
+-- including images for unpublished or deleted products. Supabase flags this as
+-- `public_bucket_allows_listing`.
+--
+-- All application access to this bucket (list, upload, remove) goes through the
+-- server with the service role key, which bypasses RLS, so removing this policy
+-- does not affect the admin media library.
 drop policy if exists "Public can read product image files" on storage.objects;
-create policy "Public can read product image files"
-on storage.objects for select
-to anon, authenticated
-using (bucket_id = 'product-images');
 
 -- Optional direct-auth policy if you ever choose browser uploads later.
 -- The current app does NOT rely on this for uploads; server API enforcement is preferred.

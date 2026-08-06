@@ -4,9 +4,17 @@ import { getActiveCategories, getCategoryBySlug } from "@/lib/data/categories";
 import { getProducts, getProductsByCategorySlug } from "@/lib/data/products";
 import { absoluteUrl, getDefaultOgImage } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 3600;
+// Categories added after a deploy still render on demand and are cached from
+// then on, rather than 404ing.
 export const dynamicParams = true;
+
+// Without this the route has no prerendered entry and every request is rendered
+// on demand with no-store, which is what kept collections off the CDN.
+export async function generateStaticParams() {
+  const categories = await getActiveCategories();
+  return categories.map((category) => ({ slug: category.slug }));
+}
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

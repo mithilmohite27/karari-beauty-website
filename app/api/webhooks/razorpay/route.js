@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
-import { updateOrderPaymentByRazorpayOrderId } from "@/lib/data/orders";
+import { OrderAdminError, updateOrderPaymentByRazorpayOrderId } from "@/lib/data/orders";
 import { RazorpayConfigError, verifyRazorpayWebhookSignature } from "@/lib/razorpay";
+
+// Signature verification runs over the exact bytes Razorpay signed, so this
+// route must never be statically evaluated or have its body pre-parsed.
+export const dynamic = "force-dynamic";
+
+const HANDLED_EVENTS = new Set(["payment.captured", "order.paid", "payment.failed"]);
 
 export async function POST(request) {
   try {
@@ -16,7 +22,9 @@ export async function POST(request) {
     const order = event?.payload?.order?.entity;
     const razorpayOrderId = payment?.order_id || order?.id || "";
 
-    if (!razorpayOrderId) {
+    // Acknowledge anything we do not act on. Returning non-2xx would make
+    // Razorpay retry an event we are never going to process.
+    if (!razorpayOrderId || !HANDLED_EVENTS.has(event.event)) {
       return NextResponse.json({ ok: true, ignored: true });
     }
 
@@ -25,7 +33,9 @@ export async function POST(request) {
         paymentStatus: "paid",
         razorpayPaymentId: payment?.id || "",
         razorpaySignatureVerified: true,
-        paymentVerifiedAt: new Date().toISOString()
+        paymentVerifiedAt: new Date().toISOString(),
+        // Verified against the stored order total before the order is confirmed.
+        amountPaise: payment?.amount ?? order?.amount_paid
       });
     }
 
@@ -43,6 +53,16 @@ export async function POST(request) {
     if (error instanceof RazorpayConfigError) {
       return NextResponse.json({ ok: false, error: error.message }, { status: error.status || 503 });
     }
+
+    // An unknown order or a flagged amount mismatch will not resolve by being
+    // retried, so acknowledge it and rely on the logged record for follow-up.
+    if (error instanceof OrderAdminError && (error.status === 404 || error.status === 409)) {
+      console.error("[razorpay-webhook] Event acknowledged without applying.", error.message);
+      return NextResponse.json({ ok: true, ignored: true, reason: error.message });
+    }
+
+    // Anything else may be transient (a Supabase blip). Fail loudly so Razorpay
+    // redelivers rather than dropping a real payment.
     console.error("[razorpay-webhook]", error);
     return NextResponse.json({ ok: false, error: "Unable to process webhook." }, { status: 500 });
   }

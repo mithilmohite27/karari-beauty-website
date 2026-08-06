@@ -5,14 +5,12 @@ import { useEffect, useState } from "react";
 
 const PRODUCT_IMAGE_FALLBACK = "/images/fallbacks/karari-product-fallback.svg";
 
-function isSupabaseProductImage(src) {
-  if (!src || typeof src !== "string") return false;
-
-  try {
-    return new URL(src).hostname.endsWith(".supabase.co");
-  } catch {
-    return false;
-  }
+// SVG fallbacks are already tiny and vector; running them through the optimizer
+// costs a transform for no gain. Everything else (including Supabase Storage
+// originals, which are multi-MB PNGs) must go through next/image so it is
+// resized to the `sizes` hint and re-encoded as AVIF/WebP.
+function shouldSkipOptimization(src) {
+  return typeof src === "string" && src.endsWith(".svg");
 }
 
 export default function ProductImage({ src, alt, fallbackSrc = PRODUCT_IMAGE_FALLBACK, onError, ...props }) {
@@ -32,7 +30,7 @@ export default function ProductImage({ src, alt, fallbackSrc = PRODUCT_IMAGE_FAL
       {...props}
       src={imageSrc}
       alt={alt}
-      unoptimized={isSupabaseProductImage(imageSrc)}
+      unoptimized={shouldSkipOptimization(imageSrc)}
       onError={handleError}
     />
   );

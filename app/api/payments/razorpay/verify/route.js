@@ -26,12 +26,14 @@ export async function POST(request) {
     });
 
     if (!verified) {
-      await updateOrderPaymentByRazorpayOrderId(razorpayOrderId, {
-        paymentStatus: "failed",
-        razorpayPaymentId,
-        razorpaySignature,
-        razorpaySignatureVerified: false,
-        paymentFailureReason: "Razorpay signature verification failed."
+      // Deliberately does not touch the order. This body is attacker-controlled
+      // apart from the signature, so writing a failure here would let any
+      // signed-in customer mark an unrelated order failed by guessing its
+      // Razorpay order id. Razorpay's webhook is the authoritative source for
+      // failures and carries its own verified signature.
+      console.warn("[razorpay-verify] Rejected a payment confirmation with an invalid signature.", {
+        razorpayOrderId,
+        razorpayPaymentId
       });
       return NextResponse.json({ ok: false, error: "Payment verification failed. Please retry payment." }, { status: 400 });
     }
