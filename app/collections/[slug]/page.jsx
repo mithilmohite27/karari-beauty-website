@@ -24,7 +24,12 @@ export async function generateMetadata({ params }) {
     return {
       title: {
         absolute: "Collection Not Found | Karari Beauty"
-      }
+      },
+      // This route streams a loading shell before the category lookup resolves,
+      // so the response has already committed 200 by the time notFound() runs -
+      // a soft 404. Until that is restructured, keep search engines from
+      // indexing unknown collection URLs as real pages.
+      robots: { index: false, follow: false }
     };
   }
 

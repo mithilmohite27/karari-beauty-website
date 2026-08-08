@@ -37,7 +37,6 @@ import { businessSettings } from "@/data/businessSettings";
 import { categories as localCategories } from "@/data/categories";
 import { products as localProducts } from "@/data/products";
 import { giftCombos } from "@/data/giftCombos";
-import { frequentlyBoughtTogether } from "@/data/frequentlyBoughtTogether";
 import { seasonalCampaign as localSeasonalCampaign } from "@/data/seasonalCampaign";
 import {
   addRecentlyViewed,
@@ -1137,45 +1136,6 @@ function GiftComboImage({ src, alt }) {
   );
 }
 
-function FrequentlyBoughtTogetherSection({ onView, products = localProducts }) {
-  const { format } = useDisplayCurrency();
-  const group = frequentlyBoughtTogether[0];
-  const items = group.productIds.map((id) => products.find((product) => product.id === id)).filter(Boolean);
-
-  return (
-    <section className="bg-silk px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl rounded-xl border border-antiqueGold/20 bg-white p-4 shadow-boutique sm:p-8">
-        <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-          <SectionHeading
-            align="left"
-            eyebrow="Bundle Builder"
-            title="Frequently Bought Together"
-            description="A clean companion-purchase UI inspired by ecommerce behavior, adapted for WhatsApp ordering."
-          />
-          <a href={createWhatsAppUrl({ product: items[0], note: `Bundle inquiry: ${group.title}` })} className="inline-flex items-center justify-center gap-2 rounded-md bg-wine px-5 py-3 text-sm font-bold text-white shadow-soft hover:bg-charcoal">
-            <MessageCircle className="h-4 w-4" />
-            Ask for Bundle
-          </a>
-        </div>
-        <div className="mt-8 grid gap-4 lg:grid-cols-4">
-          {items.map((item) => (
-            <button key={item.id} type="button" onClick={() => onView(item)} className="flex gap-4 rounded-lg border border-black/8 bg-silk p-3 text-left transition hover:-translate-y-1 hover:shadow-soft">
-              <span className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-cream">
-                <ProductImage src={item.image} alt={item.name} fill sizes="6rem" className="object-cover" />
-              </span>
-              <div>
-                <p className="line-clamp-2 text-sm font-bold text-charcoal">{item.name}</p>
-                <p className="mt-2 text-sm font-bold text-rose">{format(item.price)}</p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-karariGold">Selected</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 const footerTrustItems = [
   { label: "Secure Order Support", icon: ShieldCheck },
   { label: "Delivery Across India", icon: Truck },
@@ -1421,7 +1381,6 @@ export default function HomeExperience({
       {campaignActive ? (
         <>
           <GiftCombos onView={openProduct} products={products} />
-          <FrequentlyBoughtTogetherSection onView={openProduct} products={products} />
         </>
       ) : null}
       <FooterTrustStrip />
