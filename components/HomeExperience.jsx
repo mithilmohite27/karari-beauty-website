@@ -331,10 +331,18 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
   useEffect(() => {
-    const storedCountry = readStoredValue("karari-country", "India");
-    const validCountry = countries.find((country) => country.name === storedCountry) ? storedCountry : "India";
-    setSelectedCountry(validCountry);
-    setSelectedCurrency(readStoredValue("karari-currency", "INR"));
+    const applyStoredRegion = () => {
+      const storedCountry = readStoredValue("karari-country", "India");
+      const validCountry = countries.find((country) => country.name === storedCountry) ? storedCountry : "India";
+      setSelectedCountry(validCountry);
+      setSelectedCurrency(readStoredValue("karari-currency", "INR"));
+    };
+
+    applyStoredRegion();
+
+    // Geolocation resolves after this first read, so re-apply when it lands.
+    window.addEventListener("karari:region-detected", applyStoredRegion);
+    return () => window.removeEventListener("karari:region-detected", applyStoredRegion);
   }, []);
 
   useEffect(() => {

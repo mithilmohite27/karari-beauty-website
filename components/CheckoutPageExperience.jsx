@@ -50,6 +50,16 @@ const trustBadges = [
 ];
 const PRODUCT_IMAGE_FALLBACK = "/images/fallbacks/karari-product-fallback.svg";
 
+/** The region detected or chosen earlier in the session, if the store ships there. */
+function readStoredCountry() {
+  try {
+    const stored = window.localStorage.getItem("karari-country");
+    return countries.includes(stored) ? stored : "India";
+  } catch {
+    return "India";
+  }
+}
+
 const initialForm = {
   fullName: "",
   mobile: "",
@@ -385,7 +395,9 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
         fullName: current.fullName || profile.full_name || "",
         mobile: current.mobile || profile.phone || profile.mobile || "",
         email: current.email || user.email || "",
-        country: profile.country || current.country || "India",
+        // Falls back to the region detected on arrival, so a visitor in the UK
+        // does not have to change the country their prices were already in.
+        country: profile.country || current.country || readStoredCountry(),
         address: current.address || profile.address || "",
         city: current.city || profile.city || "",
         state: current.state || profile.state || "",
