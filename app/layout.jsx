@@ -24,9 +24,6 @@ export async function generateMetadata() {
     authors: [{ name: businessName }],
     creator: businessName,
     publisher: businessName,
-    alternates: {
-      canonical: getSiteUrl()
-    },
     icons: {
       icon: [{ url: favicon }],
       apple: "/apple-touch-icon.png"
@@ -71,7 +68,7 @@ export default async function RootLayout({ children }) {
   const siteSettings = await getSiteSettings();
 
   return (
-    <html lang="en">
+    <html lang="en-IN">
       <body className="font-sans antialiased">
         {children}
         <FloatingActions siteSettings={siteSettings} />

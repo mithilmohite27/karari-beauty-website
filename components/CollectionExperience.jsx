@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import CollectionMarketingPanel from "@/components/CollectionMarketingPanel";
-import { Header } from "@/components/HomeExperience";
+import { Footer, Header } from "@/components/HomeExperience";
 import ProductCard from "@/components/ProductCard";
 import QuickViewModal from "@/components/QuickViewModal";
 import { products as localProducts } from "@/data/products";
@@ -20,7 +20,7 @@ import {
   toggleWishlist as toggleWishlistItem
 } from "@/lib/ecommerceStorage";
 
-export default function CollectionExperience({ category, products, relatedCategories, allProducts = localProducts, allCategories = [] }) {
+export default function CollectionExperience({ category, products, relatedCategories, allProducts = localProducts, allCategories = [], siteSettings }) {
   const [sortBy, setSortBy] = useState("featured");
   const [wishlistIds, setWishlistIds] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -85,8 +85,8 @@ export default function CollectionExperience({ category, products, relatedCatego
   };
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_55%,#FFF8EE_100%)] text-[#3A2417]">
-      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} categories={allCategories} products={allProducts} />
+    <div className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_55%,#FFF8EE_100%)] text-[#3A2417]">
+      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} categories={allCategories} products={allProducts} siteSettings={siteSettings} />
       <AnimatePresence>
         {toast ? (
           <motion.div
@@ -101,9 +101,10 @@ export default function CollectionExperience({ category, products, relatedCatego
         ) : null}
       </AnimatePresence>
 
+      <main>
       <section className="px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <nav className="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#3A2417]/62">
+          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#3A2417]/62">
             <Link href="/" className="transition hover:text-[#7A183D]">Home</Link>
             <ChevronRight className="h-4 w-4 text-[#C9962D]" />
             <Link href="/#collections" className="transition hover:text-[#7A183D]">Collections</Link>
@@ -140,7 +141,7 @@ export default function CollectionExperience({ category, products, relatedCatego
             <div className="relative min-h-[12rem] overflow-hidden sm:min-h-[18rem]">
               <Image
                 src={category.image}
-                alt={category.name}
+                alt={`${category.name} collection at Karari Beauty`}
                 fill
                 priority
                 sizes="(min-width: 1024px) 50vw, 100vw"
@@ -226,8 +227,10 @@ export default function CollectionExperience({ category, products, relatedCatego
           </div>
         </div>
       </section>
+      </main>
 
       <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} products={allProducts} />
-    </main>
+      <Footer categories={allCategories} siteSettings={siteSettings} />
+    </div>
   );
 }

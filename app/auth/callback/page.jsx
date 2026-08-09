@@ -10,7 +10,7 @@ function getSafeNext(value) {
   return value;
 }
 
-const CANONICAL_ORIGIN = "https://kararibeauty.com";
+const CANONICAL_ORIGIN = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.kararibeauty.com").replace(/\/$/, "");
 
 function getCanonicalUrl(path) {
   return `${CANONICAL_ORIGIN}${getSafeNext(path)}`;

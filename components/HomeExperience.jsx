@@ -175,6 +175,7 @@ function SearchBox({ onViewProduct, products = localProducts }) {
         <Search className="h-4 w-4 shrink-0 text-karariGold" />
         <input
           value={query}
+          aria-label="Search Karari Beauty products"
           onChange={(event) => setQuery(event.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => window.setTimeout(() => setFocused(false), 140)}
@@ -325,7 +326,7 @@ function CollectionsMegaMenu({ open, onClose, categories = localCategories }) {
   );
 }
 
-export function Header({ campaignActive, onViewProduct, recentlyViewed, categories = localCategories, products = localProducts, seasonalCampaign = localSeasonalCampaign, siteSettings }) {
+export function Header({ campaignActive, onViewProduct, recentlyViewed, categories = localCategories, products = localProducts, seasonalCampaign = localSeasonalCampaign, siteSettings, showSearch = true }) {
   const { t, language } = useTranslation();
   const headerRef = useRef(null);
   const [selectedCountry, setSelectedCountry] = useState("India");
@@ -479,9 +480,11 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
             </div>
           </Link>
 
-          <div className="order-3 min-w-0 flex-[1_0_100%] lg:order-none lg:max-w-[44rem] lg:flex-1 xl:max-w-[50rem]">
-            <SearchBox onViewProduct={onViewProduct} products={products} />
-          </div>
+          {showSearch ? (
+            <div className="order-3 min-w-0 flex-[1_0_100%] lg:order-none lg:max-w-[44rem] lg:flex-1 xl:max-w-[50rem]">
+              <SearchBox onViewProduct={onViewProduct} products={products} />
+            </div>
+          ) : null}
 
           <div className="hidden shrink-0 items-center gap-2.5 lg:flex xl:gap-3">
             <div className="relative">
@@ -823,7 +826,7 @@ const heroSlides = [
     headlineLines: ["Raksha Bandhan", "Collection 2026", "is Live"],
     subheadline: "Celebrate the bond of love with Karari Beauty",
     description: "Premium rakhis, gift hampers, sweets and festive gifts delivered with care.",
-    primaryCta: { label: "Shop Rakhi Collection", href: "#products" },
+    primaryCta: { label: "Shop Rakhi Collection", href: "/collections/rakhi" },
     secondaryCta: { label: "Explore Gift Hampers", href: "#gifts" },
     position: "object-[62%_center] sm:object-center",
     showCountdown: true
@@ -914,7 +917,7 @@ function HeroCarousel({ campaignActive, seasonalCampaign = localSeasonalCampaign
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.key}
-              initial={{ opacity: 0, scale: 1.015 }}
+              initial={!userEngaged && activeSlide === 0 ? false : { opacity: 0, scale: 1.015 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.01 }}
               transition={{ duration: 0.85, ease: "easeOut" }}
@@ -925,6 +928,7 @@ function HeroCarousel({ campaignActive, seasonalCampaign = localSeasonalCampaign
                 alt={slide.headline}
                 fill
                 priority={activeSlide === 0}
+                fetchPriority={activeSlide === 0 ? "high" : "auto"}
                 sizes="100vw"
                 className={`object-cover ${slide.position}`}
               />
@@ -938,7 +942,7 @@ function HeroCarousel({ campaignActive, seasonalCampaign = localSeasonalCampaign
             <AnimatePresence mode="wait">
               <motion.div
                 key={`${slide.key}-copy`}
-                initial={{ opacity: 0, y: 16 }}
+                initial={!userEngaged && activeSlide === 0 ? false : { opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.55, ease: "easeOut" }}
@@ -1027,7 +1031,7 @@ function CategorySection({ selectedCategory, categories = localCategories }) {
                 <div className="relative aspect-[1.1/1] sm:aspect-[4/3]">
                   <Image
                     src={category.image}
-                    alt={category.name}
+                    alt={`${category.name} collection at Karari Beauty`}
                     fill
                     sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
                     className="object-cover transition duration-700 group-hover:scale-105"
@@ -1310,7 +1314,6 @@ const footerTrustItems = [
 ];
 
 const footerCareLinks = [
-  { label: "About Karari", href: "#about" },
   { label: "Contact Us", href: "/contact-us" },
   { label: "International Orders", href: "#international-orders" },
   { label: "Order Support", href: "#support" },
@@ -1407,7 +1410,7 @@ export function Footer({ categories = localCategories, siteSettings }) {
   const shortDescription = getSettingsValue(siteSettings, "business", "shortDescription", businessSettings.shortDescription);
   const logoUrl = getSafeLogoUrl(siteSettings);
   const address = getSettingsValue(siteSettings, "contact", "address", businessSettings.address);
-  const email = businessSettings.supportEmail || businessSettings.email;
+  const email = getSettingsValue(siteSettings, "contact", "email", businessSettings.supportEmail || businessSettings.email);
   const phoneNumber = getSettingsValue(siteSettings, "contact", "phoneNumber", businessSettings.phoneNumber);
   const mapsUrl = getSettingsValue(siteSettings, "contact", "mapsUrl", businessSettings.mapsUrl);
   const timings = getSettingsValue(siteSettings, "contact", "timings", businessSettings.timings);
@@ -1491,7 +1494,7 @@ export function Footer({ categories = localCategories, siteSettings }) {
                 Bulk international order support available for 25+ products.
               </SupportItem>
               <SupportItem icon={PackageCheck} title="Return & Exchange">
-                Eligible products can be returned or exchanged within 7 days, subject to store confirmation.
+                Return requests for eligible products must be raised within 4 calendar days of delivery.
               </SupportItem>
               <SupportItem icon={Clock} title="Business Timings">
                 {timings}

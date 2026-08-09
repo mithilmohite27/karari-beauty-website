@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { CustomerAuthError, verifyCustomerRequest } from "@/lib/customerAuth";
 import { createOrder } from "@/lib/data/orders";
 import { getProducts } from "@/lib/data/products";
+import { isProductPurchasable } from "@/lib/productAvailability";
 
 function cleanString(value) {
   return String(value || "").trim();
@@ -66,6 +67,8 @@ async function getServerPricedItems(items) {
   for (const item of items) {
     const product = products.find((entry) => entry.id === item.productId || entry.slug === item.slug);
     if (!product) return { error: "One or more products are no longer available." };
+    if (!isProductPurchasable(product.stockStatus)) return { error: `${product.name} is currently out of stock.` };
+    if (!Number.isFinite(Number(product.price)) || Number(product.price) <= 0) return { error: `${product.name} is not currently available to order.` };
 
     normalized.push({
       ...item,

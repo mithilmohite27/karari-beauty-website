@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, BadgeCheck, ChevronRight, Heart, Minus, PackageCheck, Plus, ShieldCheck, ShoppingCart, Star, Truck } from "lucide-react";
-import { Header } from "@/components/HomeExperience";
+import { ArrowRight, BadgeCheck, ChevronRight, Heart, Minus, PackageCheck, Plus, ShieldCheck, ShoppingCart, Truck } from "lucide-react";
+import { Footer, Header } from "@/components/HomeExperience";
 import ProductCard from "@/components/ProductCard";
 import ProductImage from "@/components/ProductImage";
 import QuickViewModal from "@/components/QuickViewModal";
 import { products as localProducts } from "@/data/products";
 import { goToCheckout } from "@/lib/customer/session";
+import { getProductOrderDetails } from "@/lib/productAvailability";
 import {
   addRecentlyViewed,
   addToCart as addCartItem,
@@ -27,7 +28,7 @@ const trustBadges = [
   { label: "Boutique Quality", icon: BadgeCheck }
 ];
 
-export default function ProductDetailExperience({ product, category, relatedProducts, allProducts = localProducts, allCategories }) {
+export default function ProductDetailExperience({ product, category, relatedProducts, allProducts = localProducts, allCategories, siteSettings }) {
   const { format } = useDisplayCurrency();
   const [quantity, setQuantity] = useState(1);
   const [wishlistIds, setWishlistIds] = useState([]);
@@ -42,6 +43,9 @@ export default function ProductDetailExperience({ product, category, relatedProd
   }, [product]);
   const [selectedImage, setSelectedImage] = useState(galleryImages[0]?.imageUrl || product.image);
   const isWished = wishlistIds.includes(product.id);
+  const orderDetails = getProductOrderDetails(product);
+  const categoryHref = category?.href || "/#collections";
+  const categoryName = category?.name || product.category || "Karari Beauty";
 
   useEffect(() => {
     setSelectedImage(galleryImages[0]?.imageUrl || product.image);
@@ -71,16 +75,24 @@ export default function ProductDetailExperience({ product, category, relatedProd
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  const productTags = useMemo(() => product.tags || [product.categorySlug], [product]);
+  const productTags = useMemo(() => product.tags || [product.categorySlug].filter(Boolean), [product]);
 
   const notify = (message) => setToast(message);
 
   const addToCart = (item, itemQuantity = 1) => {
+    if (!getProductOrderDetails(item).purchasable) {
+      notify("This product is not currently available to order");
+      return;
+    }
     addCartItem(item, itemQuantity);
     notify("Added to cart");
   };
 
   const buyNow = (item, itemQuantity = 1) => {
+    if (!getProductOrderDetails(item).purchasable) {
+      notify("This product is not currently available to order");
+      return;
+    }
     setBuyNowItem(item, itemQuantity);
     goToCheckout({ mode: "buy-now" });
   };
@@ -97,8 +109,8 @@ export default function ProductDetailExperience({ product, category, relatedProd
   };
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_55%,#FFF8EE_100%)] text-[#3A2417]">
-      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} products={allProducts} categories={allCategories} />
+    <div className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_55%,#FFF8EE_100%)] text-[#3A2417]">
+      <Header campaignActive={false} onViewProduct={openProduct} recentlyViewed={recentlyViewed} products={allProducts} categories={allCategories} siteSettings={siteSettings} />
       <AnimatePresence>
         {toast ? (
           <motion.div
@@ -113,12 +125,13 @@ export default function ProductDetailExperience({ product, category, relatedProd
         ) : null}
       </AnimatePresence>
 
+      <main>
       <section className="px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <nav className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-[#3A2417]/62 sm:gap-2 sm:text-sm">
+          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-[#3A2417]/62 sm:gap-2 sm:text-sm">
             <Link href="/" className="transition hover:text-[#7A183D]">Home</Link>
             <ChevronRight className="h-4 w-4 text-[#C9962D]" />
-            <Link href={category?.href || `/collections/${product.categorySlug}`} className="transition hover:text-[#7A183D]">{product.category}</Link>
+            <Link href={categoryHref} className="transition hover:text-[#7A183D]">{categoryName}</Link>
             <ChevronRight className="h-4 w-4 text-[#C9962D]" />
             <span className="text-[#7A183D]">{product.name}</span>
           </nav>
@@ -158,11 +171,10 @@ export default function ProductDetailExperience({ product, category, relatedProd
             <div className="rounded-xl border border-[rgba(122,24,61,0.14)] bg-white/74 p-4 shadow-boutique backdrop-blur sm:p-7">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#7A183D]">
-                  {product.category}
+                  {categoryName}
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF8EE] px-3 py-1 text-xs font-bold text-[#7A183D]">
-                  <Star className="h-3.5 w-3.5 fill-[#C9962D] text-[#C9962D]" />
-                  {product.rating || "4.8"}
+                <span className="inline-flex items-center rounded-full bg-[#FFF8EE] px-3 py-1 text-xs font-bold text-[#7A183D]">
+                  {orderDetails.label}
                 </span>
               </div>
 
@@ -170,9 +182,9 @@ export default function ProductDetailExperience({ product, category, relatedProd
               <p className="mt-3 text-sm leading-6 text-[#3A2417]/70 sm:mt-4 sm:text-base sm:leading-7">{product.shortDescription || product.description}</p>
 
               <div className="mt-5 flex flex-wrap items-baseline gap-3">
-                <p className="text-2xl font-bold text-rose sm:text-3xl">{format(product.price)}</p>
-                {product.originalPrice ? <p className="text-lg font-semibold text-[#3A2417]/38 line-through">{format(product.originalPrice)}</p> : null}
-                {product.discountLabel ? <span className="rounded-full bg-[#7A183D] px-3 py-1 text-xs font-bold text-white">{product.discountLabel}</span> : null}
+                <p className="text-2xl font-bold text-rose sm:text-3xl">{orderDetails.hasValidPrice ? format(product.price) : "Price on request"}</p>
+                {orderDetails.hasValidPrice && product.originalPrice ? <p className="text-lg font-semibold text-[#3A2417]/38 line-through">{format(product.originalPrice)}</p> : null}
+                {orderDetails.hasValidPrice && product.discountLabel ? <span className="rounded-full bg-[#7A183D] px-3 py-1 text-xs font-bold text-white">{product.discountLabel}</span> : null}
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2 text-sm font-semibold text-[#3A2417]/62">
@@ -195,19 +207,21 @@ export default function ProductDetailExperience({ product, category, relatedProd
                 <button
                   type="button"
                   onClick={() => buyNow(product, quantity)}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#7A183D] px-5 text-sm font-bold text-white transition hover:bg-[#3A2417]"
+                  disabled={!orderDetails.purchasable}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#7A183D] px-5 text-sm font-bold text-white transition hover:bg-[#3A2417] disabled:cursor-not-allowed disabled:bg-[#3A2417]/35"
                 >
                   <ArrowRight className="h-4 w-4" />
-                  Buy Now
+                  {orderDetails.purchasable ? "Buy Now" : "Unavailable"}
                 </button>
 
                 <button
                   type="button"
                   onClick={() => addToCart(product, quantity)}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-[#7A183D] bg-white/78 px-5 text-sm font-bold text-[#7A183D] transition hover:border-[#C9962D] hover:text-[#C9962D]"
+                  disabled={!orderDetails.purchasable}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-[#7A183D] bg-white/78 px-5 text-sm font-bold text-[#7A183D] transition hover:border-[#C9962D] hover:text-[#C9962D] disabled:cursor-not-allowed disabled:border-[#3A2417]/20 disabled:text-[#3A2417]/35"
                 >
                   <ShoppingCart className="h-4 w-4" />
-                  Add to Cart
+                  {orderDetails.purchasable ? "Add to Cart" : "Unavailable"}
                 </button>
 
                 <button
@@ -254,9 +268,9 @@ export default function ProductDetailExperience({ product, category, relatedProd
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#C9962D]">Related Products</p>
-                <h2 className="mt-2 font-display text-3xl font-semibold text-[#7A183D]">More from {product.category}</h2>
+                <h2 className="mt-2 font-display text-3xl font-semibold text-[#7A183D]">More from {categoryName}</h2>
               </div>
-              <Link href={category?.href || `/collections/${product.categorySlug}`} className="inline-flex items-center gap-2 text-sm font-bold text-[#7A183D] transition hover:text-[#C9962D]">
+              <Link href={categoryHref} className="inline-flex items-center gap-2 text-sm font-bold text-[#7A183D] transition hover:text-[#C9962D]">
                 View Collection
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -277,8 +291,10 @@ export default function ProductDetailExperience({ product, category, relatedProd
           </section>
         </div>
       </section>
+      </main>
 
       <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} products={allProducts} />
-    </main>
+      <Footer categories={allCategories} siteSettings={siteSettings} />
+    </div>
   );
 }

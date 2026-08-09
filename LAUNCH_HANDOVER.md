@@ -2,8 +2,8 @@
 
 ## Client Links
 
-- Website: https://kararibeauty.com
-- Admin login: https://kararibeauty.com/admin/login
+- Website: https://www.kararibeauty.com
+- Admin login: https://www.kararibeauty.com/admin/login
 - Admin login email: `[CLIENT_ADMIN_EMAIL]`
 - Admin password: share privately with the client; never store it in this repository.
 
@@ -59,7 +59,7 @@
 Configure these in Vercel for **Production**, and for Preview only when a preview deployment needs live integrations:
 
 ```env
-NEXT_PUBLIC_SITE_URL=https://kararibeauty.com
+NEXT_PUBLIC_SITE_URL=https://www.kararibeauty.com
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
@@ -88,15 +88,15 @@ The current schema includes categories, products, product images, customers, ord
 
 ## Vercel Domain Connection
 
-Primary domain: `https://kararibeauty.com`
+Primary domain: `https://www.kararibeauty.com`
 
 1. Import or open the Karari Beauty project in Vercel.
 2. Add `kararibeauty.com` and `www.kararibeauty.com` under **Settings > Domains**.
 3. At the domain registrar, add exactly the DNS records Vercel displays for each domain.
-4. Set `kararibeauty.com` as the primary production domain.
-5. Redirect `www.kararibeauty.com` to `kararibeauty.com` in Vercel.
+4. Set `www.kararibeauty.com` as the primary production domain.
+5. Redirect `kararibeauty.com` to `www.kararibeauty.com` in Vercel.
 6. Wait for Vercel to show valid configuration and issue the SSL certificate.
-7. Set `NEXT_PUBLIC_SITE_URL=https://kararibeauty.com` and redeploy.
+7. Set `NEXT_PUBLIC_SITE_URL=https://www.kararibeauty.com` and redeploy.
 8. Verify HTTPS, the www redirect, canonical URLs, sitemap and social previews.
 
 Do not remove existing mail-related DNS records while updating website DNS.
@@ -111,7 +111,7 @@ Keep Razorpay in Test Mode until every test below passes. Switch all three Razor
 4. Submit **Pay after confirmation** and confirm `payment_status = pending_confirmation`.
 5. Test COD below and above the quantity threshold with eligible and ineligible products.
 6. Confirm payment details appear in the admin order drawer.
-7. Configure the Razorpay webhook URL as `https://kararibeauty.com/api/webhooks/razorpay`.
+7. Configure the Razorpay webhook URL as `https://www.kararibeauty.com/api/webhooks/razorpay`.
 8. Confirm webhook signature verification using the production webhook secret.
 
 ## Final Production Smoke Test

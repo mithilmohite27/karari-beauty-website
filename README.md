@@ -15,7 +15,7 @@ npm install
 npm run dev
 ```
 
-Open `https://kararibeauty.com`.
+Open `https://www.kararibeauty.com`.
 
 ## Project Structure
 
@@ -252,8 +252,8 @@ Checkout behavior:
 - For faster ecommerce checkout, disable Supabase email confirmation: Supabase Dashboard -> Authentication -> Providers -> Email -> Confirm email OFF. If confirmation remains ON, customers must verify email before signing in and continuing checkout.
 - Customer Google sign-in uses Supabase Auth OAuth. Configure Supabase Dashboard -> Authentication -> Providers -> Google with the Google OAuth client ID and client secret.
 - Add the OAuth redirect URL in both Supabase and Google Cloud:
-  - `https://kararibeauty.com/auth/callback`
-- Google authorised JavaScript origins should include `https://kararibeauty.com`.
+  - `https://www.kararibeauty.com/auth/callback`
+- Google authorised JavaScript origins should include `https://www.kararibeauty.com`.
 - Online payment creates a Razorpay order server-side and verifies the Razorpay signature before clearing the cart.
 - Successful Razorpay payment saves `payment_status = paid` and confirms the order.
 - Failed/cancelled Razorpay payment keeps the cart available for retry.

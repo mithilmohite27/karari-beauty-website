@@ -1,6 +1,7 @@
 import { businessSettings } from "@/data/businessSettings";
 
 export const policyLastUpdated = "July 19, 2026";
+export const policyLastUpdatedIso = "2026-07-19";
 
 export const policyContact = {
   businessName: businessSettings.name,

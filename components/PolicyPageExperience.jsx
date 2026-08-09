@@ -10,11 +10,11 @@ export default function PolicyPageExperience({ policy, categories, siteSettings 
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#FFF8EE_0%,#FCE7EC_48%,#FFF8EE_100%)] text-[#3A2417]">
-      <Header campaignActive={false} onViewProduct={() => {}} recentlyViewed={[]} categories={categories} products={[]} siteSettings={siteSettings} />
+      <Header campaignActive={false} onViewProduct={() => {}} recentlyViewed={[]} categories={categories} products={[]} siteSettings={siteSettings} showSearch={false} />
 
       <section className="px-3 py-7 sm:px-6 sm:py-10 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <nav className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#3A2417]/55">
+          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#3A2417]/55">
             <Link href="/" className="transition hover:text-[#7A183D]">Home</Link>
             <ChevronRight className="h-4 w-4 text-[#C9962D]" />
             <span className="text-[#7A183D]">{policy.title}</span>

@@ -401,9 +401,12 @@ export const products = [...baseProducts, ...generatedProducts].map((product, in
     ...product,
     slug,
     categorySlug,
-    originalPrice: product.originalPrice || Math.ceil(product.price * 1.18),
+    // The bundled catalogue is a development fallback. Never synthesize a
+    // crossed-out list price or a review score that customers could mistake
+    // for verified merchant data during a production data outage.
+    originalPrice: undefined,
     discountLabel: product.discountLabel || product.offer || "Karari Edit",
-    rating: product.rating || (4.7 + (index % 3) / 10).toFixed(1),
+    rating: undefined,
     shortDescription: product.shortDescription || product.description,
     isFeatured: product.isFeatured ?? index < 18,
     createdAt: product.createdAt || `2026-06-${String(28 - (index % 18)).padStart(2, "0")}`,

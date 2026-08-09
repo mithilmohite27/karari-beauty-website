@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Globe2, Heart, Share2, X } from "lucide-react";
+import Link from "next/link";
 import ProductImage from "@/components/ProductImage";
 import { frequentlyBoughtTogether } from "@/data/frequentlyBoughtTogether";
 import { businessSettings } from "@/data/businessSettings";
@@ -10,6 +11,7 @@ import { products as localProducts } from "@/data/products";
 import { goToCheckout } from "@/lib/customer/session";
 import { getWishlistItems, setBuyNowItem, toggleWishlist } from "@/lib/ecommerceStorage";
 import { getCanonicalProductUrl } from "@/lib/productLinks";
+import { getProductOrderDetails } from "@/lib/productAvailability";
 import { useDisplayCurrency } from "@/lib/useDisplayCurrency";
 
 function WhatsAppGlyph({ className = "h-5 w-5" }) {
@@ -110,8 +112,10 @@ export default function QuickViewModal({ product, onClose, products = localProdu
   const isWished = wishlistIds.includes(product.id);
   const productUrl = getCanonicalProductUrl(product, typeof window !== "undefined" ? window.location.pathname : "");
   const whatsappUrl = createProductWhatsAppUrl(product, productUrl, format);
+  const orderDetails = getProductOrderDetails(product);
 
   const buyNow = () => {
+    if (!orderDetails.purchasable) return;
     setBuyNowItem(product, 1);
     goToCheckout({ mode: "buy-now" });
   };
@@ -163,7 +167,7 @@ export default function QuickViewModal({ product, onClose, products = localProdu
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-charcoal/55 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" onMouseDown={(event) => event.target === event.currentTarget && onClose?.()}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-charcoal/55 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="quick-view-title" onMouseDown={(event) => event.target === event.currentTarget && onClose?.()}>
       <motion.div
         initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
@@ -173,7 +177,7 @@ export default function QuickViewModal({ product, onClose, products = localProdu
         <div className="flex items-center justify-between border-b border-black/8 px-4 py-3 sm:px-6">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-karariGold">Quick View</p>
-            <h3 className="line-clamp-1 font-display text-xl font-semibold text-charcoal sm:text-2xl">{product.name}</h3>
+            <h2 id="quick-view-title" className="line-clamp-1 font-display text-xl font-semibold text-charcoal sm:text-2xl">{product.name}</h2>
           </div>
           <button type="button" onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-md border border-black/12 text-ink hover:border-wine hover:text-wine" aria-label="Close quick view">
             <X className="h-5 w-5" />
@@ -185,9 +189,15 @@ export default function QuickViewModal({ product, onClose, products = localProdu
           </div>
           <div className="min-h-0 lg:flex lg:flex-col">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-karariGold">{product.category}</p>
-            <h4 className="mt-2 font-display text-2xl font-semibold text-charcoal sm:text-3xl">{product.name}</h4>
-            <p className="mt-3 text-2xl font-bold text-rose">{format(product.price)}</p>
+            <p className="mt-2 font-display text-2xl font-semibold text-charcoal sm:text-3xl">{product.name}</p>
+            <p className="mt-3 text-2xl font-bold text-rose">{orderDetails.hasValidPrice ? format(product.price) : "Price on request"}</p>
+            <p className="mt-2 text-sm font-bold text-wine">{orderDetails.label}</p>
             <p className="mt-3 line-clamp-4 leading-7 text-ink/70">{product.description}</p>
+
+            <Link href={`/products/${product.slug}`} className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-wine underline-offset-4 hover:underline">
+              View full product details
+              <ArrowRight className="h-4 w-4" />
+            </Link>
 
             <div className="mt-4 rounded-lg border border-antiqueGold/25 bg-white p-3">
               <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-ink/55">
@@ -201,10 +211,11 @@ export default function QuickViewModal({ product, onClose, products = localProdu
               <button
                 type="button"
                 onClick={buyNow}
-                className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-wine px-5 py-3 text-sm font-bold text-white shadow-soft transition duration-200 hover:-translate-y-0.5 hover:bg-charcoal focus:outline-none focus:ring-2 focus:ring-wine/30 sm:col-span-1"
+                disabled={!orderDetails.purchasable}
+                className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-wine px-5 py-3 text-sm font-bold text-white shadow-soft transition duration-200 hover:-translate-y-0.5 hover:bg-charcoal focus:outline-none focus:ring-2 focus:ring-wine/30 disabled:cursor-not-allowed disabled:bg-charcoal/35 disabled:hover:translate-y-0 sm:col-span-1"
               >
                 <ArrowRight className="h-4 w-4" />
-                Buy Now
+                {orderDetails.purchasable ? "Buy Now" : "Unavailable"}
               </button>
               <a
                 href={whatsappUrl}

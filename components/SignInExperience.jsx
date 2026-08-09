@@ -27,7 +27,7 @@ const phoneCountries = [
   { code: "AE", name: "UAE", flag: "AE", dialCode: "971", min: 9, max: 9 }
 ];
 
-const CANONICAL_ORIGIN = "https://kararibeauty.com";
+const CANONICAL_ORIGIN = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.kararibeauty.com").replace(/\/$/, "");
 const AUTH_ARTWORK_SRC = "/images/auth/karari-auth-artwork.webp";
 const AUTH_ARTWORK_FALLBACK_SRC = "/images/fallbacks/karari-auth-fallback.svg";
 

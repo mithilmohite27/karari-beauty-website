@@ -3,6 +3,7 @@ import { convertFromBase, getCurrencyForCountry, resolveChargeCurrency, toMinorU
 import { CustomerAuthError, verifyCustomerRequest } from "@/lib/customerAuth";
 import { createOrder } from "@/lib/data/orders";
 import { getProducts } from "@/lib/data/products";
+import { isProductPurchasable } from "@/lib/productAvailability";
 import { createRazorpayOrder, getRazorpayStatus, RazorpayAuthError, RazorpayConfigError } from "@/lib/razorpay";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
@@ -66,6 +67,8 @@ async function getServerPricedItems(items) {
   for (const item of items) {
     const product = products.find((entry) => entry.id === item.productId || entry.slug === item.slug);
     if (!product) return { error: "CART_EMPTY", message: "One or more products are no longer available." };
+    if (!isProductPurchasable(product.stockStatus)) return { error: "PRODUCT_UNAVAILABLE", message: `${product.name} is currently out of stock.` };
+    if (!Number.isFinite(Number(product.price)) || Number(product.price) <= 0) return { error: "PRODUCT_UNAVAILABLE", message: `${product.name} is not currently available to order.` };
 
     normalized.push({
       productId: product.id,

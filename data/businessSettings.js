@@ -31,7 +31,7 @@ export const businessSettings = {
   internationalMessage: "From India to {country}, festive gifts delivered with care.",
   checkoutEnabled: true,
   whatsappSupportEnabled: true,
-  siteTitle: "Karari Beauty | Jewellery, Gifts, Cosmetics & Rakhi Collections",
-  metaDescription: "Shop Karari Beauty's curated jewellery, bangles, handbags, watches, cosmetics, wedding baskets, imported fancy items, gift products and Raksha Bandhan collections.",
+  siteTitle: "Jewellery, Gifts, Cosmetics & Rakhi | Karari Beauty",
+  metaDescription: "Shop jewellery, bangles, cosmetics, handbags, watches, rakhi and gift items online from Karari Beauty in Vansda, with delivery across India.",
   ogImageUrl: "/hero/all-occasion-gifting.png"
 };

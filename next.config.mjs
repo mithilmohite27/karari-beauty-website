@@ -46,7 +46,7 @@ const nextConfig = {
       {
         // robots.txt already disallows these, but a header keeps admin and
         // account screens out of indexes that ignore robots directives.
-        source: "/:path(admin|account)/:sub*",
+        source: "/:path(admin|account|auth)/:sub*",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
       }
     ];
