@@ -25,7 +25,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const [product, products] = await Promise.all([getProductBySlug(slug), getProducts()]);
 
   if (!product) {
     return {
@@ -35,8 +35,11 @@ export async function generateMetadata({ params }) {
     };
   }
 
+  const normalizedName = cleanSeoText(product.name).toLocaleLowerCase("en");
+  const hasDuplicateName = products.some((item) => item.slug !== product.slug && cleanSeoText(item.name).toLocaleLowerCase("en") === normalizedName);
+
   return createPageMetadata({
-    title: createProductSeoTitle(product),
+    title: createProductSeoTitle(product, { includeSku: hasDuplicateName }),
     description: createProductMetaDescription(product),
     path: `/products/${product.slug}`,
     image: product.image || getDefaultOgImage(),
