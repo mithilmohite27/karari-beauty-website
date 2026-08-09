@@ -20,7 +20,7 @@ function errorResponse(error, message, status = 400, details = "") {
 
 function logPaymentStartup(details = {}) {
   const razorpayStatus = getRazorpayStatus();
-  console.info("[razorpay-create-order:start]", {
+  console.info("razorpay-create-order:start", {
     hasPublicKey: razorpayStatus.hasPublicKey,
     hasServerKey: razorpayStatus.hasServerKey,
     hasServerSecret: razorpayStatus.hasServerSecret,
@@ -35,7 +35,7 @@ function logPaymentStartup(details = {}) {
 }
 
 function logPaymentStep(step, details = {}) {
-  console.info(`[razorpay-create-order:${step}]`, details);
+  console.info(`razorpay-create-order:${step}`, details);
 }
 
 function safeReceipt(value) {
@@ -128,7 +128,7 @@ export async function POST(request) {
     const amount = toMinorUnits(chargeAmount, chargeCurrency);
 
     if (fellBack && displayCurrency !== chargeCurrency) {
-      console.info("[razorpay-create-order:currency-fallback]", {
+      console.info("razorpay-create-order:currency-fallback", {
         country,
         displayCurrency,
         chargeCurrency,
@@ -192,7 +192,7 @@ export async function POST(request) {
         mode: order.mode || "unknown"
       });
     } catch (orderError) {
-      console.error("[razorpay-create-order:supabase-order-insert-failed]", {
+      console.error("razorpay-create-order:supabase-order-insert-failed", {
         message: orderError?.message || "Unknown Supabase order insert error",
         finalAmount: serverFinalAmount,
         amountInPaise: amount,
@@ -235,7 +235,7 @@ export async function POST(request) {
       if (razorpayError instanceof RazorpayConfigError) throw razorpayError;
 
       if (razorpayError instanceof RazorpayAuthError) {
-        console.error("[razorpay-create-order:auth-failed]", {
+        console.error("razorpay-create-order:auth-failed", {
           message: razorpayError.message,
           keyMode: getRazorpayStatus().keyMode
         });
@@ -247,7 +247,7 @@ export async function POST(request) {
         );
       }
 
-      console.error("[razorpay-create-order:api-error]", {
+      console.error("razorpay-create-order:api-error", {
         message: razorpayError?.message || "Unknown Razorpay API error",
         finalAmount: serverFinalAmount,
         amountInPaise: amount,
@@ -269,7 +269,7 @@ export async function POST(request) {
         razorpayOrderLinked: Boolean(razorpayOrder?.id)
       });
     } catch (linkError) {
-      console.error("[razorpay-create-order:supabase-razorpay-link-failed]", {
+      console.error("razorpay-create-order:supabase-razorpay-link-failed", {
         message: linkError?.message || "Unknown Supabase Razorpay link error",
         orderNumber: order.orderNumber,
         finalAmount: serverFinalAmount,
@@ -303,7 +303,7 @@ export async function POST(request) {
     }
     if (error instanceof RazorpayConfigError) {
       const razorpayStatus = getRazorpayStatus();
-      console.error("[razorpay-create-order:not-configured]", {
+      console.error("razorpay-create-order:not-configured", {
         hasPublicKey: razorpayStatus.hasPublicKey,
         hasServerKey: razorpayStatus.hasServerKey,
         hasServerSecret: razorpayStatus.hasServerSecret,
@@ -317,7 +317,7 @@ export async function POST(request) {
       });
       return errorResponse("RAZORPAY_NOT_CONFIGURED", "Payment keys are not configured.", error.status || 503);
     }
-    console.error("[razorpay-create-order:unexpected]", {
+    console.error("razorpay-create-order:unexpected", {
       message: error?.message || "Unknown error",
       finalAmount: startupLogDetails.finalAmount,
       amountInPaise: startupLogDetails.amountInPaise,
