@@ -1,9 +1,9 @@
 import FloatingActions from "@/components/FloatingActions";
 import { getSiteSettings } from "@/lib/data/siteSettings";
 import { absoluteUrl, defaultSeo, getDefaultOgImage, getSiteUrl } from "@/lib/seo";
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/next"
 
 export async function generateMetadata() {
   const siteSettings = await getSiteSettings();
@@ -75,6 +75,7 @@ export default async function RootLayout({ children }) {
       <body className="font-sans antialiased">
         {children}
         <FloatingActions siteSettings={siteSettings} />
+        <Analytics />
         <SpeedInsights />
       </body>
     </html>
