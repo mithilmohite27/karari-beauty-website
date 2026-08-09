@@ -1018,6 +1018,10 @@ function CategorySection({ selectedCategory, categories = localCategories }) {
   );
 }
 
+// One page of the homepage grid. 24 fills four rows on desktop and twelve on a
+// phone - enough to browse, without rendering the whole catalogue up front.
+const PRODUCTS_PER_PAGE = 24;
+
 function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, products = localProducts }) {
   const [sortBy, setSortBy] = useState("featured");
   const [wishlistIds, setWishlistIds] = useState([]);
@@ -1055,6 +1059,20 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, p
     }
     return items;
   }, [baseList, sortBy]);
+
+  // Only the first page is rendered into the document. The full catalogue is
+  // already in the client for search, so "Load more" is instant - no network
+  // call - while the initial HTML carries a fraction of the card markup, which
+  // is what a low-end phone actually has to parse and hydrate.
+  const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_PAGE);
+  const visibleList = useMemo(() => list.slice(0, visibleCount), [list, visibleCount]);
+  const hasMore = visibleList.length < list.length;
+
+  // Changing the filter or sort produces a different list; keep showing the
+  // first page of it rather than however far the customer had expanded before.
+  useEffect(() => {
+    setVisibleCount(PRODUCTS_PER_PAGE);
+  }, [selectedCategory, sortBy, seasonal]);
 
   const sectionTitle = selectedCategory ? `${selectedCategory.name} Collection` : "Featured Boutique Products";
   const sectionDescription = selectedCategory
@@ -1133,21 +1151,39 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, p
         </div>
 
         {list.length ? (
-          <motion.div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
-            <AnimatePresence mode="popLayout">
-              {list.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onView={onView}
-                  onAddToCart={addToCart}
-                  onBuyNow={buyNow}
-                  onToggleWishlist={toggleWishlist}
-                  wished={wishlistIds.includes(product.id)}
-                />
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <>
+            <motion.div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+              <AnimatePresence mode="popLayout">
+                {visibleList.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onView={onView}
+                    onAddToCart={addToCart}
+                    onBuyNow={buyNow}
+                    onToggleWishlist={toggleWishlist}
+                    wished={wishlistIds.includes(product.id)}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+
+            {hasMore ? (
+              <div className="mt-8 flex flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((current) => current + PRODUCTS_PER_PAGE)}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#7A183D] bg-white/82 px-6 text-sm font-bold text-[#7A183D] transition hover:bg-[#FFF8EE]"
+                >
+                  Load more products
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                <p className="text-xs font-semibold text-[#3A2417]/55">
+                  Showing {visibleList.length} of {list.length}
+                </p>
+              </div>
+            ) : null}
+          </>
         ) : (
           <div className="mt-10 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white/82 p-8 text-center shadow-soft">
             <p className="font-display text-2xl font-semibold text-wine">No products are available in this collection.</p>
