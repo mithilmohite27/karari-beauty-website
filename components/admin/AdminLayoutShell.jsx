@@ -7,15 +7,38 @@ import { usePathname, useRouter } from "next/navigation";
 import { BarChart3, CalendarDays, FolderTree, Image as ImageIcon, LogOut, Menu, Package, Settings, ShoppingBag, Users, X } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
-const navItems = [
-  { label: "Dashboard", href: "/admin", icon: BarChart3 },
-  { label: "Products", href: "/admin/products", icon: Package },
-  { label: "Categories", href: "/admin/categories", icon: FolderTree },
-  { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
-  { label: "Customers", href: "/admin/customers", icon: Users },
-  { label: "Campaigns", href: "/admin/campaigns", icon: CalendarDays },
-  { label: "Media", href: "/admin/media", icon: ImageIcon },
-  { label: "Settings", href: "/admin/settings", icon: Settings }
+/**
+ * Grouped by the job being done rather than listed flat, so the eight
+ * destinations read as four short lists. Media sits under Catalogue because
+ * it is only ever used while preparing product and category imagery.
+ */
+const navGroups = [
+  {
+    label: "",
+    items: [{ label: "Dashboard", href: "/admin", icon: BarChart3 }]
+  },
+  {
+    label: "Catalogue",
+    items: [
+      { label: "Products", href: "/admin/products", icon: Package },
+      { label: "Categories", href: "/admin/categories", icon: FolderTree },
+      { label: "Media", href: "/admin/media", icon: ImageIcon }
+    ]
+  },
+  {
+    label: "Sales",
+    items: [
+      { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
+      { label: "Customers", href: "/admin/customers", icon: Users }
+    ]
+  },
+  {
+    label: "Configuration",
+    items: [
+      { label: "Campaigns", href: "/admin/campaigns", icon: CalendarDays },
+      { label: "Settings", href: "/admin/settings", icon: Settings }
+    ]
+  }
 ];
 
 function AdminSidebar({ open, onClose }) {
@@ -31,22 +54,36 @@ function AdminSidebar({ open, onClose }) {
             <span className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-[#C9962D]">Admin</span>
           </span>
         </Link>
-        <button type="button" onClick={onClose} className="rounded-md border border-[rgba(122,24,61,0.14)] p-2 text-[#7A183D] lg:hidden" aria-label="Close admin menu">
+        <button type="button" onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-md border border-[rgba(122,24,61,0.14)] text-[#7A183D] lg:hidden" aria-label="Close admin menu">
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      <nav className="mt-8 space-y-2">
-        {navItems.map(({ label, href, icon: Icon }) => {
-          const active = href === "/admin" ? pathname === href : href && pathname?.startsWith(href);
+      <nav className="mt-8 space-y-5">
+        {navGroups.map((group) => (
+          <div key={group.label || "overview"} className="space-y-1.5">
+            {group.label ? (
+              <p className="px-3 text-[0.66rem] font-bold uppercase tracking-[0.18em] text-[#C9962D]">{group.label}</p>
+            ) : null}
+            {group.items.map(({ label, href, icon: Icon }) => {
+              // "/admin" would prefix-match every child route, so it is compared exactly.
+              const active = href === "/admin" ? pathname === href : href && pathname?.startsWith(href);
 
-          return (
-            <Link key={label} href={href} onClick={onClose} className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-bold transition ${active ? "bg-[#7A183D] text-white" : "text-[#3A2417]/68 hover:bg-[#FCE7EC] hover:text-[#7A183D]"}`}>
-              <Icon className="h-4 w-4" />
-              {label}
-            </Link>
-          );
-        })}
+              return (
+                <Link
+                  key={label}
+                  href={href}
+                  onClick={onClose}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-bold transition ${active ? "bg-[#7A183D] text-white" : "text-[#3A2417]/68 hover:bg-[#FCE7EC] hover:text-[#7A183D]"}`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
     </aside>
   );
@@ -66,7 +103,7 @@ function AdminTopbar({ admin, onMenuClick }) {
   return (
     <header className="border-b border-[rgba(122,24,61,0.12)] bg-white/82 px-4 py-3 backdrop-blur sm:px-6">
       <div className="flex items-center justify-between gap-3">
-        <button type="button" onClick={onMenuClick} className="rounded-md border border-[rgba(122,24,61,0.14)] p-2 text-[#7A183D] lg:hidden" aria-label="Open admin menu">
+        <button type="button" onClick={onMenuClick} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-[rgba(122,24,61,0.14)] text-[#7A183D] lg:hidden" aria-label="Open admin menu">
           <Menu className="h-4 w-4" />
         </button>
         <div className="min-w-0">

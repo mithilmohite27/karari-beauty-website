@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -636,7 +636,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-xs font-bold uppercase tracking-[0.16em] text-karariGold">
                 Country
-                <select value={selectedCountry} onChange={(event) => updateCountry(event.target.value)} className="mt-2 w-full rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417] outline-none">
+                <select value={selectedCountry} onChange={(event) => updateCountry(event.target.value)} className="mt-2 h-11 w-full rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 text-sm font-semibold text-[#3A2417] outline-none">
                   {countries.map((country) => (
                     <option key={country.code} value={country.name}>{country.name}</option>
                   ))}
@@ -644,7 +644,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
               </label>
               <label className="text-xs font-bold uppercase tracking-[0.16em] text-karariGold">
                 Currency
-                <select value={selectedCurrency} onChange={(event) => updateCurrency(event.target.value)} className="mt-2 w-full rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417] outline-none">
+                <select value={selectedCurrency} onChange={(event) => updateCurrency(event.target.value)} className="mt-2 h-11 w-full rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 text-sm font-semibold text-[#3A2417] outline-none">
                   {currencies.map((currency) => (
                     <option key={currency.code} value={currency.code}>{currency.symbol} {currency.label}</option>
                   ))}
@@ -679,7 +679,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
                   </Link>
                 </>
               )}
-              <button type="button" onClick={() => toggleHeaderDropdown("viewed")} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
+              <button type="button" onClick={() => toggleHeaderDropdown("viewed")} className="inline-flex min-h-11 items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
                 <Eye className="h-4 w-4" />
                 Recently Viewed
               </button>
@@ -727,6 +727,62 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
         </div>
       ) : null}
     </>
+  );
+}
+
+/**
+ * Fade-and-lift a section as it scrolls into view.
+ *
+ * Deliberately constrained:
+ * - Only opacity and transform are animated. Neither triggers layout, so this
+ *   cannot contribute to CLS.
+ * - `once` means it plays a single time; re-animating on every scroll past is
+ *   what makes these effects feel cheap and costs frames.
+ * - Never wrap the hero. That is the LCP element and must paint immediately.
+ * - Honours prefers-reduced-motion by rendering the content plainly, which also
+ *   avoids the initial opacity:0 for anyone who has asked for less motion.
+ */
+function Reveal({ children, className = "" }) {
+  const reduceMotion = useReducedMotion();
+  const ref = useRef(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    if (reduceMotion || typeof IntersectionObserver === "undefined" || !ref.current) {
+      setShown(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setShown(true);
+        observer.disconnect();
+      },
+      { rootMargin: "0px 0px -8% 0px" }
+    );
+    observer.observe(ref.current);
+
+    // Safety net. Storefront content must never be left invisible because an
+    // observer did not fire - a missed animation is a cosmetic problem, hidden
+    // products are a lost sale.
+    const failSafe = window.setTimeout(() => setShown(true), 1000);
+
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(failSafe);
+    };
+  }, [reduceMotion]);
+
+  return (
+    <div
+      ref={ref}
+      className={`${className} transition-[opacity,transform] duration-500 ease-out motion-reduce:transition-none ${
+        shown ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+      }`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -870,7 +926,13 @@ function HeroCarousel({ campaignActive, seasonalCampaign = localSeasonalCampaign
               type="button"
               key={item.key}
               onClick={() => setActiveSlide(index)}
-              className={`h-2.5 rounded-full transition-all ${activeSlide === index ? "w-8 bg-[#7A183D]" : "w-2.5 bg-[#C9962D]/45 hover:bg-[#C9962D]"}`}
+              // The visible dot stays 10px so the carousel looks unchanged, but
+              // a transparent pseudo-element gives it a 44px-tall tap target.
+              // Width is capped at the dot pitch (10px dot + 8px gap) so
+              // neighbouring targets do not overlap and steal each other's taps.
+              className={`relative h-2.5 rounded-full transition-all before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-[1.125rem] before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] ${
+                activeSlide === index ? "w-8 bg-[#7A183D]" : "w-2.5 bg-[#C9962D]/45 hover:bg-[#C9962D]"
+              }`}
               aria-label={`Show ${item.headline}`}
             />
           ))}
@@ -1383,15 +1445,22 @@ export default function HomeExperience({
   return (
     <main className="min-h-screen bg-silk">
       <Header campaignActive={campaignActive} onViewProduct={openProduct} recentlyViewed={recentlyViewed} categories={categories} products={products} seasonalCampaign={seasonalCampaign} siteSettings={siteSettings} />
+      {/* Hero is intentionally not wrapped in Reveal - it holds the LCP image. */}
       <HeroCarousel campaignActive={campaignActive} seasonalCampaign={seasonalCampaign} />
-      <CategorySection selectedCategory={selectedCategory} categories={categories} />
-      <ProductSection onView={openProduct} seasonal={campaignActive} selectedCategory={selectedCategory} onClearCategory={() => setSelectedCategory(null)} products={products} />
+      <Reveal>
+        <CategorySection selectedCategory={selectedCategory} categories={categories} />
+      </Reveal>
+      <Reveal>
+        <ProductSection onView={openProduct} seasonal={campaignActive} selectedCategory={selectedCategory} onClearCategory={() => setSelectedCategory(null)} products={products} />
+      </Reveal>
       {campaignActive ? (
-        <>
+        <Reveal>
           <GiftCombos onView={openProduct} products={products} />
-        </>
+        </Reveal>
       ) : null}
-      <FooterTrustStrip />
+      <Reveal>
+        <FooterTrustStrip />
+      </Reveal>
       <Footer categories={categories} siteSettings={siteSettings} />
       <QuickViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} products={products} />
     </main>
