@@ -3,6 +3,7 @@ import { getSiteSettings } from "@/lib/data/siteSettings";
 import { absoluteUrl, defaultSeo, getDefaultOgImage, getSiteUrl } from "@/lib/seo";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
 
 export async function generateMetadata() {
   const siteSettings = await getSiteSettings();

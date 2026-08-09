@@ -855,13 +855,54 @@ function HeroCarousel({ campaignActive, seasonalCampaign = localSeasonalCampaign
     setActiveSlide(0);
   }, [campaignActive]);
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setActiveSlide((current) => (current + 1) % slides.length);
-    }, 5000);
+  // Auto-advance is deliberately held back until the visitor interacts.
+  //
+  // Largest Contentful Paint keeps updating until the first user input. An
+  // auto-rotating hero therefore registers a *new* LCP every time it swaps, so
+  // a visitor who lands and reads for five seconds records an LCP of 5s+ no
+  // matter how fast the page actually painted. That is what put field LCP at
+  // 6.34s (Poor) while the hero itself painted in ~250ms.
+  //
+  // Once the visitor has interacted, LCP is sealed and rotation is free.
+  const [userEngaged, setUserEngaged] = useState(false);
 
-    return () => window.clearInterval(timer);
-  }, [slides.length]);
+  useEffect(() => {
+    if (userEngaged) return undefined;
+
+    const engage = () => setUserEngaged(true);
+    const events = ["pointerdown", "keydown", "scroll", "touchstart", "wheel"];
+    events.forEach((event) => window.addEventListener(event, engage, { once: true, passive: true }));
+
+    return () => events.forEach((event) => window.removeEventListener(event, engage));
+  }, [userEngaged]);
+
+  useEffect(() => {
+    if (!userEngaged || slides.length < 2) return undefined;
+
+    let timer = null;
+    const start = () => {
+      stop();
+      timer = window.setInterval(() => {
+        setActiveSlide((current) => (current + 1) % slides.length);
+      }, 5000);
+    };
+    const stop = () => {
+      if (timer) window.clearInterval(timer);
+      timer = null;
+    };
+
+    // A background tab was re-requesting hero images every five seconds
+    // indefinitely, for a carousel nobody could see.
+    const onVisibility = () => (document.hidden ? stop() : start());
+
+    start();
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [slides.length, userEngaged]);
 
   return (
     <section
