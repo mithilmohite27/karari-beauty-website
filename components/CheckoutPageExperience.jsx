@@ -21,6 +21,7 @@ import {
 } from "@/lib/ecommerceStorage";
 import { lookupIndianPincode, validateCheckoutForm } from "@/lib/checkoutValidation";
 import { getCurrencyForCountry } from "@/lib/currency";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 import { setDisplayCurrency, useDisplayCurrency } from "@/lib/useDisplayCurrency";
 
 const countries = ["India", "USA", "Canada", "Australia", "UAE", "UK"];
@@ -284,6 +285,7 @@ function loadRazorpayCheckout() {
 
 export default function CheckoutPageExperience({ products = localProducts, siteSettings }) {
   const { format } = useDisplayCurrency();
+  const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [isBuyNowMode, setIsBuyNowMode] = useState(false);
   const [form, setForm] = useState(initialForm);
@@ -789,8 +791,10 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
                 >
                   <span className="flex items-center gap-2 text-sm font-bold text-[#7A183D]">
                     <ChevronDown className={`h-4 w-4 transition-transform ${summaryOpen ? "rotate-180" : ""}`} />
-                    {summaryOpen ? "Hide order summary" : "Show order summary"}
-                    <span className="text-xs font-semibold text-[#3A2417]/55">({totalQuantity} {totalQuantity === 1 ? "item" : "items"})</span>
+                    {summaryOpen ? t("checkout.hideSummary", "Hide order summary") : t("checkout.showSummary", "Show order summary")}
+                    <span className="text-xs font-semibold text-[#3A2417]/55">
+                      ({totalQuantity} {totalQuantity === 1 ? t("common.item", "item") : t("common.items", "items")})
+                    </span>
                   </span>
                   <span className="shrink-0 text-base font-bold text-[#7A183D]">{hasFinalAmount ? format(finalAmount) : "--"}</span>
                 </button>
@@ -1014,18 +1018,22 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
                   {submitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                      Processing…
+                      {t("checkout.processing", "Processing…")}
                     </>
                   ) : (
                     <>
-                      {form.paymentMethod === "online" ? "Pay Now" : form.paymentMethod === "cod" ? "Place COD Order" : "Submit Order Request"}
+                      {form.paymentMethod === "online"
+                        ? t("checkout.payNow", "Pay Now")
+                        : form.paymentMethod === "cod"
+                          ? t("checkout.placeCodOrder", "Place COD Order")
+                          : t("checkout.submitRequest", "Submit Order Request")}
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
                 </button>
                 <p className="flex items-center justify-center gap-1.5 text-xs font-semibold text-[#3A2417]/58">
                   <Lock className="h-3.5 w-3.5 text-[#1B6B3A]" aria-hidden="true" />
-                  256-bit SSL encrypted · Secured by Razorpay
+                  {t("checkout.secureNote", "256-bit SSL encrypted · Secured by Razorpay")}
                 </p>
               </aside>
               </div>

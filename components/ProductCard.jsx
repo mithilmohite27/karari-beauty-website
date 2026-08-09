@@ -4,10 +4,12 @@ import { motion } from "framer-motion";
 import { Heart, Search, ShoppingCart, Star } from "lucide-react";
 import Link from "next/link";
 import ProductImage from "@/components/ProductImage";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 import { useDisplayCurrency } from "@/lib/useDisplayCurrency";
 
 export default function ProductCard({ product, onView, onAddToCart, onBuyNow, onToggleWishlist, wished }) {
   const { format } = useDisplayCurrency();
+  const { t } = useTranslation();
   const rating = product.rating || "4.8";
   const shortDescription = product.shortDescription || product.description;
   const originalPrice = product.originalPrice;
@@ -72,8 +74,8 @@ export default function ProductCard({ product, onView, onAddToCart, onBuyNow, on
           className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-md border border-[#7A183D] bg-white/88 px-2.5 py-2 text-xs font-bold text-[#7A183D] transition hover:border-[#C9962D] hover:text-[#C9962D] sm:gap-2 sm:px-3 sm:py-2.5 sm:text-sm"
         >
           <ShoppingCart className="h-4 w-4" />
-          <span className="hidden min-[370px]:inline">Add to Cart</span>
-          <span className="min-[370px]:hidden">Add</span>
+          <span className="hidden min-[370px]:inline">{t("product.addToCart", "Add to Cart")}</span>
+          <span className="min-[370px]:hidden">{t("product.add", "Add")}</span>
         </button>
         <button type="button" onClick={() => onView?.(product)} className="flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] p-2.5 text-[#7A183D] transition hover:border-[#C9962D] hover:text-[#C9962D]" aria-label={`Quick view ${product.name}`}>
           <Search className="h-4 w-4" />
@@ -84,7 +86,7 @@ export default function ProductCard({ product, onView, onAddToCart, onBuyNow, on
             onClick={() => onBuyNow(product)}
             className="col-span-2 inline-flex min-h-11 items-center justify-center rounded-md bg-[#7A183D] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#3A2417] sm:text-sm"
           >
-            Buy Now
+            {t("product.buyNow", "Buy Now")}
           </button>
         ) : null}
       </div>

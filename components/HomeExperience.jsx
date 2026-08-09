@@ -48,6 +48,8 @@ import {
   setBuyNowItem,
   toggleWishlist as toggleWishlistItem
 } from "@/lib/ecommerceStorage";
+import { LANGUAGES } from "@/lib/i18n/dictionaries";
+import { setLanguage, useTranslation } from "@/lib/i18n/useTranslation";
 import { setDisplayCurrency, useDisplayCurrency } from "@/lib/useDisplayCurrency";
 import { createWhatsAppUrl } from "@/lib/whatsapp";
 import { getCustomerDisplayName, getCustomerSession, goToCheckout, signOutCustomer } from "@/lib/customer/session";
@@ -152,6 +154,7 @@ function HeaderIconButton({ icon: Icon, label, count, onClick, active }) {
 
 function SearchBox({ onViewProduct, products = localProducts }) {
   const { format } = useDisplayCurrency();
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const results = useMemo(() => {
@@ -175,7 +178,7 @@ function SearchBox({ onViewProduct, products = localProducts }) {
           onChange={(event) => setQuery(event.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => window.setTimeout(() => setFocused(false), 140)}
-          placeholder="Search Rakhi, jewellery, bangles, gifts…"
+          placeholder={t("nav.search", "Search Rakhi, jewellery, bangles, gifts…")}
           className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm font-medium text-[#3A2417] outline-none placeholder:text-[#3A2417]/40"
         />
       </div>
@@ -270,6 +273,9 @@ function getCollectionById(categories, id) {
 }
 
 function CollectionsMegaMenu({ open, onClose, categories = localCategories }) {
+  // Hook must run before the early return, or the hook order changes between
+  // the open and closed states and React errors.
+  const { t } = useTranslation();
   if (!open) return null;
 
   return (
@@ -281,7 +287,7 @@ function CollectionsMegaMenu({ open, onClose, categories = localCategories }) {
       <div className="mb-3 flex items-center justify-between gap-4 border-b border-[rgba(122,24,61,0.12)] pb-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Karari Beauty</p>
-          <h3 className="font-display text-2xl font-semibold text-[#7A183D]">Collections</h3>
+          <h3 className="font-display text-2xl font-semibold text-[#7A183D]">{t("nav.collections", "Collections")}</h3>
         </div>
         <span className="hidden rounded-full border border-[rgba(201,150,45,0.28)] bg-white/70 px-3 py-1 text-xs font-bold text-[#7A183D] sm:inline-flex">
           12 boutique edits
@@ -320,6 +326,7 @@ function CollectionsMegaMenu({ open, onClose, categories = localCategories }) {
 }
 
 export function Header({ campaignActive, onViewProduct, recentlyViewed, categories = localCategories, products = localProducts, seasonalCampaign = localSeasonalCampaign, siteSettings }) {
+  const { t, language } = useTranslation();
   const headerRef = useRef(null);
   const [selectedCountry, setSelectedCountry] = useState("India");
   const [selectedCurrency, setSelectedCurrency] = useState("INR");
@@ -487,7 +494,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
                     : "border-[rgba(122,24,61,0.14)] bg-white/78 text-[#3A2417] hover:border-[#C9962D] hover:text-[#7A183D]"
                 }`}
               >
-                Collections
+                {t("nav.collections", "Collections")}
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
               <CollectionsMegaMenu open={activeHeaderDropdown === "collections"} onClose={() => setActiveHeaderDropdown(null)} categories={categories} />
@@ -557,7 +564,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
             </div>
 
             <div className="relative">
-              <HeaderIconButton icon={User} label="Account" onClick={() => toggleHeaderDropdown("account")} active={activeHeaderDropdown === "account"} />
+              <HeaderIconButton icon={User} label={t("nav.account", "Account")} onClick={() => toggleHeaderDropdown("account")} active={activeHeaderDropdown === "account"} />
               <HeaderDropdown open={activeHeaderDropdown === "account"}>
                 <div className="space-y-2">
                   {customerUser ? (
@@ -591,7 +598,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
             </div>
 
             <div className="relative">
-              <HeaderIconButton icon={Heart} label="Wishlist" count={wishlistItems.length} onClick={() => toggleHeaderDropdown("wishlist")} active={activeHeaderDropdown === "wishlist"} />
+              <HeaderIconButton icon={Heart} label={t("nav.wishlist", "Wishlist")} count={wishlistItems.length} onClick={() => toggleHeaderDropdown("wishlist")} active={activeHeaderDropdown === "wishlist"} />
               <HeaderDropdown open={activeHeaderDropdown === "wishlist"}>
                 {wishlistItems.length ? (
                   <p className="rounded-md bg-[#FFF8EE] p-3 text-sm font-medium text-[#3A2417]/65">Wishlist items are saved on this device.</p>
@@ -602,26 +609,26 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
             </div>
 
             <div className="relative">
-              <HeaderIconButton icon={Eye} label="Viewed" count={viewedCount} onClick={() => toggleHeaderDropdown("viewed")} active={activeHeaderDropdown === "viewed"} />
+              <HeaderIconButton icon={Eye} label={t("nav.viewed", "Viewed")} count={viewedCount} onClick={() => toggleHeaderDropdown("viewed")} active={activeHeaderDropdown === "viewed"} />
               <HeaderDropdown open={activeHeaderDropdown === "viewed"}>
-                <p className="px-1 pb-2 text-xs font-bold uppercase tracking-[0.18em] text-karariGold">Recently Viewed</p>
+                <p className="px-1 pb-2 text-xs font-bold uppercase tracking-[0.18em] text-karariGold">{t("nav.recentlyViewed", "Recently Viewed")}</p>
                 <RecentlyViewedList products={recentlyViewed} onViewProduct={onViewProduct} />
               </HeaderDropdown>
             </div>
 
             <div className="relative">
-              <HeaderIconButton icon={ShoppingCart} label="Cart" count={cartCount} onClick={openCartDrawer} active={cartDrawerOpen} />
+              <HeaderIconButton icon={ShoppingCart} label={t("nav.cart", "Cart")} count={cartCount} onClick={openCartDrawer} active={cartDrawerOpen} />
             </div>
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-2 lg:hidden">
             {/* h-11 w-11 = 44px, the minimum comfortable touch target. p-2.5 around a
                 16px icon gave 38px, which is easy to miss on a phone. */}
-            <button type="button" onClick={() => toggleHeaderDropdown("wishlist")} className="relative flex h-11 w-11 items-center justify-center rounded-md border border-[rgba(122,24,61,0.14)] bg-white/80 text-[#3A2417]" aria-label="Wishlist">
+            <button type="button" onClick={() => toggleHeaderDropdown("wishlist")} className="relative flex h-11 w-11 items-center justify-center rounded-md border border-[rgba(122,24,61,0.14)] bg-white/80 text-[#3A2417]" aria-label={t("nav.wishlist", "Wishlist")}>
               <Heart className="h-4 w-4" />
               {wishlistItems.length ? <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-wine px-1 text-[0.65rem] font-bold text-white">{wishlistItems.length}</span> : null}
             </button>
-            <button type="button" onClick={openCartDrawer} className="relative flex h-11 w-11 items-center justify-center rounded-md border border-[rgba(122,24,61,0.14)] bg-white/80 text-[#3A2417]" aria-label="Cart">
+            <button type="button" onClick={openCartDrawer} className="relative flex h-11 w-11 items-center justify-center rounded-md border border-[rgba(122,24,61,0.14)] bg-white/80 text-[#3A2417]" aria-label={t("nav.cart", "Cart")}>
               <ShoppingCart className="h-4 w-4" />
               {cartCount ? <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-wine px-1 text-[0.65rem] font-bold text-white">{cartCount}</span> : null}
             </button>
@@ -633,9 +640,21 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
 
         {activeHeaderDropdown === "mobile" ? (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-3 max-h-[calc(100dvh-9rem)] overflow-y-auto overscroll-contain rounded-lg border border-[rgba(122,24,61,0.14)] bg-white p-3 shadow-boutique lg:hidden">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
               <label className="text-xs font-bold uppercase tracking-[0.16em] text-karariGold">
-                Country
+                {t("nav.language", "Language")}
+                <select
+                  value={language}
+                  onChange={(event) => setLanguage(event.target.value)}
+                  className="mt-2 h-11 w-full rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 text-sm font-semibold text-[#3A2417] outline-none"
+                >
+                  {LANGUAGES.map((item) => (
+                    <option key={item.code} value={item.code}>{item.nativeLabel}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs font-bold uppercase tracking-[0.16em] text-karariGold">
+                {t("nav.country", "Country")}
                 <select value={selectedCountry} onChange={(event) => updateCountry(event.target.value)} className="mt-2 h-11 w-full rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 text-sm font-semibold text-[#3A2417] outline-none">
                   {countries.map((country) => (
                     <option key={country.code} value={country.name}>{country.name}</option>
@@ -643,7 +662,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
                 </select>
               </label>
               <label className="text-xs font-bold uppercase tracking-[0.16em] text-karariGold">
-                Currency
+                {t("nav.currency", "Currency")}
                 <select value={selectedCurrency} onChange={(event) => updateCurrency(event.target.value)} className="mt-2 h-11 w-full rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-3 text-sm font-semibold text-[#3A2417] outline-none">
                   {currencies.map((currency) => (
                     <option key={currency.code} value={currency.code}>{currency.symbol} {currency.label}</option>
@@ -656,7 +675,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
                 <>
                   <Link href="/account" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
                     <PackageCheck className="h-4 w-4" />
-                    My Account
+                    {t("nav.account", "My Account")}
                   </Link>
                   <Link href="/account#orders" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
                     <ShoppingCart className="h-4 w-4" />
@@ -671,7 +690,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
                 <>
                   <Link href="/sign-in" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
                     <User className="h-4 w-4" />
-                    Sign In
+                    {t("nav.signIn", "Sign In")}
                   </Link>
                   <Link href="/sign-in?mode=register" onClick={() => setActiveHeaderDropdown(null)} className="inline-flex items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
                     <PackageCheck className="h-4 w-4" />
@@ -681,7 +700,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
               )}
               <button type="button" onClick={() => toggleHeaderDropdown("viewed")} className="inline-flex min-h-11 items-center gap-2 rounded-md bg-[#FFF8EE] px-3 py-2 text-sm font-semibold text-[#3A2417]">
                 <Eye className="h-4 w-4" />
-                Recently Viewed
+                {t("nav.recentlyViewed", "Recently Viewed")}
               </button>
               <a href={createWhatsAppUrl({ product: null })} className="inline-flex items-center gap-2 rounded-md bg-wine px-3 py-2 text-sm font-semibold text-white">
                 <MessageCircle className="h-4 w-4" />
@@ -689,7 +708,7 @@ export function Header({ campaignActive, onViewProduct, recentlyViewed, categori
               </a>
             </div>
             <div className="mt-4 border-t border-[rgba(122,24,61,0.12)] pt-4">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-karariGold">Collections</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-karariGold">{t("nav.collections", "Collections")}</p>
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {categories.map((category) => (
                   <a
