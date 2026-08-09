@@ -84,6 +84,22 @@ if (!existsSync(auditPath)) {
   process.exit(1);
 }
 
+// Verify the credentials before doing anything else. Without this, an invalid
+// key makes every per-image count query fail, each failure returns a null
+// count, and the script reports "no rows reference it" for the entire
+// catalogue - which reads like the work is already done.
+const { error: connectionError } = await supabase.from("products").select("id", { count: "exact", head: true });
+if (connectionError) {
+  console.error("Could not query Supabase with the configured credentials.");
+  console.error(`  ${connectionError.message}`);
+  console.error("");
+  console.error("Check .env.local:");
+  console.error("  NEXT_PUBLIC_SUPABASE_URL   should be https://<project-ref>.supabase.co");
+  console.error("  SUPABASE_SERVICE_ROLE_KEY  should be the long service_role JWT starting with 'eyJ',");
+  console.error("                             found under Project Settings > API. It is not the project ref.");
+  process.exit(1);
+}
+
 const audit = JSON.parse(await readFile(auditPath, "utf8"));
 const availableFiles = new Set(await readdir(optimizedDir));
 const storageHost = new URL(supabaseUrl).hostname;
@@ -117,10 +133,21 @@ for (const url of candidateUrls) {
     continue;
   }
 
-  const [{ count: productCount }, { count: galleryCount }] = await Promise.all([
+  const [productResult, galleryResult] = await Promise.all([
     supabase.from("products").select("id", { count: "exact", head: true }).eq("image_url", url),
     supabase.from("product_images").select("id", { count: "exact", head: true }).eq("image_url", url)
   ]);
+
+  // A failed query also yields a null count, which is indistinguishable from a
+  // genuine zero. Treat it as fatal rather than silently skipping the image.
+  const queryError = productResult.error || galleryResult.error;
+  if (queryError) {
+    console.error(`Query failed while checking ${filename}: ${queryError.message}`);
+    process.exit(1);
+  }
+
+  const productCount = productResult.count;
+  const galleryCount = galleryResult.count;
 
   if (!productCount && !galleryCount) {
     skipped.push({ url, reason: "no rows reference it (already migrated?)" });
