@@ -106,7 +106,7 @@ function EmptyState({ icon: Icon, title, text, actionHref, actionLabel }) {
       <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#C9962D] shadow-soft">
         <Icon className="h-5 w-5" />
       </span>
-      <h3 className="mt-4 font-display text-2xl font-semibold text-[#7A183D]">{title}</h3>
+      <h3 className="mt-4 font-display text-xl font-semibold text-[#7A183D] sm:text-2xl">{title}</h3>
       <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-[#3A2417]/62">{text}</p>
       {actionHref ? (
         <Link href={actionHref} className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-[#621330]">
@@ -121,37 +121,39 @@ function EmptyState({ icon: Icon, title, text, actionHref, actionLabel }) {
 function SummaryCard({ icon: Icon, label, value, text, onClick }) {
   const content = (
     <>
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FFF8EE] text-[#C9962D] shadow-soft">
-        <Icon className="h-5 w-5" />
-      </span>
-      <span className="text-right">
-        <span className="block font-display text-3xl font-semibold text-[#7A183D]">{value}</span>
-        <span className="mt-1 block text-xs font-bold uppercase tracking-[0.14em] text-[#C9962D]">{label}</span>
+      <span className="flex items-start justify-between gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FFF8EE] text-[#C9962D] shadow-soft">
+          <Icon className="h-5 w-5" />
+        </span>
+        <span className="min-w-0 text-right">
+          <span className="block font-display text-3xl font-semibold leading-none text-[#7A183D]">{value}</span>
+          <span className="mt-1.5 block break-words text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#C9962D]">{label}</span>
+        </span>
       </span>
       <span className="mt-4 block text-sm font-medium leading-6 text-[#3A2417]/62">{text}</span>
     </>
   );
 
   return onClick ? (
-    <button type="button" onClick={onClick} className="rounded-xl border border-[rgba(122,24,61,0.12)] bg-white/86 p-4 text-left shadow-soft transition hover:-translate-y-0.5 hover:border-[#C9962D]/50">
-      <span className="flex items-start justify-between gap-4">{content}</span>
+    <button type="button" onClick={onClick} className="block min-w-0 rounded-xl border border-[rgba(122,24,61,0.12)] bg-white/86 p-4 text-left shadow-soft transition hover:-translate-y-0.5 hover:border-[#C9962D]/50">
+      {content}
     </button>
   ) : (
-    <article className="rounded-xl border border-[rgba(122,24,61,0.12)] bg-white/86 p-4 shadow-soft transition hover:-translate-y-0.5 hover:border-[#C9962D]/50">
-      <div className="flex items-start justify-between gap-4">{content}</div>
+    <article className="min-w-0 rounded-xl border border-[rgba(122,24,61,0.12)] bg-white/86 p-4 shadow-soft transition hover:-translate-y-0.5 hover:border-[#C9962D]/50">
+      {content}
     </article>
   );
 }
 
 function DetailRow({ icon: Icon, label, value }) {
   return (
-    <div className="flex gap-3 rounded-lg border border-[rgba(122,24,61,0.1)] bg-[#FFF8EE]/72 p-3">
+    <div className="flex min-w-0 gap-3 rounded-lg border border-[rgba(122,24,61,0.1)] bg-[#FFF8EE]/72 p-3">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#C9962D]">
         <Icon className="h-4 w-4" />
       </span>
-      <span className="min-w-0">
+      <span className="min-w-0 flex-1">
         <span className="block text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#C9962D]">{label}</span>
-        <span className="mt-1 block break-words text-sm font-semibold leading-6 text-[#3A2417]">{value}</span>
+        <span className="mt-1 block text-sm font-semibold leading-6 text-[#3A2417] [overflow-wrap:anywhere]">{value}</span>
       </span>
     </div>
   );
@@ -161,7 +163,7 @@ function ProductMiniCard({ product, actionLabel, actionIcon: ActionIcon, onActio
   if (!product) return null;
 
   return (
-    <article className="grid grid-cols-[5rem_1fr] gap-3 rounded-xl border border-[rgba(122,24,61,0.12)] bg-white/88 p-3 shadow-soft transition hover:-translate-y-0.5 hover:border-[#C9962D]/45">
+    <article className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-3 rounded-xl border border-[rgba(122,24,61,0.12)] bg-white/88 p-3 shadow-soft transition hover:-translate-y-0.5 hover:border-[#C9962D]/45 sm:grid-cols-[5rem_minmax(0,1fr)]">
       <Link href={`/products/${product.slug}`} className="relative aspect-square overflow-hidden rounded-lg bg-[#FFF8EE]">
         <ProductImage src={product.image} alt={product.name} fill sizes="96px" className="object-cover" />
       </Link>
@@ -324,7 +326,7 @@ export default function AccountExperience({ products = [] }) {
                 </span>
                 <div className="min-w-0">
                   <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#C9962D]">Welcome back</p>
-                  <h1 className="mt-2 break-words font-display text-3xl font-semibold leading-tight text-[#7A183D] sm:text-5xl">{customerName}</h1>
+                  <h1 className="mt-2 break-words font-display text-2xl font-semibold leading-tight text-[#7A183D] sm:text-4xl lg:text-5xl">{customerName}</h1>
                   <p className="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#3A2417]/66">
                     Your boutique shopping space for orders, saved favourites and Karari Beauty account details.
                   </p>
@@ -343,27 +345,27 @@ export default function AccountExperience({ products = [] }) {
             </div>
           </div>
 
-          <div className="grid gap-0 lg:grid-cols-[17rem_1fr]">
-            <aside className="border-b border-[rgba(122,24,61,0.12)] bg-[#FFF8EE]/72 p-3 lg:border-b-0 lg:border-r lg:p-4">
-              <div className="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-2 lg:overflow-visible lg:pb-0">
+          <div className="grid grid-cols-1 gap-0 lg:grid-cols-[17rem_minmax(0,1fr)]">
+            <aside className="min-w-0 border-b border-[rgba(122,24,61,0.12)] bg-[#FFF8EE]/72 p-3 lg:border-b-0 lg:border-r lg:p-4">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1">
                 {tabs.map(({ key, label, icon: Icon }) => (
                   <button
                     key={key}
                     type="button"
                     onClick={() => changeSection(key)}
-                    className={`flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-bold transition lg:w-full ${
+                    className={`flex min-h-11 min-w-0 items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold leading-tight transition sm:text-sm lg:w-full ${
                       activeSection === key
                         ? "bg-[#7A183D] text-white shadow-soft"
                         : "bg-white/70 text-[#3A2417]/72 hover:bg-[#FCE7EC] hover:text-[#7A183D]"
                     }`}
                   >
-                    <Icon className="h-4 w-4" />
-                    {label}
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0">{label}</span>
                   </button>
                 ))}
-                <button type="button" onClick={logout} className="flex min-h-11 shrink-0 items-center gap-2 rounded-lg bg-white/70 px-3 text-sm font-bold text-[#7A183D] transition hover:bg-[#FCE7EC] lg:w-full">
-                  <LogOut className="h-4 w-4" />
-                  Logout
+                <button type="button" onClick={logout} className="col-span-2 flex min-h-11 min-w-0 items-center gap-2 rounded-lg bg-white/70 px-3 py-2 text-left text-xs font-bold leading-tight text-[#7A183D] transition hover:bg-[#FCE7EC] sm:col-span-3 sm:text-sm lg:col-span-1 lg:w-full">
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  <span className="min-w-0">Logout</span>
                 </button>
               </div>
             </aside>
@@ -378,13 +380,13 @@ export default function AccountExperience({ products = [] }) {
               {activeSection === "overview" ? (
                 <div className="space-y-6">
                   <SectionTitle eyebrow="Account overview" title="Your Karari Beauty dashboard" text="A quick view of your saved shopping activity and account details." />
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <SummaryCard icon={ShoppingBag} label="Total Orders" value={orders.length} text="Orders placed from this browser." onClick={() => changeSection("orders")} />
                     <SummaryCard icon={Heart} label="Wishlist Items" value={wishlistProducts.length} text="Products saved for later." onClick={() => changeSection("wishlist")} />
                     <SummaryCard icon={MapPin} label="Saved Addresses" value={addressCount} text="Delivery details on your profile." onClick={() => changeSection("addresses")} />
                     <SummaryCard icon={Clock3} label="Recently Viewed" value={recentlyViewed.length} text="Products you explored recently." onClick={() => changeSection("viewed")} />
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <Link href="/" className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#7A183D] px-4 text-sm font-bold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-[#621330]">Continue Shopping</Link>
                     <button type="button" onClick={() => changeSection("orders")} className="inline-flex min-h-12 items-center justify-center rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-4 text-sm font-bold text-[#7A183D] transition hover:border-[#C9962D]">View Orders</button>
                     <button type="button" onClick={() => changeSection("wishlist")} className="inline-flex min-h-12 items-center justify-center rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-4 text-sm font-bold text-[#7A183D] transition hover:border-[#C9962D]">View Wishlist</button>
@@ -396,7 +398,7 @@ export default function AccountExperience({ products = [] }) {
               {activeSection === "profile" ? (
                 <div className="space-y-5">
                   <SectionTitle eyebrow="Profile details" title="Your saved information" text="These details are read from your Karari Beauty account profile." />
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     <DetailRow icon={UserRound} label="Name" value={profileValue(profile.full_name, customerName)} />
                     <DetailRow icon={Mail} label="Email" value={profileValue(user?.email)} />
                     <DetailRow icon={Phone} label="Mobile" value={profileValue(profile.phone || profile.mobile)} />
@@ -414,9 +416,9 @@ export default function AccountExperience({ products = [] }) {
                   {address ? (
                     <article className="rounded-xl border border-[rgba(122,24,61,0.12)] bg-white/88 p-5 shadow-soft">
                       <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <h3 className="font-display text-2xl font-semibold text-[#7A183D]">{profileValue(profile.full_name, customerName)}</h3>
-                          <p className="mt-2 text-sm font-semibold leading-6 text-[#3A2417]/72">{address}</p>
+                        <div className="min-w-0">
+                          <h3 className="break-words font-display text-xl font-semibold text-[#7A183D] sm:text-2xl">{profileValue(profile.full_name, customerName)}</h3>
+                          <p className="mt-2 break-words text-sm font-semibold leading-6 text-[#3A2417]/72">{address}</p>
                           <p className="mt-2 text-sm font-semibold text-[#3A2417]/62">{profileValue(profile.phone || profile.mobile, "Mobile not added")}</p>
                         </div>
                         <span className="rounded-full border border-[#C9962D]/32 bg-[#FFF8EE] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A183D]">Default</span>
@@ -441,8 +443,8 @@ export default function AccountExperience({ products = [] }) {
                           <article key={orderId} className="rounded-xl border border-[rgba(122,24,61,0.12)] bg-white/88 p-4 shadow-soft">
                             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                               <div className="min-w-0">
-                                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">Order {orderId}</p>
-                                <h3 className="mt-2 font-display text-2xl font-semibold text-[#7A183D]">{formatDate(order.createdAt)}</h3>
+                                <p className="break-words text-xs font-bold uppercase tracking-[0.16em] text-[#C9962D]">Order {orderId}</p>
+                                <h3 className="mt-2 font-display text-xl font-semibold text-[#7A183D] sm:text-2xl">{formatDate(order.createdAt)}</h3>
                                 <p className="mt-1 text-sm font-semibold text-[#3A2417]/62">{getItemCount(order)} item{getItemCount(order) === 1 ? "" : "s"} • {formatCurrency(getOrderTotal(order))}</p>
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
@@ -485,7 +487,7 @@ export default function AccountExperience({ products = [] }) {
                 <div className="space-y-5">
                   <SectionTitle eyebrow="Wishlist" title="Saved favourites" text="Keep your favourite Karari Beauty picks close while you decide." />
                   {wishlistProducts.length ? (
-                    <div className="grid gap-3 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       {wishlistProducts.map((product) => (
                         <ProductMiniCard
                           key={product.id}
@@ -509,7 +511,7 @@ export default function AccountExperience({ products = [] }) {
                 <div className="space-y-5">
                   <SectionTitle eyebrow="Recently viewed" title="Products you explored" text="A compact history of your recent product browsing." />
                   {recentlyViewed.length ? (
-                    <div className="grid gap-3 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       {recentlyViewed.map((product) => (
                         <ProductMiniCard key={product.id} product={product} secondaryLabel="View Product" secondaryHref={`/products/${product.slug}`} />
                       ))}
@@ -523,15 +525,15 @@ export default function AccountExperience({ products = [] }) {
               {activeSection === "security" ? (
                 <div className="space-y-5">
                   <SectionTitle eyebrow="Account security" title="Sign-in and privacy" text="A simple view of how your Karari Beauty account is connected." />
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     <DetailRow icon={Mail} label="Account Email" value={profileValue(user?.email)} />
                     <DetailRow icon={KeyRound} label="Sign-in Method" value={provider === "google" ? "Google connected account" : "Email and password"} />
                     <DetailRow icon={BadgeCheck} label="Account Status" value={user?.email_confirmed_at ? "Email verified" : "Verification pending"} />
                     <DetailRow icon={CreditCard} label="Shopping Protection" value="Secure checkout and order support" />
                   </div>
                   <div className="flex flex-col gap-3 rounded-xl border border-[rgba(122,24,61,0.12)] bg-white/88 p-4 shadow-soft sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h3 className="font-display text-2xl font-semibold text-[#7A183D]">Need to leave?</h3>
+                    <div className="min-w-0">
+                      <h3 className="font-display text-xl font-semibold text-[#7A183D] sm:text-2xl">Need to leave?</h3>
                       <p className="mt-1 text-sm font-semibold leading-6 text-[#3A2417]/62">Logout keeps your account secure on shared devices.</p>
                     </div>
                     <button type="button" onClick={logout} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#7A183D] px-5 text-sm font-bold text-white shadow-soft transition hover:bg-[#621330]">

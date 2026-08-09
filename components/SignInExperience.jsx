@@ -13,8 +13,12 @@ import {
   Sparkles,
   User
 } from "lucide-react";
-import { getPasswordProblem } from "@/lib/passwordPolicy";
-import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
+import { getPasswordProblem, MIN_PASSWORD_LENGTH } from "@/lib/passwordPolicy";
+import {
+  createBrowserSupabaseClient,
+  getRememberPreference,
+  setRememberPreference
+} from "@/lib/supabase/browser";
 
 const initialErrors = {};
 
@@ -71,15 +75,90 @@ function getOAuthCallbackUrl(nextPath) {
   return url.toString();
 }
 
-function friendlyAuthError(error) {
+function getEmailConfirmRedirectUrl(nextPath) {
+  return getOAuthCallbackUrl(nextPath);
+}
+
+function getPasswordResetRedirectUrl() {
+  return new URL("/auth/reset-password", CANONICAL_ORIGIN).toString();
+}
+
+/**
+ * Turns a Supabase Auth failure into a message the customer can act on.
+ *
+ * Every branch returns copy we author here - Supabase messages, status codes
+ * and any database detail are never surfaced to the browser.
+ */
+function friendlyAuthError(error, context = "sign-in") {
+  const code = String(error?.code || error?.error_code || "").toLowerCase();
   const message = String(error?.message || "").toLowerCase();
-  if (message.includes("invalid login credentials")) return "Invalid email or password.";
-  if (message.includes("already registered") || message.includes("already exists") || message.includes("user already registered")) {
-    return "This email is already registered. Please sign in.";
+  const status = Number(error?.status) || 0;
+  const has = (...needles) => needles.some((needle) => message.includes(needle));
+
+  // Supabase retries 5xx responses and reports them as retryable fetch errors,
+  // so the server case has to be separated from a genuine connectivity failure.
+  if (code === "unexpected_failure" || status >= 500 || has("database error", "internal server error")) {
+    return context === "register"
+      ? "We could not create your account right now. Please try again in a moment."
+      : "Something went wrong on our side. Please try again in a moment.";
   }
-  if (message.includes("email not confirmed")) return "Please verify your email, then sign in.";
-  if (message.includes("password")) return "Password must be at least 6 characters.";
-  return "Unable to continue. Please try again.";
+
+  if (error?.name === "AuthRetryableFetchError" || has("failed to fetch", "networkerror", "network request failed", "load failed")) {
+    return "We could not reach Karari Beauty. Please check your internet connection and try again.";
+  }
+
+  if (code === "user_already_exists" || has("already registered", "already exists", "user already registered")) {
+    return "An account with this email already exists. Please sign in instead.";
+  }
+
+  if (code === "invalid_credentials" || has("invalid login credentials")) {
+    return "Invalid email or password. Please check and try again.";
+  }
+
+  if (code === "email_not_confirmed" || has("email not confirmed")) {
+    return "Please verify your email address first, then sign in.";
+  }
+
+  if (code === "email_address_invalid" || code === "validation_failed" || has("invalid email", "unable to validate email", "email address is invalid")) {
+    return "Please enter a valid email address.";
+  }
+
+  if (code === "weak_password" || has("password should be", "password is too weak", "weak password", "password should contain")) {
+    return `Please choose a stronger password - at least ${MIN_PASSWORD_LENGTH} characters with letters and numbers.`;
+  }
+
+  if (code === "same_password" || has("should be different from the old password")) {
+    return "Your new password must be different from your current password.";
+  }
+
+  if (code === "over_email_send_rate_limit" || code === "over_request_rate_limit" || status === 429 || has("rate limit", "for security purposes", "only request this after", "too many requests")) {
+    return "Too many attempts from this device. Please wait a minute and try again.";
+  }
+
+  if (code === "signup_disabled" || code === "email_provider_disabled" || has("signups not allowed", "email logins are disabled", "provider is not enabled")) {
+    return context === "register"
+      ? "New account sign-ups are temporarily unavailable. Please try again later."
+      : "Email sign-in is temporarily unavailable. Please try again later.";
+  }
+
+  if (code === "user_not_found" || has("user not found")) {
+    return "We could not find an account with that email address.";
+  }
+
+  if (context === "register") return "We could not create your account right now. Please try again.";
+  if (context === "reset") return "Password reset email could not be sent. Please check your email address and try again.";
+  return "We could not sign you in right now. Please try again.";
+}
+
+/**
+ * With email confirmations on, Supabase answers a signup for an existing
+ * address with a success payload carrying an obfuscated user and an empty
+ * `identities` array rather than an error.
+ */
+function isExistingAccountSignUp(data) {
+  const user = data?.user;
+  if (!user || data?.session) return false;
+  return Array.isArray(user.identities) && user.identities.length === 0;
 }
 
 function BrandMark({ compact = false }) {
@@ -297,16 +376,19 @@ function TrustMessage() {
 export default function SignInExperience() {
   const [mode, setMode] = useState("sign-in");
   const [notice, setNotice] = useState("");
+  const [successNotice, setSuccessNotice] = useState("");
   const [verificationEmail, setVerificationEmail] = useState("");
+  const [resetSentEmail, setResetSentEmail] = useState("");
   const [errors, setErrors] = useState(initialErrors);
   const [submitting, setSubmitting] = useState(false);
   const [redirectTo, setRedirectTo] = useState("/");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [googleRedirecting, setGoogleRedirecting] = useState(false);
   const [form, setForm] = useState({
     email: "",
     password: "",
+    resetEmail: "",
     fullName: "",
     registerCountry: "IN",
     registerMobile: "",
@@ -316,6 +398,7 @@ export default function SignInExperience() {
   });
 
   const isRegister = mode === "register";
+  const isForgot = mode === "forgot";
   const isCheckoutRedirect = redirectTo.startsWith("/checkout");
 
   useEffect(() => {
@@ -323,19 +406,31 @@ export default function SignInExperience() {
     setRedirectTo(getSafeRedirect(params.get("redirect")));
     if (params.get("mode") === "register") setMode("register");
     if (params.get("auth_error") === "google") setNotice("Google sign-in could not be completed. Please try again.");
+    if (params.get("reset") === "success") {
+      setSuccessNotice("Your password has been updated. Please sign in with your new password.");
+    }
+    setRememberMe(getRememberPreference());
   }, []);
 
   const switchMode = (nextMode) => {
     setMode(nextMode);
     setErrors(initialErrors);
     setNotice("");
+    setSuccessNotice("");
     setVerificationEmail("");
+    setResetSentEmail("");
   };
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: "" }));
     setNotice("");
+    setSuccessNotice("");
+  };
+
+  const updateRememberMe = (remember) => {
+    setRememberMe(remember);
+    setRememberPreference(remember);
   };
 
   const startGoogleSignIn = async () => {
@@ -366,7 +461,10 @@ export default function SignInExperience() {
   const validate = () => {
     const nextErrors = {};
 
-    if (isRegister) {
+    if (isForgot) {
+      if (!form.resetEmail.trim()) nextErrors.resetEmail = "Email is required.";
+      else if (!isValidEmail(form.resetEmail)) nextErrors.resetEmail = "Please enter a valid email address.";
+    } else if (isRegister) {
       if (!form.fullName.trim()) nextErrors.fullName = "Full name is required.";
       if (!form.registerMobile.trim()) nextErrors.registerMobile = "Mobile number is required.";
       else if (!isValidMobile(form.registerMobile, form.registerCountry)) nextErrors.registerMobile = "Please enter a valid phone number.";
@@ -404,14 +502,32 @@ export default function SignInExperience() {
 
     setSubmitting(true);
     setNotice("");
+    setSuccessNotice("");
     setVerificationEmail("");
 
     try {
+      if (isForgot) {
+        const resetEmail = form.resetEmail.trim();
+        const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+          redirectTo: getPasswordResetRedirectUrl()
+        });
+
+        if (error) throw error;
+
+        setResetSentEmail(resetEmail);
+        return;
+      }
+
+      // The session is written to localStorage or sessionStorage depending on
+      // this preference, so it has to be recorded before Supabase stores it.
+      setRememberPreference(isRegister ? true : rememberMe);
+
       const result = isRegister
         ? await supabase.auth.signUp({
             email: form.registerEmail.trim(),
             password: form.registerPassword,
             options: {
+              emailRedirectTo: getEmailConfirmRedirectUrl(redirectTo),
               data: {
                 full_name: form.fullName.trim(),
                 phone: getInternationalPhone(form.registerMobile, form.registerCountry),
@@ -427,21 +543,49 @@ export default function SignInExperience() {
 
       if (result.error) throw result.error;
 
+      if (isRegister && isExistingAccountSignUp(result.data)) {
+        setNotice("An account with this email already exists. Please sign in instead.");
+        return;
+      }
+
       if (isRegister && !result.data?.session) {
         setVerificationEmail(form.registerEmail.trim());
         setNotice("");
         return;
       }
 
-      setNotice(isRegister ? "Account created successfully. Redirecting..." : "Signed in successfully. Redirecting...");
+      setSuccessNotice(isRegister ? "Account created successfully. Redirecting..." : "Signed in successfully. Redirecting...");
       window.dispatchEvent(new Event("customerAuth:updated"));
       window.setTimeout(() => window.location.assign(redirectTo), 450);
     } catch (error) {
-      setNotice(friendlyAuthError(error));
+      setNotice(friendlyAuthError(error, isForgot ? "reset" : isRegister ? "register" : "sign-in"));
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (resetSentEmail) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#FFF8EE] px-4 py-8 text-[#3A2417]">
+        <section className="w-full max-w-[460px] rounded-[24px] border border-[#7A183D]/14 bg-white p-6 text-center shadow-boutique sm:p-8">
+          <BrandMark compact />
+          <span className="mx-auto mt-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#FCE7EC] text-[#7A183D]">
+            <Mail className="h-6 w-6" />
+          </span>
+          <h1 className="mt-4 font-display text-3xl font-semibold text-[#7A183D]">Check your email</h1>
+          <p className="mt-3 break-words text-sm font-semibold leading-6 text-[#3A2417]/72">
+            If an account exists for {resetSentEmail}, we have sent a password reset link to it.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-[#3A2417]/62">
+            The link opens Karari Beauty where you can set a new password. It expires after a short while, so please use it soon.
+          </p>
+          <button type="button" onClick={() => switchMode("sign-in")} className="mt-6 h-12 w-full rounded-md bg-[#7A183D] px-5 text-sm font-bold text-[#FFF8EE] shadow-soft transition hover:bg-[#621330]">
+            Back to Sign In
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   if (verificationEmail) {
     return (
@@ -471,18 +615,38 @@ export default function SignInExperience() {
           <div className="mx-auto flex w-full min-w-0 max-w-[480px] flex-col overflow-hidden lg:my-auto">
             <div className="text-center">
               <h1 className="font-display text-[2rem] font-semibold leading-tight text-[#7A183D] sm:text-[2.25rem] lg:text-[2rem]">
-                {isRegister ? "Create Account" : "Sign In"}
+                {isForgot ? "Forgot Password" : isRegister ? "Create Account" : "Sign In"}
               </h1>
               <div className="mt-3 lg:mt-2"><Ornament /></div>
               <p className="mx-auto mt-3 max-w-sm text-sm font-medium leading-6 text-[#3A2417]/66 lg:mt-2 lg:text-xs lg:leading-5">
-                {isRegister ? "Create your account and start your journey with us." : isCheckoutRedirect ? "Welcome back! Sign in to continue secure checkout." : "Welcome back! Please sign in to continue."}
+                {isForgot
+                  ? "Enter the email address on your account and we will send you a link to set a new password."
+                  : isRegister
+                    ? "Create your account and start your journey with us."
+                    : isCheckoutRedirect
+                      ? "Welcome back! Sign in to continue secure checkout."
+                      : "Welcome back! Please sign in to continue."}
               </p>
             </div>
 
-            <div className="mt-6 lg:mt-3"><AuthTabs isRegister={isRegister} onChange={switchMode} /></div>
+            {!isForgot ? <div className="mt-6 lg:mt-3"><AuthTabs isRegister={isRegister} onChange={switchMode} /></div> : null}
 
             <form onSubmit={submit} className="mt-5 w-full min-w-0 max-w-full space-y-3 lg:mt-3 lg:space-y-2">
-              {isRegister ? (
+              {isForgot ? (
+                <>
+                  <Field label="Email address" error={errors.resetEmail}>
+                    <TextInput icon={Mail} name="resetEmail" type="email" value={form.resetEmail} onChange={(event) => updateField("resetEmail", event.target.value)} placeholder="Email address" autoComplete="email" />
+                  </Field>
+
+                  <button type="submit" disabled={submitting} className="mt-1 h-12 w-full rounded-md bg-[#7A183D] px-5 text-sm font-bold text-[#FFF8EE] shadow-[0_10px_24px_rgba(122,24,61,0.18)] transition hover:bg-[#621330] disabled:cursor-not-allowed disabled:opacity-60 lg:h-10">
+                    {submitting ? "Sending Reset Link..." : "Send Reset Link"}
+                  </button>
+
+                  <button type="button" onClick={() => switchMode("sign-in")} className="h-11 w-full rounded-md border border-[#7A183D]/18 bg-white text-sm font-semibold text-[#7A183D] transition hover:border-[#7A183D]/38 hover:bg-[#FFF8EE] lg:h-9">
+                    Back to Sign In
+                  </button>
+                </>
+              ) : isRegister ? (
                 <>
                   <Field label="Full name" error={errors.fullName}>
                     <TextInput icon={User} name="fullName" value={form.fullName} onChange={(event) => updateField("fullName", event.target.value)} placeholder="Full name" autoComplete="name" />
@@ -520,12 +684,23 @@ export default function SignInExperience() {
                   </Field>
                   <PasswordField label="Password" error={errors.password} name="password" value={form.password} onChange={(event) => updateField("password", event.target.value)} placeholder="Password" autoComplete="current-password" />
 
-                  <div className="flex items-center justify-between gap-4 py-1 text-xs font-medium">
+                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-1 text-xs font-medium">
                     <label className="flex cursor-pointer items-center gap-2 text-[#3A2417]/70">
-                      <input type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} className="h-4 w-4 accent-[#7A183D]" />
-                      Remember me
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(event) => updateRememberMe(event.target.checked)}
+                        className="h-4 w-4 accent-[#7A183D]"
+                      />
+                      Keep me signed in
                     </label>
-                    <span className="font-semibold text-[#7A183D]">Forgot password?</span>
+                    <button
+                      type="button"
+                      onClick={() => switchMode("forgot")}
+                      className="font-semibold text-[#7A183D] underline-offset-4 transition hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C9962D]"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
 
                   <button type="submit" disabled={submitting} className="mt-1 h-12 w-full rounded-md bg-[#7A183D] px-5 text-sm font-bold text-[#FFF8EE] shadow-[0_10px_24px_rgba(122,24,61,0.18)] transition hover:bg-[#621330] disabled:cursor-not-allowed disabled:opacity-60 lg:h-10">
@@ -550,20 +725,30 @@ export default function SignInExperience() {
               )}
             </form>
 
+            {successNotice ? (
+              <p role="status" className="mt-4 rounded-md border border-[#C9962D]/32 bg-[#FFF8EE] p-3 text-sm font-semibold text-[#7A183D]">
+                {successNotice}
+              </p>
+            ) : null}
+
             {notice ? (
-              <p role="status" className="mt-4 rounded-md border border-[#7A183D]/14 bg-[#FCE7EC] p-3 text-sm font-semibold text-[#7A183D]">
+              <p role="alert" className="mt-4 rounded-md border border-[#7A183D]/14 bg-[#FCE7EC] p-3 text-sm font-semibold text-[#7A183D]">
                 {notice}
               </p>
             ) : null}
 
-            <div className="mt-5 flex items-center gap-3 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#3A2417]/42 lg:mt-3">
-              <span className="h-px flex-1 bg-[#3A2417]/10" />
-              {isRegister ? "Already a member?" : "New to Karari Beauty?"}
-              <span className="h-px flex-1 bg-[#3A2417]/10" />
-            </div>
-            <button type="button" onClick={() => switchMode(isRegister ? "sign-in" : "register")} className="mt-3 h-11 w-full rounded-md border border-[#7A183D]/18 bg-white text-sm font-semibold text-[#7A183D] transition hover:border-[#7A183D]/38 hover:bg-[#FFF8EE] lg:mt-2 lg:h-9">
-              {isRegister ? "Sign In" : "Create Account"}
-            </button>
+            {!isForgot ? (
+              <>
+                <div className="mt-5 flex items-center gap-3 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#3A2417]/42 lg:mt-3">
+                  <span className="h-px flex-1 bg-[#3A2417]/10" />
+                  {isRegister ? "Already a member?" : "New to Karari Beauty?"}
+                  <span className="h-px flex-1 bg-[#3A2417]/10" />
+                </div>
+                <button type="button" onClick={() => switchMode(isRegister ? "sign-in" : "register")} className="mt-3 h-11 w-full rounded-md border border-[#7A183D]/18 bg-white text-sm font-semibold text-[#7A183D] transition hover:border-[#7A183D]/38 hover:bg-[#FFF8EE] lg:mt-2 lg:h-9">
+                  {isRegister ? "Sign In" : "Create Account"}
+                </button>
+              </>
+            ) : null}
 
             {!isCheckoutRedirect ? (
               <Link href="/" className="mt-3 block text-center text-xs font-semibold text-[#3A2417]/55 underline-offset-4 transition hover:text-[#7A183D] hover:underline lg:mt-2">
