@@ -42,7 +42,10 @@ async function copyTextToClipboard(text) {
   }
 }
 
-function createProductWhatsAppUrl(product, productUrl) {
+// `format` is passed in rather than pulled from the currency hook: this is a
+// plain helper, not a component, so it cannot call hooks. It also means the
+// message quotes the price in the currency the customer was actually shown.
+function createProductWhatsAppUrl(product, productUrl, format) {
   const whatsappNumber = String(businessSettings.whatsappNumber || "917435984499").replace(/[^\d]/g, "") || "917435984499";
   const message = [
     "Hello Karari Beauty,",
@@ -106,7 +109,7 @@ export default function QuickViewModal({ product, onClose, products = localProdu
 
   const isWished = wishlistIds.includes(product.id);
   const productUrl = getCanonicalProductUrl(product, typeof window !== "undefined" ? window.location.pathname : "");
-  const whatsappUrl = createProductWhatsAppUrl(product, productUrl);
+  const whatsappUrl = createProductWhatsAppUrl(product, productUrl, format);
 
   const buyNow = () => {
     setBuyNowItem(product, 1);

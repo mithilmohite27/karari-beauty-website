@@ -76,7 +76,9 @@ const initialForm = {
   orderType: "Domestic Order"
 };
 
-function buildWhatsAppOrderUrl(order) {
+// Takes `format` as an argument for the same reason as the product helper in
+// QuickViewModal: it is a plain function and cannot call the currency hook.
+function buildWhatsAppOrderUrl(order, format) {
   const message = [
     "Hi Karari Beauty,",
     "I have submitted an order request.",
@@ -726,7 +728,7 @@ export default function CheckoutPageExperience({ products = localProducts, siteS
                 View Collections
               </Link>
               <a
-                href={buildWhatsAppOrderUrl(submittedOrder)}
+                href={buildWhatsAppOrderUrl(submittedOrder, format)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-[rgba(122,24,61,0.14)] bg-[#FFF8EE] px-4 text-sm font-bold text-[#3A2417] transition hover:border-[#C9962D] hover:text-[#7A183D]"
