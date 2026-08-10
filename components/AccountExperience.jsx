@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -310,7 +309,7 @@ export default function AccountExperience({ products = [] }) {
     <main className="min-h-screen overflow-x-hidden bg-[linear-gradient(135deg,#FFF8EE_0%,#FCE7EC_58%,#FFF8EE_100%)] px-3 py-5 text-[#3A2417] sm:px-6 sm:py-7 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <Link href="/" className="inline-flex items-center gap-3" aria-label="Go to Karari Beauty home">
-          <Image src="/logo.png" alt="Karari Beauty logo" width={52} height={52} priority className="h-[3.25rem] w-[3.25rem] rounded-full border border-[rgba(201,150,45,0.32)] object-cover shadow-soft" />
+                  <img src="/logo.png" alt="Karari Beauty logo" width={52} height={52} loading="eager" className="h-[3.25rem] w-[3.25rem] rounded-full border border-[rgba(201,150,45,0.32)] object-cover shadow-soft" />
           <span>
             <span className="block font-display text-2xl font-semibold text-[#3A2417]">Karari Beauty</span>
             <span className="mt-1 block text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Customer Account</span>

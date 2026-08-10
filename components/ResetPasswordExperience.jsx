@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2, Eye, EyeOff, LockKeyhole, ShieldAlert, Sparkles } from "lucide-react";
 import { getPasswordProblem, MIN_PASSWORD_LENGTH } from "@/lib/passwordPolicy";
@@ -55,12 +54,12 @@ function friendlyResetError(error) {
 function BrandMark() {
   return (
     <Link href="/" aria-label="Go to Karari Beauty home" className="inline-flex flex-col items-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9962D]">
-      <Image
+      <img
         src="/logo.png"
         alt="Karari Beauty logo"
         width={58}
         height={58}
-        priority
+        loading="eager"
         className="h-14 w-14 rounded-full border border-[rgba(201,150,45,0.34)] object-cover shadow-soft"
       />
       <span className="mt-2 font-display text-2xl font-semibold leading-none text-[#7A183D]">Karari Beauty</span>

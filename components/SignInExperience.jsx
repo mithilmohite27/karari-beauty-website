@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -164,12 +163,12 @@ function isExistingAccountSignUp(data) {
 function BrandMark({ compact = false }) {
   return (
     <Link href="/" aria-label="Go to Karari Beauty home" className="inline-flex flex-col items-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9962D]">
-      <Image
+      <img
         src="/logo.png"
         alt="Karari Beauty logo"
         width={compact ? 58 : 76}
         height={compact ? 58 : 76}
-        priority
+        loading={compact ? "eager" : "lazy"}
         className={`${compact ? "h-14 w-14" : "h-[4.5rem] w-[4.5rem]"} rounded-full border border-[rgba(201,150,45,0.34)] object-cover shadow-soft`}
       />
       <span className={`${compact ? "mt-2 text-2xl" : "mt-3 text-[2rem]"} font-display font-semibold leading-none text-[#7A183D]`}>Karari Beauty</span>
@@ -193,13 +192,12 @@ function AuthBrandPanel() {
 
   return (
     <aside className="min-w-0 overflow-hidden bg-[#FCEDEA] lg:relative lg:h-full lg:min-h-0">
-      <Image
+      <img
         src={imageSrc}
         alt=""
         width={1122}
         height={1402}
-        priority
-        sizes="(min-width: 1024px) 543px, 100vw"
+        loading="eager"
         className="h-auto w-full object-contain lg:absolute lg:inset-0 lg:h-full lg:w-full lg:object-cover lg:object-[center_48%]"
         onError={() => setImageSrc((current) => (current === AUTH_ARTWORK_FALLBACK_SRC ? current : AUTH_ARTWORK_FALLBACK_SRC))}
       />

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
@@ -69,7 +68,7 @@ export default function AdminLoginExperience() {
       <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-5xl items-center gap-5 lg:grid-cols-[1fr_420px]">
         <section className="rounded-3xl border border-[rgba(122,24,61,0.14)] bg-white/64 p-5 shadow-boutique backdrop-blur sm:p-8">
           <Link href="/" className="inline-flex items-center gap-3" aria-label="Go to Karari Beauty home">
-            <Image src="/logo.png" alt="Karari Beauty logo" width={52} height={52} priority className="h-12 w-12 rounded-full border border-[rgba(201,150,45,0.32)] bg-white object-cover shadow-soft" />
+          <img src="/logo.png" alt="Karari Beauty logo" width={52} height={52} loading="eager" className="h-12 w-12 rounded-full border border-[rgba(201,150,45,0.32)] bg-white object-cover shadow-soft" />
             <span>
               <span className="block font-display text-2xl font-semibold text-[#3A2417]">Karari Beauty</span>
               <span className="mt-1 block text-xs font-bold uppercase tracking-[0.2em] text-[#C9962D]">Admin Studio</span>

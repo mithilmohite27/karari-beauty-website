@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { BarChart3, CalendarDays, FolderTree, Image as ImageIcon, LogOut, Menu, Package, Settings, ShoppingBag, Users, X } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
@@ -48,7 +47,7 @@ function AdminSidebar({ open, onClose }) {
     <aside className={`${open ? "fixed inset-y-0 left-0 z-50 w-72" : "hidden"} border-r border-[rgba(122,24,61,0.12)] bg-[#FFF8EE] p-4 shadow-boutique lg:static lg:block lg:w-72 lg:shadow-none`}>
       <div className="flex items-center justify-between gap-3">
         <Link href="/admin" className="flex items-center gap-3">
-          <Image src="/logo.png" alt="Karari Beauty logo" width={42} height={42} className="h-10 w-10 rounded-full border border-[rgba(201,150,45,0.32)] object-cover" />
+                  <img src="/logo.png" alt="Karari Beauty logo" width={42} height={42} loading="eager" className="h-10 w-10 rounded-full border border-[rgba(201,150,45,0.32)] object-cover" />
           <span>
             <span className="block font-display text-xl font-semibold text-[#3A2417]">Karari Beauty</span>
             <span className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-[#C9962D]">Admin</span>
