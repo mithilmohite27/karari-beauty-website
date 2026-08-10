@@ -1263,10 +1263,9 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, p
 }
 function GiftCombos({ onView, products = localProducts }) {
   const { format } = useDisplayCurrency();
-  // Prefer linking to a real product page for hampers rather than opening
-  // the Quick View modal which is intended for single product previews.
-  const targetProduct = products.find((p) => p.category === "Gift Hampers");
-  const targetHref = targetProduct ? `/products/${targetProduct.slug}` : "/collections/gift-hampers";
+  // Link combos to the Gift Items collection to avoid 404s when specific
+  // hamper products are not present in the production catalog.
+  const targetHref = "/collections/gift-items";
 
   return (
     <section id="gifts" className="bg-white px-4 py-16 sm:px-6 lg:px-8">
