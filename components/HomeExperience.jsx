@@ -1359,12 +1359,11 @@ function getWhatsAppContactUrl(siteSettings) {
 }
 
 function BrandLogo({ src, alt, className, width, height, priority = false }) {
-  const isLocalAsset = String(src || "").startsWith("/");
-  if (!isLocalAsset) {
-    return <img src={src} alt={alt} width={width} height={height} className={className} loading={priority ? "eager" : "lazy"} />;
-  }
-
-  return <Image src={src} alt={alt} width={width} height={height} priority={priority} className={className} />;
+  // Use a plain <img> for logos (both local and remote). The Next.js image
+  // optimizer consumes Vercel image-transformation quota which can return
+  // 402 when exhausted; a small logo benefits little from that. Using a
+  // native img element keeps the experience stable.
+  return <img src={src} alt={alt} width={width} height={height} className={className} loading={priority ? "eager" : "lazy"} />;
 }
 
 function FooterTrustStrip() {
