@@ -5,12 +5,33 @@ import { useEffect, useState } from "react";
 
 const PRODUCT_IMAGE_FALLBACK = "/images/fallbacks/karari-product-fallback.svg";
 
-// SVG fallbacks are already tiny and vector; running them through the optimizer
-// costs a transform for no gain. Everything else (including Supabase Storage
-// originals, which are multi-MB PNGs) must go through next/image so it is
-// resized to the `sizes` hint and re-encoded as AVIF/WebP.
+/**
+ * Decide whether an image should bypass the Next.js image optimizer.
+ *
+ * Every trip through /_next/image consumes one Vercel image-transformation
+ * from a metered monthly allowance. When that allowance runs out the optimizer
+ * returns HTTP 402 and the image renders blank - which is exactly how a quota
+ * exhaustion presents itself: scattered "broken" images with working paths,
+ * usually the newest ones, because older transforms are still cached.
+ *
+ * Two categories genuinely gain nothing from a transform:
+ *
+ *   - SVG: already vector and tiny.
+ *   - Anything under the `optimized/` prefix in Storage. Those were produced by
+ *     scripts/publish-optimized-images.mjs: resized WebP, ~70 KB, already the
+ *     size they are displayed at. Re-encoding them buys nothing measurable and
+ *     spends a transform that a genuinely large upload will need instead.
+ *
+ * Serving these direct from Supabase's CDN keeps the allowance for images that
+ * actually need resizing, and means a future exhaustion can never blank out the
+ * product catalogue.
+ */
 function shouldSkipOptimization(src) {
-  return typeof src === "string" && src.endsWith(".svg");
+  if (typeof src !== "string") return false;
+  if (src.endsWith(".svg")) return true;
+
+  // Pre-optimized WebP produced by the storage migration.
+  return src.includes("/product-images/optimized/") && src.endsWith(".webp");
 }
 
 export default function ProductImage({ src, alt, fallbackSrc = PRODUCT_IMAGE_FALLBACK, onError, ...props }) {

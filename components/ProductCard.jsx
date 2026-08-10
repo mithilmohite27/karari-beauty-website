@@ -38,8 +38,14 @@ export default function ProductCard({ product, onView, onAddToCart, onBuyNow, on
         <button
           type="button"
           onClick={() => onToggleWishlist(product)}
-          className={`absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full border bg-white/92 shadow-soft transition sm:right-3 sm:top-3 ${
-            wished ? "border-[#7A183D] text-[#7A183D]" : "border-white/60 text-[#3A2417] hover:border-[#C9962D] hover:text-[#7A183D]"
+          // Solid white rather than white/92, a tinted border rather than
+          // white/60, and a real drop shadow. The old styling was a translucent
+          // white circle with a white edge, so it vanished against pale product
+          // photography - which is most of the catalogue.
+          className={`absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-[0_2px_8px_rgba(58,36,23,0.28)] ring-1 ring-black/5 transition sm:right-3 sm:top-3 ${
+            wished
+              ? "border-[#7A183D] text-[#7A183D]"
+              : "border-[rgba(58,36,23,0.16)] text-[#3A2417] hover:border-[#C9962D] hover:text-[#7A183D]"
           }`}
           aria-label={wished ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
         >

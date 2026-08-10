@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import ProductImage from "@/components/ProductImage";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ChevronRight } from "lucide-react";
@@ -139,7 +140,14 @@ export default function CollectionExperience({ category, products, relatedCatego
               </p>
             </div>
             <div className="relative min-h-[12rem] overflow-hidden sm:min-h-[18rem]">
-              <Image
+              {/*
+                ProductImage rather than next/image directly: it carries an
+                onError fallback. A bare next/image renders a blank box when the
+                source fails - which is how an exhausted image-optimization
+                quota (HTTP 402) presented itself here, as a hero that looked
+                deleted rather than one that failed to load.
+              */}
+              <ProductImage
                 src={category.image}
                 alt={`${category.name} collection at Karari Beauty`}
                 fill
