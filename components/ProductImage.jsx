@@ -30,8 +30,11 @@ function shouldSkipOptimization(src) {
   if (typeof src !== "string") return false;
   if (src.endsWith(".svg")) return true;
 
-  // Pre-optimized WebP produced by the storage migration.
-  return src.includes("/product-images/optimized/") && src.endsWith(".webp");
+  // Any WebP in our storage bucket is already compressed to display size -
+  // either by the one-off migration (publish-optimized-images.mjs) or, for
+  // anything uploaded since, by compressForStorage() in lib/data/media.js.
+  // Re-encoding it would spend a transformation to make it marginally smaller.
+  return src.includes(".supabase.co/storage/") && src.endsWith(".webp");
 }
 
 export default function ProductImage({ src, alt, fallbackSrc = PRODUCT_IMAGE_FALLBACK, onError, ...props }) {
