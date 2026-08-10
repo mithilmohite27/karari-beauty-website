@@ -1,0 +1,26 @@
+name: Image optimization check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  check-images:
+    name: Check images in PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run image optimization check
+        run: |
+          git fetch origin main || true
+          node scripts/check-images.mjs

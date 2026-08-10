@@ -10,9 +10,10 @@
     "supabase:seed": "node scripts/generate-supabase-seed.mjs",
     "images:compress": "node scripts/compress-static-assets.mjs",
     "images:publish": "node scripts/publish-optimized-images.mjs",
-    "images:publish:write": "node scripts/publish-optimized-images.mjs --write"
+    "images:publish:write": "node scripts/publish-optimized-images.mjs --write",
+    "check:images": "node scripts/check-images.mjs"
   },
-  "dependencies": {
+  "dependencies":  {
     "@supabase/supabase-js": "^2.110.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
