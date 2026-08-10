@@ -945,6 +945,7 @@ function HeroCarousel({ campaignActive, seasonalCampaign = localSeasonalCampaign
                 src={slide.image}
                 alt={slide.headline}
                 fill
+                unoptimized={true}
                 priority={activeSlide === 0}
                 fetchPriority={activeSlide === 0 ? "high" : "auto"}
                 sizes="100vw"
@@ -1047,7 +1048,7 @@ function CategorySection({ selectedCategory, categories = localCategories }) {
             >
               <div className="relative overflow-hidden">
                 <div className="relative aspect-[1.1/1] sm:aspect-[4/3]">
-                  <Image
+                  <ProductImage
                     src={category.image}
                     alt={`${category.name} collection at Karari Beauty`}
                     fill
