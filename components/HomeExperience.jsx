@@ -808,12 +808,30 @@ function Reveal({ children, className = "" }) {
   );
 }
 
+/**
+ * Typographic polish only - no colour, font or identity change.
+ *
+ * Three adjustments, all about rhythm rather than restyling:
+ *  - The eyebrow sat 12px from a 36px heading, so the two read as one block.
+ *    Tightened the eyebrow's own leading and opened the gap beneath it.
+ *  - The heading jumped 30px -> 36px with nothing between; a mid step at `md`
+ *    keeps the scale smooth on tablets instead of snapping.
+ *  - Descriptions ran the full 3xl container. Capping the measure near 65
+ *    characters is the readability convention; long lines are the single most
+ *    common reason body copy feels heavy.
+ */
 function SectionHeading({ eyebrow, title, description, align = "center" }) {
   return (
     <div className={align === "left" ? "max-w-2xl" : "mx-auto max-w-3xl text-center"}>
-      <p className="text-xs font-bold uppercase tracking-[0.28em] text-karariGold">{eyebrow}</p>
-      <h2 className="mt-3 font-display text-3xl font-semibold text-charcoal sm:text-4xl">{title}</h2>
-      {description ? <p className="mt-4 text-base leading-7 text-ink/65">{description}</p> : null}
+      <p className="text-xs font-bold uppercase leading-none tracking-[0.28em] text-karariGold">{eyebrow}</p>
+      <h2 className="mt-4 font-display text-3xl font-semibold leading-[1.15] tracking-[-0.01em] text-charcoal md:text-[2.125rem] sm:text-4xl">
+        {title}
+      </h2>
+      {description ? (
+        <p className={`mt-4 max-w-[62ch] text-base leading-7 text-ink/65 ${align === "left" ? "" : "mx-auto"}`}>
+          {description}
+        </p>
+      ) : null}
     </div>
   );
 }
