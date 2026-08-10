@@ -1263,6 +1263,11 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, p
 }
 function GiftCombos({ onView, products = localProducts }) {
   const { format } = useDisplayCurrency();
+  // Prefer linking to a real product page for hampers rather than opening
+  // the Quick View modal which is intended for single product previews.
+  const targetProduct = products.find((p) => p.category === "Gift Hampers");
+  const targetHref = targetProduct ? `/products/${targetProduct.slug}` : "/collections/gift-hampers";
+
   return (
     <section id="gifts" className="bg-white px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -1288,14 +1293,10 @@ function GiftCombos({ onView, products = localProducts }) {
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => onView(products.find((product) => product.category === "Gift Hampers") || products[0])}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-charcoal px-4 py-3 text-sm font-bold text-white transition hover:bg-wine"
-                >
+                <Link href={targetHref} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-charcoal px-4 py-3 text-sm font-bold text-white transition hover:bg-wine">
                   View Hamper Inquiry
                   <ArrowRight className="h-4 w-4" />
-                </button>
+                </Link>
               </div>
             </motion.article>
           ))}
