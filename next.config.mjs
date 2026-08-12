@@ -7,11 +7,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   outputFileTracingRoot: __dirname,
   images: {
-    // Source images in Supabase Storage are 1000-1500px PNGs. AVIF/WebP plus the
-    // per-component `sizes` hints cut a ~2 MB original to tens of KB at the edge.
+    // Disable Next.js built-in image optimization transforms. The site now
+    // serves pre-generated WebP images from Supabase (and uses native <img>
+    // for logos/artwork). Turning this on prevents any /_next/image calls that
+    // consume Vercel's metered transforms and return HTTP 402 when exhausted.
+    unoptimized: true,
     formats: ["image/avif", "image/webp"],
-    // Product art is immutable once uploaded (filenames are timestamp-prefixed),
-    // so optimized variants can be held for a year instead of the 60s default.
     minimumCacheTTL: 31536000,
     remotePatterns: [
       {

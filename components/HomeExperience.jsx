@@ -808,12 +808,30 @@ function Reveal({ children, className = "" }) {
   );
 }
 
+/**
+ * Typographic polish only - no colour, font or identity change.
+ *
+ * Three adjustments, all about rhythm rather than restyling:
+ *  - The eyebrow sat 12px from a 36px heading, so the two read as one block.
+ *    Tightened the eyebrow's own leading and opened the gap beneath it.
+ *  - The heading jumped 30px -> 36px with nothing between; a mid step at `md`
+ *    keeps the scale smooth on tablets instead of snapping.
+ *  - Descriptions ran the full 3xl container. Capping the measure near 65
+ *    characters is the readability convention; long lines are the single most
+ *    common reason body copy feels heavy.
+ */
 function SectionHeading({ eyebrow, title, description, align = "center" }) {
   return (
     <div className={align === "left" ? "max-w-2xl" : "mx-auto max-w-3xl text-center"}>
-      <p className="text-xs font-bold uppercase tracking-[0.28em] text-karariGold">{eyebrow}</p>
-      <h2 className="mt-3 font-display text-3xl font-semibold text-charcoal sm:text-4xl">{title}</h2>
-      {description ? <p className="mt-4 text-base leading-7 text-ink/65">{description}</p> : null}
+      <p className="text-xs font-bold uppercase leading-none tracking-[0.28em] text-karariGold">{eyebrow}</p>
+      <h2 className="mt-4 font-display text-3xl font-semibold leading-[1.15] tracking-[-0.01em] text-charcoal md:text-[2.125rem] sm:text-4xl">
+        {title}
+      </h2>
+      {description ? (
+        <p className={`mt-4 max-w-[62ch] text-base leading-7 text-ink/65 ${align === "left" ? "" : "mx-auto"}`}>
+          {description}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -927,6 +945,7 @@ function HeroCarousel({ campaignActive, seasonalCampaign = localSeasonalCampaign
                 src={slide.image}
                 alt={slide.headline}
                 fill
+                unoptimized={true}
                 priority={activeSlide === 0}
                 fetchPriority={activeSlide === 0 ? "high" : "auto"}
                 sizes="100vw"
@@ -1029,7 +1048,7 @@ function CategorySection({ selectedCategory, categories = localCategories }) {
             >
               <div className="relative overflow-hidden">
                 <div className="relative aspect-[1.1/1] sm:aspect-[4/3]">
-                  <Image
+                  <ProductImage
                     src={category.image}
                     alt={`${category.name} collection at Karari Beauty`}
                     fill
@@ -1244,6 +1263,10 @@ function ProductSection({ onView, seasonal, selectedCategory, onClearCategory, p
 }
 function GiftCombos({ onView, products = localProducts }) {
   const { format } = useDisplayCurrency();
+  // Link combos to the Gift Items collection to avoid 404s when specific
+  // hamper products are not present in the production catalog.
+  const targetHref = "/collections/gift-items";
+
   return (
     <section id="gifts" className="bg-white px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -1269,14 +1292,10 @@ function GiftCombos({ onView, products = localProducts }) {
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => onView(products.find((product) => product.category === "Gift Hampers") || products[0])}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-charcoal px-4 py-3 text-sm font-bold text-white transition hover:bg-wine"
-                >
+                <Link href={targetHref} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-charcoal px-4 py-3 text-sm font-bold text-white transition hover:bg-wine">
                   View Hamper Inquiry
                   <ArrowRight className="h-4 w-4" />
-                </button>
+                </Link>
               </div>
             </motion.article>
           ))}
@@ -1340,12 +1359,11 @@ function getWhatsAppContactUrl(siteSettings) {
 }
 
 function BrandLogo({ src, alt, className, width, height, priority = false }) {
-  const isLocalAsset = String(src || "").startsWith("/");
-  if (!isLocalAsset) {
-    return <img src={src} alt={alt} width={width} height={height} className={className} loading={priority ? "eager" : "lazy"} />;
-  }
-
-  return <Image src={src} alt={alt} width={width} height={height} priority={priority} className={className} />;
+  // Use a plain <img> for logos (both local and remote). The Next.js image
+  // optimizer consumes Vercel image-transformation quota which can return
+  // 402 when exhausted; a small logo benefits little from that. Using a
+  // native img element keeps the experience stable.
+  return <img src={src} alt={alt} width={width} height={height} className={className} loading={priority ? "eager" : "lazy"} />;
 }
 
 function FooterTrustStrip() {
