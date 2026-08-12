@@ -1,4 +1,5 @@
 import FloatingActions from "@/components/FloatingActions";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { getSiteSettings } from "@/lib/data/siteSettings";
 import { absoluteUrl, defaultSeo, getDefaultOgImage, getSiteUrl } from "@/lib/seo";
 import { Analytics } from "@vercel/analytics/next";
@@ -72,6 +73,7 @@ export default async function RootLayout({ children }) {
       <body className="font-sans antialiased">
         {children}
         <FloatingActions siteSettings={siteSettings} />
+        <GoogleAnalytics />
         <Analytics />
         <SpeedInsights />
       </body>
