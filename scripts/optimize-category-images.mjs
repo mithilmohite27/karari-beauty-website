@@ -38,12 +38,24 @@ const apply = process.argv.includes("--write");
 // --slug=fancy-items limits the run to one category. Without it every category
 // is processed.
 const onlySlug = (process.argv.find((arg) => arg.startsWith("--slug=")) || "").split("=")[1] || "";
+// Re-process images already under `optimized/`. Needed when the target width
+// changes, since the skip guard would otherwise treat them as done.
+const force = process.argv.includes("--force");
 
 const BUCKET = "product-images";
 const PREFIX = "optimized";
-// Category heroes render at roughly half viewport width; 1600px covers desktop
-// at 2x without paying for pixels nobody sees.
-const MAX_WIDTH = 1600;
+
+/**
+ * Largest a category hero is ever displayed at is 444px (the collection page
+ * banner); the homepage grid shows them at 326px. 900px therefore covers the
+ * widest case at 2x for retina.
+ *
+ * This was 1600px, which made sense while /_next/image resized per viewport.
+ * next.config.mjs now sets images.unoptimized, so one stored file serves every
+ * device - Lighthouse measured the result as 1125x1024 images painted into a
+ * 444x296 box, roughly 1.2 MB of pixels the browser decodes and discards.
+ */
+const MAX_WIDTH = 900;
 const WEBP_QUALITY = 80;
 
 async function loadEnvLocal() {
@@ -99,8 +111,8 @@ for (const category of categories) {
     console.log(`  SKIP   ${category.slug.padEnd(18)} no image set`);
     continue;
   }
-  if (url.includes(`/${PREFIX}/`)) {
-    console.log(`  SKIP   ${category.slug.padEnd(18)} already optimized`);
+  if (url.includes(`/${PREFIX}/`) && !force) {
+    console.log(`  SKIP   ${category.slug.padEnd(18)} already optimized (--force to re-process)`);
     continue;
   }
 
