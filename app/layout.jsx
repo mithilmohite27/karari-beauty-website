@@ -13,6 +13,9 @@ export async function generateMetadata() {
   const description = siteSettings.seo.metaDescription || defaultSeo.description;
   const favicon = siteSettings.business.faviconUrl || "/favicon.png";
   const ogImage = siteSettings.seo.ogImageUrl ? absoluteUrl(siteSettings.seo.ogImageUrl) : getDefaultOgImage();
+  // Trimmed because pasting the token from Search Console commonly carries
+  // trailing whitespace, which would emit a tag Google then fails to match.
+  const verificationToken = String(process.env.GOOGLE_SITE_VERIFICATION || "").trim();
 
   return {
     metadataBase: new URL(getSiteUrl()),
@@ -61,7 +64,17 @@ export async function generateMetadata() {
         "max-snippet": -1,
         "max-video-preview": -1
       }
-    }
+    },
+    // Search Console ownership verification.
+    //
+    // Set GOOGLE_SITE_VERIFICATION in Vercel to the content value Search
+    // Console gives you under the "HTML tag" method - the token only, not the
+    // whole <meta> element. Omitted entirely when unset, so an empty variable
+    // never emits a broken tag.
+    //
+    // Read at build time because this layout is prerendered, so the value only
+    // takes effect on the next deployment after it is set.
+    ...(verificationToken ? { verification: { google: verificationToken } } : {})
   };
 }
 
