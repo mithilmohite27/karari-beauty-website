@@ -6,6 +6,17 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
+/**
+ * Search Console ownership token.
+ *
+ * Safe to keep in the repository: this value is published in the page source
+ * of every request by design, so it is not a secret. It proves ownership only
+ * to whoever already controls the site or its DNS. Hardcoding the default means
+ * verification survives without an environment variable being set correctly;
+ * GOOGLE_SITE_VERIFICATION still overrides it if the property is ever moved.
+ */
+const DEFAULT_SITE_VERIFICATION = "tXODXQJ0EsW2wGxDDe0LB1vHRwu28LUuSW4moUDs1mI";
+
 export async function generateMetadata() {
   const siteSettings = await getSiteSettings();
   const businessName = siteSettings.business.name || "Karari Beauty";
@@ -13,9 +24,15 @@ export async function generateMetadata() {
   const description = siteSettings.seo.metaDescription || defaultSeo.description;
   const favicon = siteSettings.business.faviconUrl || "/favicon.png";
   const ogImage = siteSettings.seo.ogImageUrl ? absoluteUrl(siteSettings.seo.ogImageUrl) : getDefaultOgImage();
-  // Trimmed because pasting the token from Search Console commonly carries
-  // trailing whitespace, which would emit a tag Google then fails to match.
-  const verificationToken = String(process.env.GOOGLE_SITE_VERIFICATION || "").trim();
+  // Search Console shows this token in two shapes: bare for the HTML-tag
+  // method, and prefixed with "google-site-verification=" for the DNS TXT
+  // record. Accept either and normalise, because pasting the DNS form into the
+  // meta tag emits a value Google will not match, and the failure says nothing
+  // about why. Trimmed too - a copied token frequently carries whitespace.
+  const verificationToken = String(process.env.GOOGLE_SITE_VERIFICATION || DEFAULT_SITE_VERIFICATION)
+    .trim()
+    .replace(/^google-site-verification=/i, "")
+    .trim();
 
   return {
     metadataBase: new URL(getSiteUrl()),
