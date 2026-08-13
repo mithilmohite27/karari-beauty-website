@@ -856,7 +856,7 @@ const heroSlides = [
     headline: "Gifts That Speak from the Heart",
     headlineLines: ["Gifts That Speak", "from the Heart"],
     subheadline: "Every occasion. Every emotion.",
-    description: "Jewellery, bangles, handbags, watches and thoughtful gifts for your loved ones.",
+    description: "Jewellery, bangles, handbags, umbrellas and thoughtful gifts for your loved ones.",
     primaryCta: { label: "Explore Collections", href: "#categories" },
     secondaryCta: { label: "Shop Gift Items", href: "#products" },
     position: "object-[66%_center] sm:object-center"
@@ -972,9 +972,18 @@ function HeroCarousel({ campaignActive, seasonalCampaign = localSeasonalCampaign
                   {slide.eyebrow}
                 </div>
                 <h1 className="mt-3 font-display text-[1.95rem] font-semibold leading-[1.04] text-[#3A2417] sm:mt-[1.125rem] sm:text-[2.55rem] lg:text-[3.2rem] xl:text-[3.35rem]">
-                  {slide.headlineLines.map((line) => (
+                  {/*
+                    The trailing space is load-bearing. Each line is a block
+                    span, so a browser renders the break visually - but
+                    textContent concatenates with no separator, giving
+                    "Raksha BandhanCollection 2026is Live". Anything reading the
+                    H1 as plain text rather than laying it out (SEO crawlers,
+                    extractors, some AI scrapers) sees the mangled version. A
+                    trailing space costs nothing visually and fixes all of them.
+                  */}
+                  {slide.headlineLines.map((line, index) => (
                     <span key={line} className="block">
-                      {line}
+                      {index < slide.headlineLines.length - 1 ? `${line} ` : line}
                     </span>
                   ))}
                 </h1>

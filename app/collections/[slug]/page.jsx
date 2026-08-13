@@ -19,19 +19,30 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const category = await getCategoryBySlug(slug);
+  const [category, allProducts] = await Promise.all([getCategoryBySlug(slug), getProducts()]);
 
+  // If no explicit category exists, allow a fallback to a products-by-tag
+  // collection (e.g., /collections/gift-hampers) so marketing URLs don't 404.
   if (!category) {
-    return {
-      title: {
-        absolute: "Collection Not Found | Karari Beauty"
-      },
-      // This route streams a loading shell before the category lookup resolves,
-      // so the response has already committed 200 by the time notFound() runs -
-      // a soft 404. Until that is restructured, keep search engines from
-      // indexing unknown collection URLs as real pages.
-      robots: { index: false, follow: false }
-    };
+    const productsByTag = allProducts.filter((p) => (p.tags || []).includes(slug));
+    if (!productsByTag.length) {
+      return {
+        title: {
+          absolute: "Collection Not Found | Karari Beauty"
+        },
+        robots: { index: false, follow: false }
+      };
+    }
+
+    const displayName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const href = `/collections/${slug}`;
+    return createPageMetadata({
+      title: `${displayName} Collection`,
+      description: `Selected ${displayName.toLowerCase()} and curated hampers from Karari Beauty.`,
+      path: href,
+      image: productsByTag[0].image || getDefaultOgImage(),
+      imageAlt: `${displayName} collection at Karari Beauty`
+    });
   }
 
   const href = category.href || `/collections/${category.slug}`;

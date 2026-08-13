@@ -31,7 +31,11 @@ export const businessSettings = {
   internationalMessage: "From India to {country}, festive gifts delivered with care.",
   checkoutEnabled: true,
   whatsappSupportEnabled: true,
-  siteTitle: "Jewellery, Gifts, Cosmetics & Rakhi | Karari Beauty",
-  metaDescription: "Shop jewellery, bangles, cosmetics, handbags, watches, rakhi and gift items online from Karari Beauty in Vansda, with delivery across India.",
+  // Only categories the store actually sells (see lib/storefrontCatalog.js).
+  // These previously advertised Cosmetics and Watches, both since retired -
+  // the snippet promised products whose collection pages now 404, which spends
+  // clicks on an immediate bounce and reads as a broken store.
+  siteTitle: "Rakhi, Jewellery, Bangles & Gifts | Karari Beauty",
+  metaDescription: "Shop rakhi, jewellery, bangles, handbags, umbrellas and gift items online from Karari Beauty in Vansda, with delivery across India.",
   ogImageUrl: "/hero/all-occasion-gifting.png"
 };
