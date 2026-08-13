@@ -839,7 +839,10 @@ function SectionHeading({ eyebrow, title, description, align = "center" }) {
 const heroSlides = [
   {
     key: "raksha-bandhan",
-    image: "/hero/raksha-bandhan-2026.png",
+    // WebP: this is the LCP element and next.config sets images.unoptimized,
+    // so whatever is referenced here is exactly what the browser downloads.
+    // The PNG was 617 KB.
+    image: "/hero/raksha-bandhan-2026.webp",
     headline: "Raksha Bandhan Collection 2026 is Live",
     headlineLines: ["Raksha Bandhan", "Collection 2026", "is Live"],
     subheadline: "Celebrate the bond of love with Karari Beauty",
@@ -851,7 +854,7 @@ const heroSlides = [
   },
   {
     key: "all-occasion",
-    image: "/hero/all-occasion-gifting.png",
+    image: "/hero/all-occasion-gifting.webp",
     eyebrow: "Karari Beauty gifting edit",
     headline: "Gifts That Speak from the Heart",
     headlineLines: ["Gifts That Speak", "from the Heart"],
