@@ -27,6 +27,7 @@ export default function ProductCard({ product, onView, onAddToCart, onBuyNow, on
           <ProductImage
             src={product.image}
             alt={product.name}
+            blurDataURL={product.imageBlur || undefined}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, (min-width: 420px) 50vw, 100vw"
             className="object-cover transition duration-700 group-hover:scale-105"

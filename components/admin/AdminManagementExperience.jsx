@@ -70,6 +70,7 @@ const emptyProductForm = {
   badge: "",
   offer: "",
   image_url: "",
+  image_variants: {},
   short_description: "",
   description: "",
   tags: "",
@@ -245,7 +246,10 @@ function productToForm(product) {
     rating: product.rating || "",
     badge: product.badge || "",
     offer: product.offer || "",
-    image_url: product.image || "",
+    // imageOriginal, not image: `image` may be a /cdn/ path once the product
+    // has R2 variants, and saving that back would corrupt products.image_url.
+    image_url: product.imageOriginal || product.image || "",
+    image_variants: product.imageVariants || {},
     short_description: product.shortDescription || "",
     description: product.description || "",
     tags: Array.isArray(product.tags) ? product.tags.join(", ") : "",
@@ -1299,6 +1303,10 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
     try {
       const result = await uploadImage(file, "main");
       setField("image_url", result.url);
+      // Saved alongside the URL so the product keeps its responsive variants.
+      // A bare image_url write clears image_variants server-side, because a new
+      // URL makes the old variants describe the wrong picture.
+      setField("image_variants", result.variants || {});
       setImageState((current) => ({ ...current, loading: false }));
     } catch (uploadError) {
       setImageState((current) => ({ ...current, loading: false, error: uploadError.message || "Unable to upload image." }));
@@ -1337,7 +1345,8 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
         image_url: result.url,
         storage_path: result.path,
         alt_text: form.name,
-        sort_order: gallery.length
+        sort_order: gallery.length,
+        variants: result.variants || {}
       });
       setImageState((current) => ({ ...current, galleryLoading: false }));
     } catch (uploadError) {
@@ -1376,6 +1385,7 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error(result.error || "Unable to set main image.");
       setField("image_url", image.imageUrl);
+      setField("image_variants", image.variants || {});
       await loadGallery();
       setImageState((current) => ({ ...current, galleryLoading: false }));
     } catch (galleryError) {
@@ -1471,7 +1481,11 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
               <div className="min-w-0 flex-1 space-y-3">
                 <label className="grid gap-1 text-sm font-bold text-[#3A2417]">
                   Image URL / existing path
-                  <input value={form.image_url} onChange={(event) => setField("image_url", event.target.value)} placeholder="/products/example.png or https://..." className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
+                  {/* Typing a different URL invalidates any stored variants:
+                      they describe the previous picture. Clearing them here
+                      makes the product serve the pasted URL directly and marks
+                      it for the next backfill run. */}
+                  <input value={form.image_url} onChange={(event) => { setField("image_url", event.target.value); setField("image_variants", {}); }} placeholder="/products/example.png or https://..." className="min-h-11 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-3 outline-none focus:border-[#C9962D]" />
                 </label>
                 <div className="flex flex-wrap gap-2">
                   <label className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg bg-[#7A183D] px-4 text-sm font-bold text-white ${!canManageProducts ? "pointer-events-none opacity-55" : ""}`}>
@@ -1479,7 +1493,7 @@ function ProductFormDrawer({ mode, product, products, categories, saving, error,
                     Upload / Replace Image
                     <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleMainUpload} disabled={!canManageProducts || imageState.loading} className="hidden" />
                   </label>
-                  <button type="button" onClick={() => setField("image_url", "")} className="min-h-10 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-4 text-sm font-bold text-[#7A183D]">Clear image</button>
+                  <button type="button" onClick={() => { setField("image_url", ""); setField("image_variants", {}); }} className="min-h-10 rounded-lg border border-[rgba(122,24,61,0.14)] bg-white px-4 text-sm font-bold text-[#7A183D]">Clear image</button>
                 </div>
                 {!canManageProducts ? <p className="text-xs font-bold text-[#7A183D]">Connect Supabase Storage to upload images.</p> : null}
               </div>

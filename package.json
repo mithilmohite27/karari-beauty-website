@@ -11,9 +11,12 @@
     "images:compress": "node scripts/compress-static-assets.mjs",
     "images:publish": "node scripts/publish-optimized-images.mjs",
     "images:publish:write": "node scripts/publish-optimized-images.mjs --write",
-    "check:images": "node scripts/check-images.mjs"
+    "check:images": "node scripts/check-images.mjs",
+    "images:r2": "node scripts/migrate-images-to-r2.mjs",
+    "images:r2:write": "node scripts/migrate-images-to-r2.mjs --write"
   },
-  "dependencies":  {
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1111.0",
     "@supabase/supabase-js": "^2.110.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",

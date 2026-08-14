@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { isCdnPath } from "@/lib/imageVariants";
 
 const PRODUCT_IMAGE_FALLBACK = "/images/fallbacks/karari-product-fallback.svg";
 
@@ -30,6 +31,13 @@ function shouldSkipOptimization(src) {
   if (typeof src !== "string") return false;
   if (src.endsWith(".svg")) return true;
 
+  // A /cdn/ path is the one case that genuinely wants the image pipeline. It
+  // resolves through lib/cdn-loader.js to an already-resized object in R2, so
+  // Next builds a real srcset and still makes no /_next/image request - no
+  // Vercel transformation is consumed. Skipping it here would throw away the
+  // responsive variants the whole migration exists to produce.
+  if (isCdnPath(src)) return false;
+
   // Any WebP in our storage bucket is already compressed to display size -
   // either by the one-off migration (publish-optimized-images.mjs) or, for
   // anything uploaded since, by compressForStorage() in lib/data/media.js.
@@ -37,7 +45,7 @@ function shouldSkipOptimization(src) {
   return src.includes(".supabase.co/storage/") && src.endsWith(".webp");
 }
 
-export default function ProductImage({ src, alt, fallbackSrc = PRODUCT_IMAGE_FALLBACK, onError, ...props }) {
+export default function ProductImage({ src, alt, blurDataURL, fallbackSrc = PRODUCT_IMAGE_FALLBACK, onError, ...props }) {
   const [imageSrc, setImageSrc] = useState(src || fallbackSrc);
 
   useEffect(() => {
@@ -49,12 +57,18 @@ export default function ProductImage({ src, alt, fallbackSrc = PRODUCT_IMAGE_FAL
     setImageSrc((current) => (current === fallbackSrc ? current : fallbackSrc));
   };
 
+  // The blur placeholder belongs to the original image, so it must be dropped
+  // the moment we fall back - otherwise a failed load shows the product blurred
+  // underneath the generic fallback graphic.
+  const showBlur = Boolean(blurDataURL) && imageSrc === src;
+
   return (
     <Image
       {...props}
       src={imageSrc}
       alt={alt}
       unoptimized={shouldSkipOptimization(imageSrc)}
+      {...(showBlur ? { placeholder: "blur", blurDataURL } : {})}
       onError={handleError}
     />
   );

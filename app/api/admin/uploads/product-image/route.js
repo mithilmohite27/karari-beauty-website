@@ -28,7 +28,10 @@ export async function POST(request) {
     return NextResponse.json({
       ok: true,
       url: media.publicUrl,
-      path: `${MEDIA_BUCKET}/${media.storagePath}`
+      path: `${MEDIA_BUCKET}/${media.storagePath}`,
+      // Empty object when R2 is not configured or processing failed; callers
+      // store it as-is and the image falls back to `url`.
+      variants: media.variants || {}
     });
   } catch (error) {
     if (error instanceof MediaAdminError) {

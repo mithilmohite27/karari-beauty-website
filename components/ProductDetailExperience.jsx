@@ -42,6 +42,9 @@ export default function ProductDetailExperience({ product, category, relatedProd
       : [];
   }, [product]);
   const [selectedImage, setSelectedImage] = useState(galleryImages[0]?.imageUrl || product.image);
+  // The placeholder has to track the selected thumbnail, not the product's main
+  // image, or switching images briefly blurs in the wrong picture.
+  const selectedBlur = galleryImages.find((image) => image.imageUrl === selectedImage)?.blurDataURL || product.imageBlur || "";
   const isWished = wishlistIds.includes(product.id);
   const orderDetails = getProductOrderDetails(product);
   const categoryHref = category?.href || "/#collections";
@@ -142,6 +145,7 @@ export default function ProductDetailExperience({ product, category, relatedProd
                 <ProductImage
                   src={selectedImage || product.image}
                   alt={product.name}
+                  blurDataURL={selectedBlur || undefined}
                   fill
                   priority
                   sizes="(min-width: 1024px) 50vw, 100vw"
