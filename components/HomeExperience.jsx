@@ -855,9 +855,15 @@ const heroSlides = [
   {
     key: "all-occasion",
     image: "/hero/all-occasion-gifting.webp",
-    eyebrow: "Karari Beauty gifting edit",
-    headline: "Gifts That Speak from the Heart",
-    headlineLines: ["Gifts That Speak", "from the Heart"],
+    eyebrow: "Handpicked gifting edit",
+    // This slide carries the homepage H1 outside the Raksha Bandhan window -
+    // the campaign slide is filtered out once it ends, leaving this one first.
+    // For most of the year it is therefore the H1 Google indexes, so it names
+    // the brand and the three categories rather than setting a mood: "Gifts
+    // That Speak from the Heart" was evergreen but carried no entity and no
+    // category terms.
+    headline: "Karari Beauty Rakhi, Jewellery & Boutique Gifts",
+    headlineLines: ["Karari Beauty", "Rakhi, Jewellery & Boutique Gifts"],
     subheadline: "Every occasion. Every emotion.",
     description: "Jewellery, bangles, handbags, umbrellas and thoughtful gifts for your loved ones.",
     primaryCta: { label: "Explore Collections", href: "#categories" },
