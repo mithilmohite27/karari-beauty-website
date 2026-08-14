@@ -34,6 +34,7 @@ that as the source of truth.
 | MX | `@` | `mx1.hostinger.com` (priority 5) | n/a |
 | MX | `@` | `mx2.hostinger.com` (priority 10) | n/a |
 | TXT | `@` | `v=spf1 include:_spf.mail.hostinger.com ~all` | n/a |
+| TXT | `_dmarc` | `v=DMARC1; p=none` | n/a |
 
 ### Subdomains
 
@@ -46,13 +47,17 @@ that as the source of truth.
 | CNAME | `hostingermail-b._domainkey` | `hostingermail-b.dkim.mail.hostinger.com` | **DNS only** |
 | CNAME | `hostingermail-c._domainkey` | `hostingermail-c.dkim.mail.hostinger.com` | **DNS only** |
 
-### Needs checking by hand
+### Confirmed against Cloudflare's scan
 
-- `_dmarc` — a TXT record appears to exist but returned empty over public DNS.
-  Read the exact value out of the Hostinger panel and copy it verbatim.
-- Anything else in the Hostinger zone not listed above. Verification TXT records
-  for payment providers, analytics, or mail tools are easy to miss and only
-  surface as a failure weeks later.
+The zone contains exactly 11 records and Cloudflare's import found all of them,
+including the `_dmarc` TXT that public DNS would not return. Nothing had to be
+added by hand.
+
+Cloudflare imported seven of them as **Proxied**, and all seven had to be
+flipped to DNS only — the apex `A`, `www`, `autoconfig`, `autodiscover`, and the
+three `_domainkey` CNAMEs. Proxying a DKIM CNAME is the worst of these:
+Cloudflare answers the lookup with its own addresses instead of the DKIM key, so
+signature verification fails on every outgoing message.
 
 The apex `A` and the `www` CNAME both point at Vercel. The four mail-related
 CNAMEs plus the MX and SPF records are what keep email working.
