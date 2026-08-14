@@ -133,7 +133,7 @@ Cloudflare side exists, so the plan can be reviewed early.
 npm run images:r2:write
 ```
 
-Expected result: **107 migrated, 12 skipped, 0 failed.**
+Expected result: **93 migrated, 26 skipped, 0 failed.**
 
 The script is idempotent — it selects only rows whose variants column is still
 `{}`, which is what the `idx_products_unmigrated` and
@@ -144,18 +144,48 @@ and skipped, never fatal.
 Confirm afterwards:
 
 ```sql
-select count(*) from products where image_variants = '{}'::jsonb;        -- expect 12
-select count(*) from product_images where variants = '{}'::jsonb;        -- expect 0
+select count(*) from products where image_variants = '{}'::jsonb;        -- expect 14
+select count(*) from product_images where variants = '{}'::jsonb;        -- expect 12
 ```
 
-### The 12 skipped products
+### What gets skipped, and why
 
-They point at `images.unsplash.com` — stock photography, not photographs of the
-actual products. The script skips them by design: copying a stock photo into our
-own CDN does not make it a picture of our product, and a generic stock image on
-a jewellery product page hurts conversion and gives Google nothing distinctive
-to index. They need real photography, after which a re-run picks them up
-automatically.
+Two separate checks, because placeholders arrive in two forms.
+
+**Stock photography by hostname.** 12 products point at `images.unsplash.com`.
+Copying a stock photo into our own CDN does not make it a picture of our
+product, and a generic stock image on a jewellery product page hurts conversion
+and gives Google nothing distinctive to index.
+
+**Stock photography that was re-hosted.** A hostname check is not enough. Some
+stock images were downloaded, re-encoded and uploaded into our own Supabase
+bucket, so they carry a `supabase.co` URL and pass every host check while still
+being stock imagery.
+
+The signal that survives re-hosting is sharing: one image file standing in for
+several distinct products at several different prices is a placeholder wherever
+it is served from. Real product photography is used once. The script builds an
+index of image URL to distinct product slugs and skips anything used more than
+once.
+
+In this catalogue two re-hosted files are each doing duty for six products:
+
+| File | Products |
+| --- | --- |
+| `p-1786663190868-87pnoj.webp` | antique-pendant-jewellery-set, crystal-stud-combo, gold-tone-bracelet, meenakari-choker-set, pearl-glow-jewellery-set, rose-pearl-earrings |
+| `p-1786663191845-0h55ux.webp` | antique-gold-bangle-pair, daily-wear-bangle-pair, kundan-bridal-bangles, pearl-accent-bangles, rose-gold-bangle-stack, traditional-red-chooda-set |
+
+That makes **14 products** displaying placeholder imagery, not 12.
+`crystal-stud-combo` and `traditional-red-chooda-set` carry a re-hosted stock
+file as their main image and are invisible to a hostname check.
+
+This is worth fixing on its own terms, independently of the CDN. Five bangle
+products priced from ₹699 to ₹2,299 currently show the identical photograph. A
+customer comparing them sees one picture at five prices, and what arrives will
+not match what they chose.
+
+All of it resolves the same way: real photography per product. A re-run picks
+them up automatically once each has its own image.
 
 ## New uploads
 

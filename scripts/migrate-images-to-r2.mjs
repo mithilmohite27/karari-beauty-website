@@ -72,6 +72,50 @@ function isPlaceholder(url) {
   return PLACEHOLDER_HOSTS.some((host) => String(url).includes(host));
 }
 
+/**
+ * Count how many distinct products each image URL is used by, across both
+ * tables.
+ *
+ * WHY THIS EXISTS
+ * Checking the hostname is not enough to recognise a placeholder. Some stock
+ * photos were downloaded, re-encoded and uploaded into our own Supabase bucket,
+ * so they carry a supabase.co URL and pass every host check while still being
+ * stock imagery. In this catalogue two such files are each shared by six
+ * different products.
+ *
+ * Sharing is the signal that survives re-hosting: one file standing in for six
+ * distinct products at six different prices is a placeholder no matter where it
+ * is served from. Real product photography is used once.
+ *
+ * Migrating those would write two stock images into R2 under twelve product
+ * keys and present them as our own photography - the exact outcome the Unsplash
+ * skip was written to prevent.
+ */
+async function buildSharedImageIndex(db) {
+  const usage = new Map();
+
+  const record = (url, slug) => {
+    if (!url || !slug) return;
+    if (!usage.has(url)) usage.set(url, new Set());
+    usage.get(url).add(slug);
+  };
+
+  const { data: products, error: productError } = await db.from("products").select("slug, image_url");
+  if (productError) throw new Error(`Could not read products for the shared-image index: ${productError.message}`);
+  for (const row of products) record(row.image_url, row.slug);
+
+  const { data: images, error: imageError } = await db.from("product_images").select("image_url, products(slug)");
+  if (imageError) throw new Error(`Could not read product_images for the shared-image index: ${imageError.message}`);
+  for (const row of images) record(row.image_url, row.products?.slug);
+
+  const shared = new Map();
+  for (const [url, slugs] of usage) {
+    if (slugs.size > 1) shared.set(url, [...slugs].sort());
+  }
+
+  return shared;
+}
+
 async function main() {
   // Only --write needs credentials. The dry run is a planning tool - it should
   // work before the Cloudflare side exists, so the migration can be reviewed
@@ -95,9 +139,20 @@ async function main() {
     console.log("Re-run with --write to perform the migration.\n");
   }
 
+  const shared = await buildSharedImageIndex(db);
+
+  if (shared.size > 0) {
+    console.log(`\n${shared.size} image file(s) are shared across multiple products and will be skipped:`);
+    for (const [url, slugs] of shared) {
+      console.log(`  ${url.split("/").pop()} used by ${slugs.length}: ${slugs.join(", ")}`);
+    }
+    console.log("  These are placeholders regardless of where they are hosted. Each product needs its own photograph.");
+  }
+
   const totals = { ok: 0, skipped: 0, failed: 0 };
 
   await migrateTable(db, totals, {
+    shared,
     table: "product_images",
     column: "variants",
     select: "id, image_url, sort_order, products(slug)",
@@ -106,6 +161,7 @@ async function main() {
   });
 
   await migrateTable(db, totals, {
+    shared,
     table: "products",
     column: "image_variants",
     select: "id, slug, image_url",
@@ -120,7 +176,7 @@ async function main() {
   if (totals.failed > 0) process.exitCode = 1;
 }
 
-async function migrateTable(db, totals, { table, column, select, slugOf, indexOf }) {
+async function migrateTable(db, totals, { shared, table, column, select, slugOf, indexOf }) {
   // The literal string "{}", not an object: PostgREST puts this straight into
   // the query string, and an object stringifies to "[object Object]" and comes
   // back as "invalid input syntax for type json". This predicate is what makes
@@ -152,6 +208,13 @@ async function migrateTable(db, totals, { table, column, select, slugOf, indexOf
 
     if (isPlaceholder(row.image_url)) {
       console.warn(`  SKIP  ${label} - stock placeholder, needs real product photography`);
+      totals.skipped += 1;
+      continue;
+    }
+
+    const sharedWith = shared.get(row.image_url);
+    if (sharedWith) {
+      console.warn(`  SKIP  ${label} - image shared with ${sharedWith.length - 1} other product(s), needs its own photograph`);
       totals.skipped += 1;
       continue;
     }
