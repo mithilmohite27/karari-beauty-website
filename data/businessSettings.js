@@ -37,5 +37,5 @@ export const businessSettings = {
   // clicks on an immediate bounce and reads as a broken store.
   siteTitle: "Rakhi, Jewellery, Bangles & Gifts | Karari Beauty",
   metaDescription: "Shop rakhi, jewellery, bangles, handbags, umbrellas and gift items online from Karari Beauty in Vansda, with delivery across India.",
-  ogImageUrl: "/hero/all-occasion-gifting.png"
+  ogImageUrl: "/og-image.jpg"
 };

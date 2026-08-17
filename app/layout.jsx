@@ -1,7 +1,7 @@
 import FloatingActions from "@/components/FloatingActions";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { getSiteSettings } from "@/lib/data/siteSettings";
-import { absoluteUrl, defaultSeo, getDefaultOgImage, getSiteUrl } from "@/lib/seo";
+import { absoluteUrl, defaultSeo, getDefaultOgImage, getSiteUrl, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/seo";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -57,8 +57,8 @@ export async function generateMetadata() {
       images: [
         {
           url: ogImage,
-          width: 1200,
-          height: 630,
+          width: OG_IMAGE_WIDTH,
+          height: OG_IMAGE_HEIGHT,
           alt: `${businessName} boutique gifting collection`
         }
       ],
